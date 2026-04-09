@@ -127,7 +127,7 @@ CREATE TABLE note_reaction (
 
 
 /* ============================= */
-/*      三、增强与日志模块(2张表)       */
+/*      三、增强与日志模块(3张表)       */
 /* ============================= */
 
 /* AI 摘要表 */
@@ -150,3 +150,25 @@ CREATE TABLE sys_log_behavior (
     INDEX idx_user_id (user_id),
     INDEX idx_action_type (action_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户行为日志表';
+
+/* 系统操作审计表 */
+CREATE TABLE sys_log_operation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    user_id BIGINT COMMENT '执行者ID',
+    username VARCHAR(50) COMMENT '执行者账号/昵称',
+    user_type TINYINT COMMENT '用户类型：0 管理员, 1 普通用户',
+    module VARCHAR(30) NOT NULL COMMENT '操作模块：AUTH, USER, NOTE, CATEGORY, INTERACT, AI',
+    action_type TINYINT NOT NULL COMMENT '行为类型：1 登录, 2 退出, 3 创建, 4 修改, 5 删除, 6 审核',
+    description VARCHAR(255) COMMENT '操作描述（例：删除了笔记《我的周报》）',
+    request_url VARCHAR(255) COMMENT '请求接口路径',
+    request_method VARCHAR(10) COMMENT '请求方式（POST/DELETE等）',
+    request_param TEXT COMMENT '请求参数（建议记录关键参数，如ID）',
+    ip_address VARCHAR(128) COMMENT 'IP地址',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '操作结果：1 成功, 0 失败',
+    error_msg TEXT COMMENT '失败原因',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '触发时间',
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_module (module),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作审计表';

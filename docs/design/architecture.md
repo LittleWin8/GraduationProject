@@ -138,70 +138,9 @@ smart-note-system
 
 ### 2、Web 前端项目结构
 
-> 基于 Vue 3 + Element Plus，用于后台管理与内容审核维护。
+> Web 端采用基于中后台集成方案的二次开发模式，复用了 Geeker-Admin 成熟的路由守卫与权限动态过滤机制，重点开发了符合本系统业务逻辑的笔记审核与用户分析模块。详细结构参考：[Geeker-Admin](https://docs.spicyboy.cn/guide/catalogue.html#geeker-admin-%E7%9B%AE%E5%BD%95%E8%AF%B4%E6%98%8E-%F0%9F%93%9A)
 
-```
-smart-note-ui
-│
-├─ public
-│   └─ favicon.ico
-│      ↑ 网站图标
-│
-├─ src
-│   ├─ api
-│   │   ├─ system
-│   │   │   ├─ user.js       ↑ 用户管理接口（对应 sys_user）
-│   │   │   └─ menu.js       ↑ 菜单权限接口（对应 sys_menu）
-│   │   │
-│   │   ├─ note
-│   │   │   ├─ content.js    ↑ 笔记增删改查接口（对应 note）
-│   │   │   └─ category.js   ↑ 分类与标签接口
-│   │   │
-│   │   └─ auth.js           ↑ 登录、获取用户信息接口
-│   │
-│   ├─ assets
-│   │   └─ images            ↑ 静态图片资源
-│   │
-│   ├─ components
-│   │   ├─ Editor            ↑ Markdown 编辑器组件（v-md-editor）
-│   │   └─ SvgIcon           ↑ SVG 图标组件
-│   │
-│   ├─ layout
-│   │   ├─ components        ↑ Navbar、Sidebar、AppMain
-│   │   └─ index.vue         ↑ 整体布局入口
-│   │
-│   ├─ router
-│   │   ├─ index.js          ↑ 路由定义
-│   │   └─ permission.js     ↑ 路由守卫（JWT 校验、动态路由加载）
-│   │
-│   ├─ store
-│   │   ├─ modules
-│   │   │   ├─ user.js       ↑ 用户 Token 与信息存储
-│   │   │   └─ permission.js ↑ 路由权限状态
-│   │   └─ index.js          ↑ Pinia 状态管理入口
-│   │
-│   ├─ utils
-│   │   ├─ request.js        ↑ Axios 封装（请求拦截、Token 注入）
-│   │   └─ auth.js           ↑ Cookie / LocalStorage 操作
-│   │
-│   └─ views
-│       ├─ login
-│       │   └─ index.vue     ↑ 管理员登录页
-│       │
-│       ├─ system
-│       │   ├─ user          ↑ 用户管理页面
-│       │   └─ role          ↑ 角色管理页面
-│       │
-│       └─ note
-│           ├─ list          ↑ 笔记列表页（审核与管理）
-│           └─ category      ↑ 分类管理页
-│
-├─ package.json
-│   ↑ 项目依赖管理
-│
-└─ vite.config.js
-    ↑ Vite 构建配置（代理设置、别名配置）
-```
+
 
 ### 3、微信小程序项目结构
 

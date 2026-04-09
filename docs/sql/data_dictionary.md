@@ -17,18 +17,19 @@
 
 # 三、表清单汇总
 
-| 模块       | 物理表名         | 中文名称       | 核心作用                           |
-| ---------- | ---------------- | -------------- | ---------------------------------- |
-| 用户与权限 | sys_user         | 用户主表       | 存储系统用户基础信息               |
-|            | user_auth        | 用户认证表     | 存储登录凭证（密码 / 微信 OpenID） |
-| 笔记业务   | note             | 笔记主表       | 存储笔记核心内容                   |
-|            | note_tag         | 标签定义表     | 笔记标签库                         |
-|            | note_tag_rel     | 笔记标签关联表 | 处理多对多关系                     |
-|            | note_attachment  | 笔记附件表     | 存储图片与文件信息                 |
-|            | note_comment     | 笔记评论表     | 用户对笔记的评论                   |
-|            | note_reaction    | 笔记互动表     | 点赞 / 踩/收藏记录                 |
-| 增强与日志 | note_ai_summary  | AI 摘要表      | 存储 AI 生成内容                   |
-|            | sys_log_behavior | 用户行为日志表 | 记录浏览、搜索等行为               |
+| 模块       | 物理表名          | 中文名称       | 核心作用                                       |
+| ---------- | ----------------- | -------------- | ---------------------------------------------- |
+| 用户与权限 | sys_user          | 用户主表       | 存储系统用户基础信息                           |
+|            | user_auth         | 用户认证表     | 存储登录凭证（密码 / 微信 OpenID）             |
+| 笔记业务   | note              | 笔记主表       | 存储笔记核心内容                               |
+|            | note_tag          | 标签定义表     | 笔记标签库                                     |
+|            | note_tag_rel      | 笔记标签关联表 | 处理多对多关系                                 |
+|            | note_attachment   | 笔记附件表     | 存储图片与文件信息                             |
+|            | note_comment      | 笔记评论表     | 用户对笔记的评论                               |
+|            | note_reaction     | 笔记互动表     | 点赞 / 踩/收藏记录                             |
+| 增强与日志 | note_ai_summary   | AI 摘要表      | 存储 AI 生成内容                               |
+|            | sys_log_behavior  | 用户行为日志表 | 记录浏览、搜索等行为                           |
+|            | sys_log_operation | 系统操作审计表 | 记录全部用户关键动作，用于安全追溯和管理审计。 |
 
 ------
 
@@ -148,7 +149,7 @@
 
 ------
 
-## 3. 增强与日志模块（2 张表）
+## 3. 增强与日志模块（3 张表）
 
 ### note_ai_summary（AI 摘要表）
 
@@ -172,3 +173,22 @@
 | action_type | TINYINT | 1 浏览，2 搜索 |
 | content | VARCHAR | 行为内容 |
 | create_time | DATETIME | 发生时间 |
+
+
+
+### sys_log_operation（系统操作审计表）
+
+| **字段名**  | **类型**     | **说明**                                                     |
+| ----------- | ------------ | ------------------------------------------------------------ |
+| id          | BIGINT (PK)  | 日志 ID                                                      |
+| user_id     | BIGINT       | 执行操作的用户 ID                                            |
+| username    | VARCHAR(50)  | 操作人账号/昵称                                              |
+| module      | VARCHAR(30)  | **操作模块**：AUTH(认证), USER(用户), NOTE(笔记), CATEGORY(分类/标签), INTERACT(互动), AI(AI) |
+| action_type | TINYINT      | **行为类型**：1 登录, 2 退出, 3 创建, 4 修改, 5 删除, 6 审核 |
+| business_id | BIGINT       | **业务主键 ID**：如笔记 ID、分类 ID、被禁用的用户 ID 等      |
+| description | VARCHAR(255) | 详细描述（如：删除了笔记《我的周报》）                       |
+| request_url | VARCHAR(255) | 请求的接口路径                                               |
+| ip_address  | VARCHAR(128) | 操作时的 IP 地址                                             |
+| status      | TINYINT      | 操作结果：1 成功, 0 失败                                     |
+| create_time | DATETIME     | 发生时间                                                     |
+
