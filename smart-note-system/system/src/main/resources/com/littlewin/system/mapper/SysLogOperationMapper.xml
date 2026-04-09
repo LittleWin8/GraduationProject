@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.littlewin.system.mapper.SysLogOperationMapper">
+
+    <insert id="insertOperationLog" parameterType="com.littlewin.system.domain.entity.SysLogOperation">
+        INSERT INTO sys_log_operation (
+            user_id, username, module, action_type, business_id,
+            description, request_url, request_method, ip_address, status, error_msg
+        ) VALUES (
+                     #{userId}, #{username}, #{module}, #{actionType}, #{businessId},
+                     #{description}, #{requestUrl}, #{requestMethod}, #{ipAddress}, #{status}, #{errorMsg}
+                 )
+    </insert>
+
+</mapper>
