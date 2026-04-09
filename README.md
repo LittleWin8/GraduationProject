@@ -30,7 +30,7 @@
 | **数据库**     | 核心数据库      | **MySQL 8.0**             | 存储用户信息、笔记数据及行为日志                             |
 |                | 管理工具        | **DataGrip**              | 数据库建模与 SQL 管理                                        |
 | **前端开发**   | 用户端          | **微信小程序（原生）**    | 面向终端用户，提供笔记管理与浏览功能                         |
-|                | 管理端          | **Vue 3 + Element Plus**  | 用于系统管理与内容维护                                       |
+|                | 管理端          | **Vue 3 + Element Plus**  | 用于系统管理、内容维护与审核<br />本项目Web前端部分基于开源项目  **[Geeker-Admin](https://github.com/HalseySpicy/Geeker-Admin)**  二次开发 |
 | **接口与调试** | 接口测试        | **Postman**               | 接口调试与功能验证                                           |
 | **环境依赖**   | 运行环境        | **Java 17 / Node.js 20**  | 系统运行与构建环境                                           |
 |                | 项目管理        | **Maven 3.x**             | 依赖管理与项目构建                                           |
@@ -42,4 +42,9 @@
 2. **数据库建表脚本：**[init_db.sql](docs/sql/init_db.sql)
 
 
+
+## 四、系统设计
+
+1. **系统架构设计**：[系统架构设计说明](docs/design/architecture.md)
+2. **系统后端API文档：**[后端API文档](docs/design/api-design.md)
 
