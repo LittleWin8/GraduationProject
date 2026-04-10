@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { AuthState } from "@/stores/interface";
-import { getAuthButtonListApi, getAuthMenuListApi } from "@/api/modules/login";
+import { getAuthDataApi } from "@/api/modules/login";
 import { getFlatMenuList, getShowMenuList, getAllBreadcrumbList } from "@/utils";
 
 export const useAuthStore = defineStore({
@@ -26,22 +26,41 @@ export const useAuthStore = defineStore({
     breadcrumbListGet: state => getAllBreadcrumbList(state.authMenuList)
   },
   actions: {
-    // Get AuthButtonList
+    // // Get AuthButtonList
+    // async getAuthButtonList() {
+    //   // const { data } = await getAuthButtonListApi();
+    //   // this.authButtonList = data;
+
+    //   const res: any = await getAuthButtonListApi();
+    //   this.authButtonList = res?.data?.authButtonList ?? [];
+    // },
+    // // Get AuthMenuList
+    // async getAuthMenuList() {
+    //   // const { data } = await getAuthMenuListApi();
+    //   // this.authMenuList = data;
+
+    //   const res: any = await getAuthMenuListApi();
+    //   this.authMenuList = res.data.menuList;
+    // },
+
+    async getAuthData() {
+      // 如果已经有数据了，直接返回，不再重复请求
+      if (this.authMenuList.length > 0) return;
+
+      const res: any = await getAuthDataApi();
+      // 后端返回的对象里包含 menuList 和 authButtonList
+      this.authMenuList = res.data.menuList;
+      this.authButtonList = res.data.authButtonList;
+    },
+
     async getAuthButtonList() {
-      // const { data } = await getAuthButtonListApi();
-      // this.authButtonList = data;
-
-      const res: any = await getAuthButtonListApi();
-      this.authButtonList = res.data || res;
+      await this.getAuthData();
     },
-    // Get AuthMenuList
+
     async getAuthMenuList() {
-      // const { data } = await getAuthMenuListApi();
-      // this.authMenuList = data;
-
-      const res: any = await getAuthMenuListApi();
-      this.authMenuList = res.data || res;
+      await this.getAuthData();
     },
+
     // Set RouteName
     async setRouteName(name: string) {
       this.routeName = name;

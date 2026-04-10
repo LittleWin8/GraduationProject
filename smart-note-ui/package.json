@@ -1,22 +1,23 @@
 {
-  "name": "geeker-admin",
+  "name": "smart-note-admin",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "geeker-admin open source management system",
+  "description": "个人知识管理与智能笔记系统 - 管理后台",
   "author": {
-    "name": "Geeker",
-    "email": "848130454@qq.com",
-    "url": "https://github.com/HalseySpicy"
+    "name": "LittleWin8",
+    "email": "1944252183@qq.com",
+    "url": "https://github.com/LittleWin8/GraduationProject"
   },
   "license": "MIT",
-  "homepage": "https://github.com/HalseySpicy/Geeker-Admin",
+  "homepage": "https://github.com/LittleWin8/GraduationProject",
   "repository": {
     "type": "git",
-    "url": "git@github.com:HalseySpicy/Geeker-Admin.git"
+    "url": "https://github.com/LittleWin8/GraduationProject.git",
+    "directory": "smart-note-ui"
   },
   "bugs": {
-    "url": "https://github.com/HalseySpicy/Geeker-Admin/issues"
+    "url": "https://github.com/LittleWin8/GraduationProject/issues"
   },
   "scripts": {
     "dev": "vite",

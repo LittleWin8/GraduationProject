@@ -3,11 +3,15 @@ package com.littlewin.system.service.impl;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Spring Security 的用户详情服务实现
@@ -32,10 +36,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("登录用户：" + username + " 已禁用");
         }
 
-        // 2. 构建 Spring Security 的 UserDetails 对象
-        // 注意：这里只传入了用户名和密码，权限信息（Authorities）暂时为空，由后续过滤器处理
+        // 2. 加载权限标志位
+        List<String> perms = userAuthMapper.selectMenuPermsByUserId(user.getUserId());
+
+        // 3.转换成 Spring Security 识别的权限对象
+        List<SimpleGrantedAuthority> authorities = perms.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        // 4. 构建 Spring Security 的 UserDetails 对象
         return User.withUsername(user.getUsername())
                 .password(user.getPassword()) // 这里的密码必须是数据库里存的加密后的字符串
+                .authorities(authorities)
                 .build();
     }
 }

@@ -7,19 +7,19 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("sys_user")
-public class SysUser implements Serializable {
+@TableName("sys_role")
+public class SysRole implements Serializable {
 
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Long userId;
+    @TableId(value = "role_id", type = IdType.AUTO)
+    private Long roleId;
 
-    private String nickname;
+    private String roleName;
 
-    private String avatar;
+    private String roleKey;
+
+    private Integer sortOrder;
 
     private Integer status;
 
     private LocalDateTime createTime;
-
-    private LocalDateTime updateTime;
 }
