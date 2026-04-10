@@ -44,21 +44,27 @@ export const useAuthStore = defineStore({
     // },
 
     async getAuthData() {
-      // 如果已经有数据了，直接返回，不再重复请求
-      if (this.authMenuList.length > 0) return;
-
-      const res: any = await getAuthDataApi();
-      // 后端返回的对象里包含 menuList 和 authButtonList
-      this.authMenuList = res.data.menuList;
-      this.authButtonList = res.data.authButtonList;
+      try {
+        const res: any = await getAuthDataApi();
+        this.authMenuList = res.data?.menuList ?? [];
+        this.authButtonList = res.data?.authButtonList ?? [];
+      } catch (error) {
+        console.error("获取权限数据失败", error);
+        throw error;
+      }
     },
 
     async getAuthButtonList() {
-      await this.getAuthData();
+      // 如果上面去掉了 if，这里逻辑依然成立
+      if (Object.keys(this.authButtonList).length === 0) {
+        await this.getAuthData();
+      }
     },
 
     async getAuthMenuList() {
-      await this.getAuthData();
+      if (this.authMenuList.length === 0) {
+        await this.getAuthData();
+      }
     },
 
     // Set RouteName

@@ -41,10 +41,12 @@ import { useKeepAliveStore } from "@/stores/modules/keepAlive";
 import { initDynamicRouter } from "@/routers/modules/dynamicRouter";
 import { CircleClose, UserFilled } from "@element-plus/icons-vue";
 import type { ElForm } from "element-plus";
+import { useAuthStore } from "@/stores/modules/auth";
 // import md5 from "md5";
 
 const router = useRouter();
 const userStore = useUserStore();
+const authStore = useAuthStore();
 const tabsStore = useTabsStore();
 const keepAliveStore = useKeepAliveStore();
 
@@ -72,6 +74,9 @@ const login = (formEl: FormInstance | undefined) => {
       // const { data } = await loginApi({ ...loginForm, password: md5(loginForm.password) });
       const { data } = await loginApi({ ...loginForm, password: loginForm.password });
       userStore.setToken(data.token);
+
+      // 在获取新权限前，强制重置 authStore 的所有状态（清空旧菜单和按钮）
+      authStore.$reset();
 
       // 2.添加动态路由
       await initDynamicRouter();
