@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.littlewin.system.mapper.SysUserMapper">
+
+    <select id="selectUserList" resultType="com.littlewin.system.domain.vo.UserListVO">
+        SELECT
+        u.user_id AS userId,
+        u.nickname,
+        u.avatar,
+        u.status,
+        u.create_time AS createTime,
+        i.phone,
+        i.last_login_time AS lastLoginTime,
+        a.identifier AS account,
+        a.auth_type AS authType,
+        (SELECT GROUP_CONCAT(r.role_name)
+        FROM sys_role r
+        JOIN sys_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = u.user_id) AS roleNames
+        FROM sys_user u
+        LEFT JOIN user_info i ON u.user_id = i.user_id
+        LEFT JOIN user_auth a ON u.user_id = a.user_id
+        <where>
+            u.status != 2  <if test="nickname != null and nickname != ''">
+            AND u.nickname LIKE CONCAT('%', #{nickname}, '%')
+        </if>
+            <if test="phone != null and phone != ''">
+                AND i.phone = #{phone}
+            </if>
+            <if test="status != null">
+                AND u.status = #{status}
+            </if>
+            <if test="authType != null and authType != ''">
+                AND a.auth_type = #{authType}
+            </if>
+            <if test="identifier != null and identifier != ''">
+                AND a.identifier LIKE CONCAT('%', #{identifier}, '%')
+            </if>
+        </where>
+        ORDER BY u.create_time DESC
+    </select>
+
+    <update id="updateSysUser">
+        UPDATE sys_user
+        <set>
+            <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateUserInfo">
+        UPDATE user_info
+        <set>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="signature != null">signature = #{signature},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateUserStatus">
+        UPDATE sys_user SET status = #{status} WHERE user_id = #{userId}
+    </update>
+
+    <select id="selectRoleIdsByUserId" resultType="Long">
+        SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteUserRoles">
+        DELETE FROM sys_user_role WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="batchInsertUserRoles">
+        INSERT INTO sys_user_role (user_id, role_id) VALUES
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId}, #{roleId})
+        </foreach>
+    </insert>
+
+</mapper>

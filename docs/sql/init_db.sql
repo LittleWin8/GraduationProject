@@ -19,7 +19,7 @@ CREATE TABLE sys_user (
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
     nickname VARCHAR(50) NOT NULL COMMENT '昵称',
     avatar VARCHAR(255) COMMENT '头像URL',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '用户状态：1 正常，0 禁用',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '用户状态：1 正常，0 禁用，2删除/注销',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统用户主表';
@@ -36,7 +36,21 @@ CREATE TABLE user_auth (
     INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户登录认证表';
 
-/* 3. 角色表 */
+/* 3. 用户详细信息表（精简版） */
+CREATE TABLE user_info (
+    user_id BIGINT PRIMARY KEY COMMENT '关联用户ID',
+    gender TINYINT DEFAULT 0 COMMENT '性别：0 未知, 1 男, 2 女',
+    phone VARCHAR(20) COMMENT '手机号',
+    email VARCHAR(100) COMMENT '邮箱',
+    birthday DATE COMMENT '生日',
+    city VARCHAR(50) COMMENT '所在城市',
+    signature VARCHAR(255) COMMENT '个性签名',
+    last_login_ip VARCHAR(45) COMMENT '最后登录IP',
+    last_login_time DATETIME COMMENT '最后登录时间',
+    INDEX idx_phone (phone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户详细资料表';
+
+/* 4. 角色表 */
 CREATE TABLE sys_role (
     role_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID',
     role_name VARCHAR(50) NOT NULL COMMENT '角色名称',
@@ -46,7 +60,7 @@ CREATE TABLE sys_role (
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色信息表';
 
-/* 4. 菜单权限表 */
+/* 5. 菜单权限表（已优化以适配 JSON 结构） */
 CREATE TABLE sys_menu (
     menu_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '菜单ID',
     parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
@@ -68,14 +82,14 @@ CREATE TABLE sys_menu (
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表';
 
-/* 5. 角色-菜单关联表 */
+/* 6. 角色-菜单关联表 */
 CREATE TABLE sys_role_menu (
     role_id BIGINT NOT NULL COMMENT '角色ID',
     menu_id BIGINT NOT NULL COMMENT '菜单ID',
     PRIMARY KEY (role_id, menu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
-/* 6. 用户-角色关联表 */
+/* 7. 用户-角色关联表 */
 CREATE TABLE sys_user_role (
     user_id BIGINT NOT NULL COMMENT '用户ID',
     role_id BIGINT NOT NULL COMMENT '角色ID',

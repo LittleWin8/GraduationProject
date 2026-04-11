@@ -2,10 +2,12 @@ package com.littlewin.system.mapper;
 
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.SysUser;
+import com.littlewin.system.domain.entity.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -41,4 +43,17 @@ public interface UserAuthMapper {
      * * 限定类型为 'password'，确保拿的是主账号名
      */
     String selectIdentifierByUserId(@Param("userId") Long userId);
+
+
+    /**
+     * 更新用户最后登录信息
+     */
+    int updateLoginInfo(@Param("userId") Long userId,
+                        @Param("ip") String ip,
+                        @Param("loginTime") LocalDateTime loginTime);
+
+    /**
+     * 根据用户ID查询详细信息表内容
+     */
+    UserInfo selectUserInfoById(@Param("userId") Long userId);
 }

@@ -5,9 +5,11 @@ import com.littlewin.common.enums.LogStatus;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.utils.JwtUtils;
 import com.littlewin.common.utils.SecurityUtils;
+import com.littlewin.common.utils.ServletUtils;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.SysUser;
+import com.littlewin.system.domain.entity.UserInfo;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     new UsernamePasswordAuthenticationToken(username, password);
             authenticationManager.authenticate(authenticationToken);
 
+
+            // 往用户信息表插入最后登录ip和登录时间
+            String ip = ServletUtils.getClientIp();
+            userAuthMapper.updateLoginInfo(loginUser.getUserId(), ip, LocalDateTime.now());
+
+            // 记录登录日志
             sysLogService.recordAuthLog(loginUser, LogStatus.SUCCESS, LogAction.LOGIN, "登录成功", null);
 
             return JwtUtils.createToken(username);
@@ -72,26 +81,34 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public Map<String, Object> getUserInfo() {
-        // 1. 获取当前登录用户名
         String username = SecurityUtils.getUserId();
-
-        // 2. 查出用户基础认证信息
         AdminLoginDTO authUser = userAuthMapper.selectAdminLoginUser(username);
         if (authUser == null) throw new ServiceException("用户不存在");
 
-        // 3. 查询详细资料、角色，以及账号字段
+        // 1. 查询各表信息
         SysUser user = userAuthMapper.selectSysUserById(authUser.getUserId());
+        UserInfo info = userAuthMapper.selectUserInfoById(authUser.getUserId());
         List<String> roles = userAuthMapper.selectRoleKeysByUserId(authUser.getUserId());
-        // 获取 auth 表中的 identifier
         String account = userAuthMapper.selectIdentifierByUserId(authUser.getUserId());
 
-        // 4. 组装返回数据
+        // 2. 组装返回数据
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("userId", user.getUserId());
-        userInfo.put("name", user.getNickname());    // 显示用的昵称
-        userInfo.put("account", account);            // 登录账号名 (identifier)
+        userInfo.put("name", user.getNickname());
+        userInfo.put("account", account);
         userInfo.put("avatar", user.getAvatar() == null ? "" : user.getAvatar());
         userInfo.put("roles", roles);
+
+        if (info != null) {
+            userInfo.put("gender", info.getGender());
+            userInfo.put("phone", info.getPhone());
+            userInfo.put("email", info.getEmail());
+            userInfo.put("birthday", info.getBirthday());
+            userInfo.put("city", info.getCity());
+            userInfo.put("signature", info.getSignature());
+            userInfo.put("lastLoginIp", info.getLastLoginIp());
+            userInfo.put("lastLoginTime", info.getLastLoginTime());
+        }
 
         return userInfo;
     }

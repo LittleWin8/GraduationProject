@@ -15,6 +15,7 @@
                  JOIN user_auth a ON u.user_id = a.user_id
         WHERE a.identifier = #{username}
           AND a.auth_type = 'password'
+          AND u.status != 2
         LIMIT 1
     </select>
 
@@ -56,6 +57,7 @@
         SELECT user_id, nickname, avatar, status
         FROM sys_user
         WHERE user_id = #{userId}
+          AND status!=2
     </select>
 
     <select id="selectRoleKeysByUserId" resultType="String">
@@ -71,6 +73,19 @@
         WHERE user_id = #{userId}
           AND auth_type = 'password'
             LIMIT 1
+    </select>
+
+    <update id="updateLoginInfo">
+        UPDATE user_info
+        SET last_login_ip = #{ip},
+            last_login_time = #{loginTime}
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="selectUserInfoById" resultType="com.littlewin.system.domain.entity.UserInfo">
+        SELECT user_id, gender, phone, email, birthday, city, signature, last_login_ip, last_login_time
+        FROM user_info
+        WHERE user_id = #{userId}
     </select>
 
 </mapper>

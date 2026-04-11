@@ -167,6 +167,23 @@ public class Result<T> implements Serializable {
 
 
 
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "roles": [
+            "admin"
+        ],
+        "name": "超级管理员",
+        "avatar": "",
+        "userId": 1,
+        "account": "admin"
+    },
+    "timestamp": 1775896878185
+}
+```
+
 
 
 ## 三、微信小程序接口（/api/app）
