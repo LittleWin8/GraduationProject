@@ -74,20 +74,30 @@
 | status      | TINYINT     | 状态：1正常，0停用       |
 | create_time | DATETIME    | 创建时间                 |
 
+
+
 ### sys_menu（菜单权限表）
 
-| 字段名      | 类型         | 说明                         |
-| :---------- | :----------- | :--------------------------- |
-| menu_id     | BIGINT (PK)  | 菜单ID，自增                 |
-| parent_id   | BIGINT       | 父菜单ID，0为顶级            |
-| title       | VARCHAR(50)  | 菜单标题                     |
-| path        | VARCHAR(100) | 路由地址                     |
-| component   | VARCHAR(100) | 组件路径                     |
-| perms       | VARCHAR(100) | 权限标识（如 sys:user:list） |
-| icon        | VARCHAR(50)  | 图标                         |
-| menu_type   | CHAR(1)      | M目录 / C菜单 / F按钮        |
-| sort_order  | INT          | 显示顺序                     |
-| create_time | DATETIME     | 创建时间                     |
+| 字段名        | 类型         | 说明                                              |
+| :------------ | :----------- | :------------------------------------------------ |
+| menu_id       | BIGINT (PK)  | 菜单ID，自增                                      |
+| parent_id     | BIGINT       | 父菜单ID，0为顶级，默认0                          |
+| name          | VARCHAR(50)  | 路由名称（对应前端JSON中的name，用于KeepAlive）   |
+| path          | VARCHAR(255) | 路由地址（对应前端JSON中的path）                  |
+| component     | VARCHAR(255) | 组件路径（对应前端JSON中的component）             |
+| redirect      | VARCHAR(255) | 重定向地址                                        |
+| menu_type     | CHAR(1)      | 类型：M目录 / C菜单 / F按钮（非空）               |
+| title         | VARCHAR(50)  | 菜单标题（对应meta.title，非空）                  |
+| icon          | VARCHAR(50)  | 图标（对应meta.icon）                             |
+| is_link       | VARCHAR(255) | 是否外链（对应meta.isLink），默认空字符串         |
+| is_hide       | TINYINT      | 是否隐藏：0否, 1是（对应meta.isHide），默认0      |
+| is_full       | TINYINT      | 是否全屏：0否, 1是（对应meta.isFull），默认0      |
+| is_affix      | TINYINT      | 是否固定：0否, 1是（对应meta.isAffix），默认0     |
+| is_keep_alive | TINYINT      | 是否缓存：0否, 1是（对应meta.isKeepAlive），默认1 |
+| active_menu   | VARCHAR(255) | 高亮菜单路径（对应meta.activeMenu）               |
+| perms         | VARCHAR(100) | 权限标识（如：add, edit, delete）                 |
+| sort_order    | INT          | 显示顺序，默认0                                   |
+| create_time   | DATETIME     | 创建时间，默认当前时间                            |
 
 ### sys_role_menu（角色菜单关联表）
 

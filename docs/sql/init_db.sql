@@ -10,12 +10,11 @@ COLLATE utf8mb4_general_ci;
 
 USE smart_note;
 
-
 /* ============================= */
 /*      一、用户与权限模块       */
 /* ============================= */
 
-/* 用户主表 */
+/* 1. 用户主表 */
 CREATE TABLE sys_user (
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
     nickname VARCHAR(50) NOT NULL COMMENT '昵称',
@@ -25,8 +24,7 @@ CREATE TABLE sys_user (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统用户主表';
 
-
-/* 用户认证表 */
+/* 2. 用户认证表 */
 CREATE TABLE user_auth (
     auth_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '认证ID',
     user_id BIGINT NOT NULL COMMENT '关联用户ID',
@@ -38,46 +36,51 @@ CREATE TABLE user_auth (
     INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户登录认证表';
 
-/* 角色表 */
+/* 3. 角色表 */
 CREATE TABLE sys_role (
-  `role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '角色ID',
-  `role_name` varchar(50) NOT NULL COMMENT '角色名称',
-  `role_key` varchar(50) NOT NULL COMMENT '角色权限字符',
-  `sort_order` int DEFAULT '0' COMMENT '显示顺序',
-  `status` tinyint DEFAULT '1' COMMENT '状态：1正常, 0停用',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`role_id`)
+    role_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID',
+    role_name VARCHAR(50) NOT NULL COMMENT '角色名称',
+    role_key VARCHAR(50) NOT NULL COMMENT '角色权限字符',
+    sort_order INT DEFAULT 0 COMMENT '显示顺序',
+    status TINYINT DEFAULT 1 COMMENT '状态：1正常, 0停用',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色信息表';
 
-/* 菜单权限表 */
+/* 4. 菜单权限表 */
 CREATE TABLE sys_menu (
-  `menu_id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
-  `parent_id` bigint DEFAULT '0' COMMENT '父菜单ID',
-  `title` varchar(50) NOT NULL COMMENT '菜单标题',
-  `path` varchar(100) DEFAULT NULL COMMENT '路由地址',
-  `component` varchar(100) DEFAULT NULL COMMENT '组件路径',
-  `perms` varchar(100) DEFAULT NULL COMMENT '权限标识',
-  `icon` varchar(50) DEFAULT NULL COMMENT '图标',
-  `menu_type` char(1) DEFAULT NULL COMMENT 'M目录 C菜单 F按钮',
-  `sort_order` int DEFAULT '0' COMMENT '显示顺序',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`menu_id`)
+    menu_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '菜单ID',
+    parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
+    name VARCHAR(50) DEFAULT NULL COMMENT '路由名称（对应JSON中的name，用于KeepAlive）',
+    path VARCHAR(255) DEFAULT NULL COMMENT '路由地址（对应JSON中的path）',
+    component VARCHAR(255) DEFAULT NULL COMMENT '组件路径（对应JSON中的component）',
+    redirect VARCHAR(255) DEFAULT NULL COMMENT '重定向地址',
+    menu_type CHAR(1) NOT NULL COMMENT '类型：M目录, C菜单, F按钮',
+    title VARCHAR(50) NOT NULL COMMENT '菜单标题（对应meta.title）',
+    icon VARCHAR(50) DEFAULT NULL COMMENT '图标（对应meta.icon）',
+    is_link VARCHAR(255) DEFAULT '' COMMENT '是否外链（对应meta.isLink）',
+    is_hide TINYINT DEFAULT 0 COMMENT '是否隐藏：0否, 1是（对应meta.isHide）',
+    is_full TINYINT DEFAULT 0 COMMENT '是否全屏：0否, 1是（对应meta.isFull）',
+    is_affix TINYINT DEFAULT 0 COMMENT '是否固定：0否, 1是（对应meta.isAffix）',
+    is_keep_alive TINYINT DEFAULT 1 COMMENT '是否缓存：0否, 1是（对应meta.isKeepAlive）',
+    active_menu VARCHAR(255) DEFAULT NULL COMMENT '高亮菜单路径（对应meta.activeMenu）',
+    perms VARCHAR(100) DEFAULT NULL COMMENT '权限标识（如：add, edit, delete）',
+    sort_order INT DEFAULT 0 COMMENT '显示顺序',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表';
 
-/* 角色-菜单关联表 */
+/* 5. 角色-菜单关联表 */
 CREATE TABLE sys_role_menu (
-  `role_id` bigint NOT NULL COMMENT '角色ID',
-  `menu_id` bigint NOT NULL COMMENT '菜单ID',
-  PRIMARY KEY (`role_id`,`menu_id`)
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    menu_id BIGINT NOT NULL COMMENT '菜单ID',
+    PRIMARY KEY (role_id, menu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
-/* 用户角色关联表 */
-CREATE TABLE `sys_user_role` (
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `role_id` bigint NOT NULL COMMENT '角色ID',
-  PRIMARY KEY (`user_id`,`role_id`)
+/* 6. 用户-角色关联表 */
+CREATE TABLE sys_user_role (
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (user_id, role_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
-
 
 /* ============================= */
 /*        二、笔记业务模块       */
@@ -210,24 +213,3 @@ CREATE TABLE sys_log_operation (
     INDEX idx_module (module),
     INDEX idx_create_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作审计表';
-
-/* ============================= */
-/*       四、权限与菜单模块         */
-/* ============================= */
-/* 管理端菜单权限表表 */
-CREATE TABLE sys_menu (
-    menu_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '菜单ID',
-    parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID（0为顶级菜单）',
-    title VARCHAR(50) NOT NULL COMMENT '菜单标题',
-    path VARCHAR(100) COMMENT '路由路径（前端Vue路由地址）',
-    component VARCHAR(100) COMMENT '组件路径（Vue文件路径，如 note/audit/index）',
-    icon VARCHAR(50) COMMENT '图标标识',
-    sort_order INT DEFAULT 0 COMMENT '显示排序',
-
-    -- 核心字段：控制谁能看
-    -- 建议逻辑：0-仅超管可见, 2-仅运营可见, 9-两者均可见
-    role_scope TINYINT DEFAULT 9 COMMENT '角色可见范围：0-仅超管, 2-仅运营, 9-通用',
-
-    is_hidden TINYINT DEFAULT 0 COMMENT '隐藏状态：0-显示, 1-隐藏',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理端菜单权限表';

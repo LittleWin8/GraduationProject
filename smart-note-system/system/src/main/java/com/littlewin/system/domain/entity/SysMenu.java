@@ -15,17 +15,33 @@ public class SysMenu implements Serializable {
 
     private Long parentId;
 
-    private String title;
+    private String name;
 
     private String path;
 
     private String component;
 
-    private String perms;
+    private String redirect;
+
+    private String menuType;
+
+    private String title;
 
     private String icon;
 
-    private String menuType;
+    private String isLink;
+
+    private Integer isHide;
+
+    private Integer isFull;
+
+    private Integer isAffix;
+
+    private Integer isKeepAlive;
+
+    private String activeMenu;
+
+    private String perms;
 
     private Integer sortOrder;
 

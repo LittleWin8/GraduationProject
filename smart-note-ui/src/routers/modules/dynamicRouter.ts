@@ -37,8 +37,18 @@ export const initDynamicRouter = async () => {
     authStore.flatMenuListGet.forEach(item => {
       item.children && delete item.children;
       if (item.component && typeof item.component == "string") {
-        item.component = modules["/src/views" + item.component + ".vue"];
+        // 兼容性处理：确保 component 路径以 / 开头
+        const componentPath = item.component.startsWith("/") ? item.component : `/${item.component}`;
+        const fullPath = `/src/views${componentPath}.vue`;
+
+        // 如果匹配不到组件，在控制台打印具体的错误路径，方便你排查文件是否存在
+        if (!modules[fullPath]) {
+          console.error(`动态路由加载失败：找不到文件 "${fullPath}"，请检查后端 component 字段或物理文件路径。`);
+        } else {
+          item.component = modules[fullPath];
+        }
       }
+
       if (item.meta.isFull) {
         router.addRoute(item as unknown as RouteRecordRaw);
       } else {

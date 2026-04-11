@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
 import { UserState } from "@/stores/interface";
 import piniaPersistConfig from "@/stores/helper/persist";
+import { useAuthStore } from "./auth";
 
 export const useUserStore = defineStore({
-  id: "geeker-user",
+  id: "Link-Mind",
   state: (): UserState => ({
     token: "",
     userInfo: { name: "xiaowen" }
@@ -24,9 +25,9 @@ export const useUserStore = defineStore({
       this.$reset();
 
       // 2. 如果有权限相关的 store，建议也在这里清除
-      // const authStore = useAuthStore();
-      // authStore.$reset();
+      const authStore = useAuthStore();
+      authStore.$reset();
     }
   },
-  persist: piniaPersistConfig("geeker-user")
+  persist: piniaPersistConfig("Link-Mind")
 });

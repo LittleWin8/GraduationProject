@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { AuthState } from "@/stores/interface";
-import { getAuthDataApi } from "@/api/modules/login";
+import { getAuthButtonListApi, getAuthMenuListApi } from "@/api/modules/login";
 import { getFlatMenuList, getShowMenuList, getAllBreadcrumbList } from "@/utils";
 
 export const useAuthStore = defineStore({
@@ -26,47 +26,16 @@ export const useAuthStore = defineStore({
     breadcrumbListGet: state => getAllBreadcrumbList(state.authMenuList)
   },
   actions: {
-    // // Get AuthButtonList
-    // async getAuthButtonList() {
-    //   // const { data } = await getAuthButtonListApi();
-    //   // this.authButtonList = data;
-
-    //   const res: any = await getAuthButtonListApi();
-    //   this.authButtonList = res?.data?.authButtonList ?? [];
-    // },
-    // // Get AuthMenuList
-    // async getAuthMenuList() {
-    //   // const { data } = await getAuthMenuListApi();
-    //   // this.authMenuList = data;
-
-    //   const res: any = await getAuthMenuListApi();
-    //   this.authMenuList = res.data.menuList;
-    // },
-
-    async getAuthData() {
-      try {
-        const res: any = await getAuthDataApi();
-        this.authMenuList = res.data?.menuList ?? [];
-        this.authButtonList = res.data?.authButtonList ?? [];
-      } catch (error) {
-        console.error("获取权限数据失败", error);
-        throw error;
-      }
-    },
-
+    // Get AuthButtonList
     async getAuthButtonList() {
-      // 如果上面去掉了 if，这里逻辑依然成立
-      if (Object.keys(this.authButtonList).length === 0) {
-        await this.getAuthData();
-      }
+      const { data } = await getAuthButtonListApi();
+      this.authButtonList = data;
     },
-
+    // Get AuthMenuList
     async getAuthMenuList() {
-      if (this.authMenuList.length === 0) {
-        await this.getAuthData();
-      }
+      const { data } = await getAuthMenuListApi();
+      this.authMenuList = data;
     },
-
     // Set RouteName
     async setRouteName(name: string) {
       this.routeName = name;

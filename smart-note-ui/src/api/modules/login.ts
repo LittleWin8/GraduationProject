@@ -1,6 +1,4 @@
 import { Login } from "@/api/interface/index";
-// import authMenuList from "@/assets/json/authMenuList.json";
-// import authButtonList from "@/assets/json/authButtonList.json";
 import http from "@/api";
 
 /**
@@ -8,32 +6,26 @@ import http from "@/api";
  */
 // 用户登录
 export const loginApi = (params: Login.ReqLoginForm) => {
-  return http.post<Login.ResLogin>(`admin/auth/login`, params, { loading: false });
+  // 对应后端 @PostMapping("/login")，路径补全为 /api/admin/auth/login
+  // 注意：如果你的 http 实例没有配置 base_url 包含 /api，请手动补全
+  return http.post<Login.ResLogin>(`/admin/auth/login`, params, { loading: false });
 };
 
-// 退出登录接口
+// 获取菜单列表 (动态路由)
+export const getAuthMenuListApi = () => {
+  // 对应后端 @GetMapping("/getAuthMenuList")
+  return http.get<Menu.MenuOptions[]>(`/admin/auth/getAuthMenuList`, {}, { loading: false });
+};
+
+// 获取按钮权限
+export const getAuthButtonListApi = () => {
+  // 对应后端 @GetMapping("/getAuthButtonList")
+  // 后端返回：{ authButton: [], useProTable: [] }，完全适配 Geeker 结构
+  return http.get<Login.ResAuthButtons>(`/admin/auth/getAuthButtonList`, {}, { loading: false });
+};
+
+// 用户退出登录
 export const logoutApi = () => {
+  // 对应后端 @PostMapping("/logout")
   return http.post(`/admin/auth/logout`);
 };
-
-// 获取权限数据（包含菜单和按钮）
-export const getAuthDataApi = () => {
-  return http.get<any>(`/admin/auth/getAuthData`);
-};
-
-// 保留原函数名以兼容旧代码，但统一调用上面的新接口
-export const getAuthMenuListApi = () => getAuthDataApi();
-export const getAuthButtonListApi = () => getAuthDataApi();
-// // 获取菜单列表
-// export const getAuthMenuListApi = () => {
-//   // return http.get<Menu.MenuOptions[]>(PORT1 + `/menu/list`, {}, { loading: false });
-//   // 如果想让菜单变为本地数据，注释上一行代码，并引入本地 authMenuList.json 数据
-//   return authMenuList;
-// };
-
-// // 获取按钮权限
-// export const getAuthButtonListApi = () => {
-//   // return http.get<Login.ResAuthButtons>(PORT1 + `/auth/buttons`, {}, { loading: false });
-//   // 如果想让按钮权限变为本地数据，注释上一行代码，并引入本地 authButtonList.json 数据
-//   return authButtonList;
-// };

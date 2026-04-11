@@ -2,7 +2,6 @@ package com.littlewin.system.controller;
 
 import com.littlewin.common.constants.Constants;
 import com.littlewin.common.core.Result;
-import com.littlewin.system.domain.dto.AdminLoginResponseDTO;
 import com.littlewin.system.service.AdminAuthService;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,18 +31,27 @@ public class AdminAuthController {
         return Result.success(data);
     }
 
-    /**
-     * 权限数据接口：根据请求头中的 Token 获取菜单和按钮
-     */
-    @GetMapping("/getAuthData")
-    public Result getAuthData() {
-        AdminLoginResponseDTO data = adminAuthService.getLoginUserData();
-        return Result.success(data);
-    }
-
     @PostMapping("/logout")
     public Result logout() {
         adminAuthService.logout();
         return Result.success("退出成功");
     }
+
+    /**
+     * 获取菜单权限列表 (树形结构)
+     */
+    @GetMapping("/getAuthMenuList")
+    public Result getAuthMenuList() {
+        return Result.success(adminAuthService.getAuthMenuList());
+    }
+
+    /**
+     * 获取按钮权限列表 (Map结构：页面name -> 权限数组)
+     */
+    @GetMapping("/getAuthButtonList")
+    public Result getAuthButtonList() {
+        return Result.success(adminAuthService.getAuthButtonList());
+    }
+
+
 }

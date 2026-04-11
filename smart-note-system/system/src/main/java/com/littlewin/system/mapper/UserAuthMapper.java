@@ -23,4 +23,5 @@ public interface UserAuthMapper {
      * 根据用户ID查询所有菜单记录 (M目录和C菜单)
      */
     List<SysMenu> selectMenuListByUserId(@Param("userId") Long userId);
+    List<SysMenu> selectButtonListByUserId(@Param("userId") Long userId);
 }
