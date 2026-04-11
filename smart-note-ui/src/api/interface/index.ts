@@ -39,6 +39,14 @@ export namespace Login {
   export interface ResLogin {
     token: string;
   }
+  // 适配后端的 getUserInfo 接口返回的数据结构
+  export interface ResUserInfo {
+    userId: number;
+    name: string;
+    account: string; // 对应后端的 identifier
+    avatar: string;
+    roles: string[]; // 对应后端的 role_key 数组
+  }
   export interface ResAuthButtons {
     [key: string]: string[];
   }

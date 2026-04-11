@@ -52,4 +52,25 @@
           AND m.perms != ''
     </select>
 
+    <select id="selectSysUserById" resultType="com.littlewin.system.domain.entity.SysUser">
+        SELECT user_id, nickname, avatar, status
+        FROM sys_user
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectRoleKeysByUserId" resultType="String">
+        SELECT DISTINCT r.role_key
+        FROM sys_role r
+                 LEFT JOIN sys_user_role ur ON r.role_id = ur.role_id
+        WHERE ur.user_id = #{userId} AND r.status = 1
+    </select>
+
+    <select id="selectIdentifierByUserId" resultType="String">
+        SELECT identifier
+        FROM user_auth
+        WHERE user_id = #{userId}
+          AND auth_type = 'password'
+            LIMIT 1
+    </select>
+
 </mapper>

@@ -11,6 +11,12 @@ export const loginApi = (params: Login.ReqLoginForm) => {
   return http.post<Login.ResLogin>(`/admin/auth/login`, params, { loading: false });
 };
 
+// 获取当前登录用户信息
+export const getUserInfoApi = () => {
+  // 对应后端 @GetMapping("/getUserInfo")
+  return http.get<Login.ResUserInfo>(`/admin/auth/getUserInfo`, {}, { loading: false });
+};
+
 // 获取菜单列表 (动态路由)
 export const getAuthMenuListApi = () => {
   // 对应后端 @GetMapping("/getAuthMenuList")

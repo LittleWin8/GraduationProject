@@ -29,7 +29,13 @@ export interface GlobalState {
 /* UserState */
 export interface UserState {
   token: string;
-  userInfo: { name: string };
+  userInfo: {
+    userId: number; // 后端返回的 userId
+    name: string; // 用户昵称
+    account: string; // 后端返回的 identifier/账号
+    avatar: string; // 头像
+    roles: string[]; // 角色列表
+  };
 }
 
 /* tabsMenuProps */

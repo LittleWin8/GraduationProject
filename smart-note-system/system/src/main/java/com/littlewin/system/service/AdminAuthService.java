@@ -13,8 +13,12 @@ public interface AdminAuthService {
     // 退出登录
     void logout();
 
-    // 拆分后的新方法
+    // 获取菜单列表
     List<MenuVO> getAuthMenuList();
 
+    // 获取按钮列表
     Map<String, List<String>> getAuthButtonList();
+
+    //获取用户信息
+    Map<String, Object> getUserInfo();
 }

@@ -7,6 +7,7 @@ import com.littlewin.common.utils.JwtUtils;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.domain.entity.SysMenu;
+import com.littlewin.system.domain.entity.SysUser;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;
@@ -66,6 +67,33 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             }
         }
         SecurityContextHolder.clearContext();
+    }
+
+
+    @Override
+    public Map<String, Object> getUserInfo() {
+        // 1. 获取当前登录用户名
+        String username = SecurityUtils.getUserId();
+
+        // 2. 查出用户基础认证信息
+        AdminLoginDTO authUser = userAuthMapper.selectAdminLoginUser(username);
+        if (authUser == null) throw new ServiceException("用户不存在");
+
+        // 3. 查询详细资料、角色，以及账号字段
+        SysUser user = userAuthMapper.selectSysUserById(authUser.getUserId());
+        List<String> roles = userAuthMapper.selectRoleKeysByUserId(authUser.getUserId());
+        // 获取 auth 表中的 identifier
+        String account = userAuthMapper.selectIdentifierByUserId(authUser.getUserId());
+
+        // 4. 组装返回数据
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("userId", user.getUserId());
+        userInfo.put("name", user.getNickname());    // 显示用的昵称
+        userInfo.put("account", account);            // 登录账号名 (identifier)
+        userInfo.put("avatar", user.getAvatar() == null ? "" : user.getAvatar());
+        userInfo.put("roles", roles);
+
+        return userInfo;
     }
 
     /**

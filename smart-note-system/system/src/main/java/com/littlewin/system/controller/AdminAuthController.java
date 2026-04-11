@@ -53,5 +53,16 @@ public class AdminAuthController {
         return Result.success(adminAuthService.getAuthButtonList());
     }
 
+    /**
+     * 获取当前登录用户信息
+     * 包含：昵称、头像、角色列表等
+     */
+    @GetMapping("/getUserInfo")
+    public Result getUserInfo() {
+        // 通常从 SecurityContext 或 Token 中解析出当前用户的 userId
+        // 这里调用 service 层获取组合后的用户信息
+        return Result.success(adminAuthService.getUserInfo());
+    }
+
 
 }
