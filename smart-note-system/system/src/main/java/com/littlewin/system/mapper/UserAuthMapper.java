@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserAuthMapper {
@@ -29,21 +30,14 @@ public interface UserAuthMapper {
     List<SysMenu> selectButtonListByUserId(@Param("userId") Long userId);
 
     /**
-     * 根据用户ID查询用户主表基本信息
-     */
-    SysUser selectSysUserById(@Param("userId") Long userId);
-
-    /**
      * 根据用户ID查询该用户拥有的所有角色Key (如: ['admin', 'editor'])
      */
     List<String> selectRoleKeysByUserId(@Param("userId") Long userId);
 
     /**
-     * 根据用户ID查询登录账号 (identifier)
-     * * 限定类型为 'password'，确保拿的是主账号名
+     * 联查获取用户所有详细信息（User + Info + Auth）
      */
-    String selectIdentifierByUserId(@Param("userId") Long userId);
-
+    Map<String, Object> selectFullUserInfoById(@Param("userId") Long userId);
 
     /**
      * 更新用户最后登录信息
@@ -51,9 +45,4 @@ public interface UserAuthMapper {
     int updateLoginInfo(@Param("userId") Long userId,
                         @Param("ip") String ip,
                         @Param("loginTime") LocalDateTime loginTime);
-
-    /**
-     * 根据用户ID查询详细信息表内容
-     */
-    UserInfo selectUserInfoById(@Param("userId") Long userId);
 }

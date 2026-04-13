@@ -81,34 +81,22 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public Map<String, Object> getUserInfo() {
+        // 1. 获取当前登录用户名并查询 authUser
         String username = SecurityUtils.getUserId();
         AdminLoginDTO authUser = userAuthMapper.selectAdminLoginUser(username);
         if (authUser == null) throw new ServiceException("用户不存在");
 
-        // 1. 查询各表信息
-        SysUser user = userAuthMapper.selectSysUserById(authUser.getUserId());
-        UserInfo info = userAuthMapper.selectUserInfoById(authUser.getUserId());
+        // 2. 优化：1次联查获取 3 表数据
+        Map<String, Object> userInfo = userAuthMapper.selectFullUserInfoById(authUser.getUserId());
+        if (userInfo == null) throw new ServiceException("获取详细资料失败");
+
+        // 3. 角色列表是 1:N 关系，保留独立查询以避免 SQL 结果集膨胀
         List<String> roles = userAuthMapper.selectRoleKeysByUserId(authUser.getUserId());
-        String account = userAuthMapper.selectIdentifierByUserId(authUser.getUserId());
 
-        // 2. 组装返回数据
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("userId", user.getUserId());
-        userInfo.put("name", user.getNickname());
-        userInfo.put("account", account);
-        userInfo.put("avatar", user.getAvatar() == null ? "" : user.getAvatar());
+        // 4. 组装最终结果
         userInfo.put("roles", roles);
-
-        if (info != null) {
-            userInfo.put("gender", info.getGender());
-            userInfo.put("phone", info.getPhone());
-            userInfo.put("email", info.getEmail());
-            userInfo.put("birthday", info.getBirthday());
-            userInfo.put("city", info.getCity());
-            userInfo.put("signature", info.getSignature());
-            userInfo.put("lastLoginIp", info.getLastLoginIp());
-            userInfo.put("lastLoginTime", info.getLastLoginTime());
-        }
+        // 处理可能为 null 的头像
+        userInfo.put("avatar", userInfo.get("avatar") == null ? "" : userInfo.get("avatar"));
 
         return userInfo;
     }
