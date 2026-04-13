@@ -2,83 +2,51 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.littlewin.system.mapper.SysUserMapper">
 
-    <select id="selectUserList" resultType="com.littlewin.system.domain.vo.UserListVO">
+    <select id="selectUserPageList" resultType="com.littlewin.system.domain.vo.UserListVO">
         SELECT
-        u.user_id AS userId,
+        u.user_id,
         u.nickname,
-        u.avatar,
         u.status,
-        u.create_time AS createTime,
+        u.create_time,
+        a.auth_type,
+        a.identifier,
+        i.gender,
         i.phone,
-        i.last_login_time AS lastLoginTime,
-        a.identifier AS account,
-        a.auth_type AS authType,
-        (SELECT GROUP_CONCAT(r.role_name)
-        FROM sys_role r
-        JOIN sys_user_role ur ON r.role_id = ur.role_id
-        WHERE ur.user_id = u.user_id) AS roleNames
+        i.city
         FROM sys_user u
-        LEFT JOIN user_info i ON u.user_id = i.user_id
         LEFT JOIN user_auth a ON u.user_id = a.user_id
-        <where>
-            u.status != 2  <if test="nickname != null and nickname != ''">
-            AND u.nickname LIKE CONCAT('%', #{nickname}, '%')
+        LEFT JOIN user_info i ON u.user_id = i.user_id
+        <if test="query.roleName != null">
+            LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id
         </if>
-            <if test="phone != null and phone != ''">
-                AND i.phone = #{phone}
+        <where>
+            u.del_flag = 0
+            <if test="query.authType != null and query.authType != ''">
+                AND a.auth_type = #{query.authType}
             </if>
-            <if test="status != null">
-                AND u.status = #{status}
+            <if test="query.identifier != null and query.identifier != ''">
+                AND a.identifier LIKE CONCAT('%', #{query.identifier}, '%')
             </if>
-            <if test="authType != null and authType != ''">
-                AND a.auth_type = #{authType}
+            <if test="query.gender != null">
+                AND i.gender = #{query.gender}
             </if>
-            <if test="identifier != null and identifier != ''">
-                AND a.identifier LIKE CONCAT('%', #{identifier}, '%')
+            <if test="query.city != null and query.city != ''">
+                AND i.city = #{query.city}
+            </if>
+            <if test="query.roleName != null">
+                AND ur.role_name = #{query.roleName}
+            </if>
+            <if test="query.status != null">
+                AND u.status = #{query.status}
+            </if>
+            <if test="query.startTime != null and query.startTime != ''">
+                AND u.create_time &gt;= #{query.startTime}
+            </if>
+            <if test="query.endTime != null and query.endTime != ''">
+                AND u.create_time &lt;= #{query.endTime}
             </if>
         </where>
         ORDER BY u.create_time DESC
     </select>
-
-    <update id="updateSysUser">
-        UPDATE sys_user
-        <set>
-            <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>
-            <if test="avatar != null">avatar = #{avatar},</if>
-            <if test="status != null">status = #{status},</if>
-        </set>
-        WHERE user_id = #{userId}
-    </update>
-
-    <update id="updateUserInfo">
-        UPDATE user_info
-        <set>
-            <if test="phone != null">phone = #{phone},</if>
-            <if test="gender != null">gender = #{gender},</if>
-            <if test="email != null">email = #{email},</if>
-            <if test="city != null">city = #{city},</if>
-            <if test="signature != null">signature = #{signature},</if>
-        </set>
-        WHERE user_id = #{userId}
-    </update>
-
-    <update id="updateUserStatus">
-        UPDATE sys_user SET status = #{status} WHERE user_id = #{userId}
-    </update>
-
-    <select id="selectRoleIdsByUserId" resultType="Long">
-        SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
-    </select>
-
-    <delete id="deleteUserRoles">
-        DELETE FROM sys_user_role WHERE user_id = #{userId}
-    </delete>
-
-    <insert id="batchInsertUserRoles">
-        INSERT INTO sys_user_role (user_id, role_id) VALUES
-        <foreach collection="roleIds" item="roleId" separator=",">
-            (#{userId}, #{roleId})
-        </foreach>
-    </insert>
 
 </mapper>

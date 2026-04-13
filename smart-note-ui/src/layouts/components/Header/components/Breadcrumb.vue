@@ -33,10 +33,21 @@ const authStore = useAuthStore();
 const globalStore = useGlobalStore();
 
 const breadcrumbList = computed(() => {
-  let breadcrumbData = authStore.breadcrumbListGet[route.matched[route.matched.length - 1].path] ?? [];
-  // 🙅‍♀️不需要首页面包屑可删除以下判断
-  if (breadcrumbData[0].path !== HOME_URL) {
+  // 1. 获取当前匹配的路由节点（增加可选链保护 ?.）
+  const matchedRoute = route.matched[route.matched.length - 1];
+
+  // 2. 如果匹配不到路由，或者 authStore 数据已清空，直接返回空数组
+  if (!matchedRoute?.path || !authStore.breadcrumbListGet) return [];
+
+  // 3. 安全地获取面包屑数据
+  let breadcrumbData = authStore.breadcrumbListGet[matchedRoute.path] ?? [];
+  if (breadcrumbData.length > 0 && breadcrumbData[0]?.path !== HOME_URL) {
     breadcrumbData = [{ path: HOME_URL, meta: { icon: "HomeFilled", title: "首页" } }, ...breadcrumbData];
+  }
+
+  // 5. 如果此时还是空的（比如在退出瞬间），兜底返回首页
+  if (breadcrumbData.length === 0) {
+    return [{ path: HOME_URL, meta: { icon: "HomeFilled", title: "首页" } }];
   }
   return breadcrumbData;
 });

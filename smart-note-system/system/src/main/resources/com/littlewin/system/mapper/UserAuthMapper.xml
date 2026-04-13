@@ -3,9 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.littlewin.system.mapper.UserAuthMapper">
 
-    <select id="selectAdminLoginUser"
-            resultType="com.littlewin.system.domain.dto.AdminLoginDTO">
-
+    <select id="selectAdminLoginUser" resultType="com.littlewin.system.domain.dto.AdminLoginDTO">
         SELECT
             u.user_id    AS userId,
             u.status     AS status,
@@ -15,8 +13,7 @@
                  JOIN user_auth a ON u.user_id = a.user_id
         WHERE a.identifier = #{username}
           AND a.auth_type = 'password'
-          AND u.status != 2
-        LIMIT 1
+          AND u.status = 1    AND u.del_flag = 0  LIMIT 1
     </select>
 
 
@@ -33,7 +30,9 @@
         FROM sys_menu m
                  LEFT JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
                  LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id
-        WHERE ur.user_id = #{userId} AND m.menu_type IN ('M', 'C')
+        WHERE ur.user_id = #{userId}
+          AND m.menu_type IN ('M', 'C')
+          AND m.is_hide = 0
         ORDER BY m.parent_id, m.sort_order
     </select>
 

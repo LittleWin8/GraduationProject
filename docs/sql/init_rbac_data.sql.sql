@@ -8,6 +8,7 @@ TRUNCATE TABLE user_auth;
 TRUNCATE TABLE sys_user;
 TRUNCATE TABLE sys_role;
 TRUNCATE TABLE sys_menu;
+TRUNCATE TABLE user_info;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =============================================
@@ -32,14 +33,14 @@ INSERT INTO sys_role (role_id, role_name, role_key, sort_order, status) VALUES
 (2, '内容运营', 'editor', 2, 1);
 
 -- =============================================
--- 4. 菜单（结构+顺序版）
+-- 4. 菜单（修正 Path 为绝对路径）
 -- =============================================
 
--- 顶级
+-- 顶级菜单
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, redirect, menu_type, title, icon, sort_order)
 VALUES
-(1, 0, 'home', '/home/index', 'home/index', NULL, 'C', '首页', 'HomeFilled', 1),
+(1, 0, 'home', '/home/index', '/home/index', NULL, 'C', '首页', 'HomeFilled', 1),
 (2, 0, 'dashboard', '/dashboard', NULL, NULL, 'M', '工作台', 'Odometer', 2),
 (3, 0, 'system', '/system', NULL, NULL, 'M', '用户管理', 'User', 3),
 (4, 0, 'note', '/note', NULL, NULL, 'M', '内容管理', 'Document', 4),
@@ -50,39 +51,39 @@ VALUES
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order)
 VALUES
-(10, 2, 'dashboardIndex', 'index', 'dashboard/index', 'C', '统计仪表盘', 'TrendCharts', 'sys:stats:view', 1),
-(11, 2, 'todo', 'todo', 'dashboard/todo', 'C', '待办提醒', 'Bell', 'editor:todo:view', 2);
+(10, 2, 'dashboardIndex', '/dashboard/index', '/dashboard/index', 'C', '统计仪表盘', 'TrendCharts', 'sys:stats:view', 1),
+(11, 2, 'todo', '/dashboard/todo', '/dashboard/todo', 'C', '待办提醒', 'Bell', 'editor:todo:view', 2);
 
--- 用户管理
+-- 用户管理 
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order)
 VALUES
-(20, 3, 'user', 'user', 'system/user/index', 'C', '账号列表', 'Avatar', 'sys:user:list', 1),
-(21, 3, 'role', 'role', 'system/role/index', 'C', '角色权限', 'Key', 'sys:role:list', 2),
-(22, 3, 'profile', 'profile', 'system/profile/index', 'C', '个人信息', 'UserFilled', NULL, 3);
+(20, 3, 'user', '/system/user', '/system/user/index', 'C', '账号列表', 'Avatar', 'sys:user:list', 1),
+(21, 3, 'role', '/system/role', '/system/role/index', 'C', '角色权限', 'Key', 'sys:role:list', 2),
+(22, 3, 'profile', '/system/profile', '/system/profile/index', 'C', '个人信息', 'UserFilled', NULL, 3);
 
 -- 内容管理
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order)
 VALUES
-(30, 4, 'noteList', 'list', 'note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1),
-(31, 4, 'audit', 'audit', 'note/audit/index', 'C', '合规审核', 'Checked', 'note:audit:view', 2);
+(30, 4, 'noteList', '/note/list', '/note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1),
+(31, 4, 'audit', '/note/audit', '/note/audit/index', 'C', '合规审核', 'Checked', 'note:audit:view', 2);
 
 -- 分类
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order)
 VALUES
-(40, 5, 'tag', 'tag', 'category/tag/index', 'C', '标签管理', 'PriceTag', 'note:tag:list', 1),
-(41, 5, 'tree', 'tree', 'category/tree/index', 'C', '分类树', 'Operation', 'note:cat:list', 2);
+(40, 5, 'tag', '/category/tag', '/category/tag/index', 'C', '标签管理', 'PriceTag', 'note:tag:list', 1),
+(41, 5, 'tree', '/category/tree', '/category/tree/index', 'C', '分类树', 'Operation', 'note:cat:list', 2);
 
--- 系统监控
+-- 系统监控 
 INSERT INTO sys_menu
 (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order)
 VALUES
-(50, 6, 'log', 'log', 'monitor/log/index', 'C', '操作审计', 'Memo', 'sys:log:view', 1);
+(50, 6, 'log', '/monitor/log', '/monitor/log/index', 'C', '操作审计', 'Memo', 'sys:log:view', 1);
 
 -- =============================================
--- 5. 按钮权限（100+）
+-- 5. 按钮权限
 -- =============================================
 INSERT INTO sys_menu
 (menu_id, parent_id, menu_type, title, perms, sort_order)
@@ -105,33 +106,18 @@ VALUES
 (131, 31, 'F', '审核驳回', 'note:audit:reject', 2);
 
 -- =============================================
--- 6. 角色菜单（修改后）
+-- 6. 角色菜单
 -- =============================================
 
 -- admin：全部菜单权限
 INSERT INTO sys_role_menu (role_id, menu_id)
 SELECT 1, menu_id FROM sys_menu;
 
--- editor（内容运营）：只能看到用户管理下的个人信息，看不到账号列表和角色权限
+-- editor（内容运营）
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(2, 1),   -- 首页
-(2, 2),   -- 工作台（父菜单）
-(2, 3),   -- 用户管理（父菜单，用于显示个人信息）
-(2, 4),   -- 内容管理（父菜单）
-(2, 5),   -- 分类维护（父菜单）
-(2, 10),  -- 统计仪表盘
-(2, 11),  -- 待办提醒
-(2, 22),  -- 个人信息（用户管理下的子菜单）
-(2, 30),  -- 笔记列表
-(2, 31),  -- 合规审核
-(2, 40),  -- 标签管理
-(2, 41),  -- 分类树
-(2, 120), -- 新增笔记按钮
-(2, 121), -- 删除笔记按钮
-(2, 122), -- 批量添加按钮
-(2, 123), -- 批量删除按钮
-(2, 130), -- 审核通过按钮
-(2, 131); -- 审核驳回按钮
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 10), (2, 11), (2, 22),
+(2, 30), (2, 31), (2, 40), (2, 41), (2, 120), (2, 121), (2, 122),
+(2, 123), (2, 130), (2, 131);
 
 -- =============================================
 -- 7. 用户角色
@@ -140,40 +126,11 @@ INSERT INTO sys_user_role (user_id, role_id) VALUES
 (1, 1),
 (2, 2);
 
-
 -- =============================================
 -- 8. 用户详细信息
 -- =============================================
 INSERT INTO user_info (
-    user_id,
-    gender,
-    phone,
-    email,
-    birthday,
-    city,
-    signature,
-    last_login_ip,
-    last_login_time
+    user_id, gender, phone, email, birthday, city, signature, last_login_ip, last_login_time
 ) VALUES
-(
-    1,
-    1,
-    '18888888888',
-    'admin@yourdomain.com',
-    '1990-01-01',
-    '北京市',
-    '向上生长，向下扎根。系统最高管理员。',
-    '127.0.0.1',
-    '2026-04-11 10:00:00'
-),
-(
-    2,
-    2,
-    '17777777777',
-    'editor@yourdomain.com',
-    '1995-05-20',
-    '上海市',
-    '内容为王，细节至上。负责全平台内容审核。',
-    '127.0.0.1',
-    '2026-04-11 10:30:00'
-);
+(1, 1, '18888888888', 'admin@yourdomain.com', '1990-01-01', '北京市', '向上生长，向下扎根。系统最高管理员。', '127.0.0.1', '2026-04-11 10:00:00'),
+(2, 2, '17777777777', 'editor@yourdomain.com', '1995-05-20', '上海市', '内容为王，细节至上。负责全平台内容审核。', '127.0.0.1', '2026-04-11 10:30:00');
