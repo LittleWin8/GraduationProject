@@ -21,7 +21,7 @@ public class SysDictController {
      * 给 Geeker-admin 表单下拉框使用
      */
     @GetMapping("/type/{dictType}")
-    public Result<List<SysDictData>> dictData(@PathVariable String dictType) {
+    public Result<List<SysDictData>> dictData(@PathVariable("dictType") String dictType) {
         List<SysDictData> list = dictService.selectDictDataByType(dictType);
         return Result.success(list);
     }
