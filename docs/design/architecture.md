@@ -85,7 +85,7 @@ smart-note-system
 │           │   ↑ 系统常量（状态码、用户类型等）
 │           │
 │           ├─ utils
-│           │   ↑ 工具类（时间、加密、JWT、Security 工具）
+│           │   ↑ 工具类（时间、加密、JWT、Security 工具等）
 │           │
 │           └─ exception
 │               ↑ 全局异常处理
@@ -128,7 +128,6 @@ smart-note-system
 │           │
 │           └─ domain
 │               ↑ 笔记实体类
-│               ↑ Note / Category / Tag / Comment 等
 │
 └─ pom.xml
     ↑ 父 pom

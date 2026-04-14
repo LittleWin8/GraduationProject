@@ -28,14 +28,17 @@
 |                | sys_role_menu     | 角色菜单关联表 | 关联角色与菜单权限                           |
 |                | sys_user_role     | 用户角色关联表 | 关联用户与角色                               |
 | **笔记业务**   | note              | 笔记主表       | 存储笔记核心内容                             |
-|                | note_tag          | 标签定义表     | 笔记标签库                                   |
-|                | note_tag_rel      | 笔记标签关联表 | 处理多对多关系                               |
+|                | sys_category      | 系统预设分类表 | 管理员维护的笔记分类                         |
+|                | note_tag          | 标签定义表     | 用户自定义笔记标签库                         |
+|                | note_tag_rel      | 笔记标签关联表 | 处理笔记与标签的多对多关系                   |
 |                | note_attachment   | 笔记附件表     | 存储图片与文件信息                           |
 |                | note_comment      | 笔记评论表     | 用户对笔记的评论                             |
 |                | note_reaction     | 笔记互动表     | 点赞 / 踩 / 收藏记录                         |
 | **增强与日志** | note_ai_summary   | AI 摘要表      | 存储 AI 生成内容                             |
 |                | sys_log_behavior  | 用户行为日志表 | 记录浏览、搜索等行为                         |
 |                | sys_log_operation | 系统操作审计表 | 记录全部用户关键动作，用于安全追溯和管理审计 |
+| **数据字典**   | sys_dict_type     | 字典类型表     | 定义字典类型                                 |
+|                | sys_dict_data     | 字典数据表     | 存储字典键值对                               |
 
 # 四、各表字段详细设计
 
@@ -43,14 +46,15 @@
 
 ### sys_user（用户主表）
 
-| 字段名      | 类型         | 说明                                  |
-| :---------- | :----------- | :------------------------------------ |
-| user_id     | BIGINT (PK)  | 用户ID，自增                          |
-| nickname    | VARCHAR(50)  | 昵称                                  |
-| avatar      | VARCHAR(255) | 头像URL                               |
-| status      | TINYINT      | 用户状态：1 正常，0 禁用，2 删除/注销 |
-| create_time | DATETIME     | 创建时间，默认当前时间                |
-| update_time | DATETIME     | 更新时间，自动更新                    |
+| 字段名      | 类型         | 说明                             |
+| :---------- | :----------- | :------------------------------- |
+| user_id     | BIGINT (PK)  | 用户 ID，自增                    |
+| nickname    | VARCHAR(50)  | 昵称                             |
+| avatar      | VARCHAR(255) | 头像 URL                         |
+| status      | TINYINT      | 用户状态：1 正常，0 禁用，2 注销 |
+| del_flag    | TINYINT      | 逻辑删除：0 正常，1 删除         |
+| create_time | DATETIME     | 创建时间，默认当前时间           |
+| update_time | DATETIME     | 更新时间，自动更新               |
 
 ### user_auth（用户认证表）
 
@@ -63,6 +67,21 @@
 | credential  | VARCHAR(255) | 加密密码（微信可为空）                                       |
 | create_time | DATETIME     | 创建时间                                                     |
 | **索引**    |              | uk_identifier_type (identifier, auth_type) 唯一；idx_user_id |
+
+### user_info（用户详细信息表）
+
+| 字段名          | 类型         | 说明                     |
+| :-------------- | :----------- | :----------------------- |
+| user_id         | BIGINT (PK)  | 关联用户 ID              |
+| gender          | TINYINT      | 性别：0 未知，1 男，2 女 |
+| phone           | VARCHAR(20)  | 手机号                   |
+| email           | VARCHAR(100) | 邮箱                     |
+| birthday        | DATE         | 生日                     |
+| city            | VARCHAR(50)  | 所在城市                 |
+| signature       | VARCHAR(255) | 个性签名                 |
+| last_login_ip   | VARCHAR(45)  | 最后登录 IP              |
+| last_login_time | DATETIME     | 最后登录时间             |
+| **索引**        |              | idx_phone                |
 
 ### sys_role（角色信息表）
 
@@ -114,32 +133,45 @@
 | user_id | BIGINT | 用户ID（联合主键） |
 | role_id | BIGINT | 角色ID（联合主键） |
 
-## 2. 笔记业务模块（6张表）
+## 2. 笔记业务模块（7张表）
 
 ### note（笔记主表）
 
-| 字段名        | 类型         | 说明                     |
-| :------------ | :----------- | :----------------------- |
-| note_id       | BIGINT (PK)  | 笔记ID，自增             |
-| user_id       | BIGINT       | 作者ID                   |
-| category_name | VARCHAR(50)  | 分类名称                 |
-| title         | VARCHAR(200) | 标题                     |
-| content       | LONGTEXT     | Markdown 内容            |
-| is_public     | TINYINT      | 0 私密，1 公开           |
-| status        | TINYINT      | 0 草稿，1 正常，2 回收站 |
-| view_count    | INT          | 浏览次数，默认0          |
-| create_time   | DATETIME     | 创建时间                 |
-| update_time   | DATETIME     | 更新时间                 |
-| **索引**      |              | idx_user_id, idx_status  |
+| 字段名      | 类型         | 说明                                     |
+| :---------- | :----------- | :--------------------------------------- |
+| note_id     | BIGINT (PK)  | 笔记 ID，自增                            |
+| user_id     | BIGINT       | 作者 ID                                  |
+| category_id | BIGINT       | 关联系统分类 ID                          |
+| title       | VARCHAR(200) | 标题                                     |
+| content     | LONGTEXT     | Markdown 内容                            |
+| is_public   | TINYINT      | 是否公开：0 私密，1 公开                 |
+| status      | TINYINT      | 状态：0 草稿，1 正常，2 回收站           |
+| view_count  | INT          | 浏览次数，默认 0                         |
+| del_flag    | TINYINT      | 逻辑删除：0 正常，1 删除                 |
+| create_time | DATETIME     | 创建时间，默认当前时间                   |
+| update_time | DATETIME     | 更新时间，自动更新                       |
+| **索引**    |              | idx_user_id, idx_category_id, idx_status |
+
+### sys_category（系统预设分类表）
+
+| 字段名      | 类型        | 说明                         |
+| :---------- | :---------- | :--------------------------- |
+| category_id | BIGINT (PK) | 分类 ID，自增                |
+| name        | VARCHAR(50) | 分类名称                     |
+| parent_id   | BIGINT      | 父分类 ID，默认 0            |
+| sort_order  | INT         | 排序，默认 0                 |
+| status      | TINYINT     | 状态：1 启用，0 禁用，默认 1 |
+| create_time | DATETIME    | 创建时间，默认当前时间       |
 
 ### note_tag（标签定义表）
 
-| 字段名   | 类型        | 说明         |
-| :------- | :---------- | :----------- |
-| tag_id   | BIGINT (PK) | 标签ID，自增 |
-| name     | VARCHAR(50) | 标签名称     |
-| user_id  | BIGINT      | 所属用户ID   |
-| **索引** |             | idx_user_id  |
+| 字段名      | 类型        | 说明                   |
+| :---------- | :---------- | :--------------------- |
+| tag_id      | BIGINT (PK) | 标签 ID，自增          |
+| name        | VARCHAR(50) | 标签名称               |
+| user_id     | BIGINT      | 所属用户 ID            |
+| create_time | DATETIME    | 创建时间，默认当前时间 |
+| **索引**    |             | idx_user_id            |
 
 ### note_tag_rel（笔记标签关联表）
 
@@ -150,63 +182,66 @@
 
 ### note_attachment（附件表）
 
-| 字段名    | 类型         | 说明             |
-| :-------- | :----------- | :--------------- |
-| attach_id | BIGINT (PK)  | 附件ID，自增     |
-| note_id   | BIGINT       | 所属笔记ID       |
-| file_url  | VARCHAR(255) | 文件访问路径     |
-| file_name | VARCHAR(255) | 原始文件名       |
-| file_size | BIGINT       | 文件大小（字节） |
-| **索引**  |              | idx_note_id      |
+| 字段名      | 类型         | 说明                     |
+| :---------- | :----------- | :----------------------- |
+| attach_id   | BIGINT (PK)  | 附件 ID，自增            |
+| note_id     | BIGINT       | 所属笔记 ID              |
+| user_id     | BIGINT       | 上传者 ID                |
+| file_url    | VARCHAR(255) | 文件访问路径             |
+| file_name   | VARCHAR(255) | 原始文件名               |
+| file_suffix | VARCHAR(20)  | 文件后缀（如 png, pdf）  |
+| file_size   | BIGINT       | 文件大小（字节）         |
+| create_time | DATETIME     | 上传时间，默认当前时间   |
+| **索引**    |              | idx_note_id, idx_user_id |
 
 ### note_comment（评论表）
 
-| 字段名      | 类型        | 说明                                    |
-| :---------- | :---------- | :-------------------------------------- |
-| comment_id  | BIGINT (PK) | 评论ID，自增                            |
-| note_id     | BIGINT      | 所属笔记ID                              |
-| user_id     | BIGINT      | 评论用户ID                              |
-| content     | TEXT        | 评论内容                                |
-| parent_id   | BIGINT      | 父评论ID（用于回复）                    |
-| create_time | DATETIME    | 创建时间                                |
-| del_flag    | TINYINT     | 逻辑删除：0 正常，1 删除                |
-| **索引**    |             | idx_note_id, idx_user_id, idx_parent_id |
+| 字段名      | 类型        | 说明                             |
+| :---------- | :---------- | :------------------------------- |
+| comment_id  | BIGINT (PK) | 评论 ID，自增                    |
+| note_id     | BIGINT      | 所属笔记 ID                      |
+| user_id     | BIGINT      | 评论用户 ID                      |
+| content     | TEXT        | 评论内容                         |
+| parent_id   | BIGINT      | 父评论 ID（用于回复）            |
+| del_flag    | TINYINT     | 逻辑删除：0 正常，1 删除，默认 0 |
+| create_time | DATETIME    | 创建时间，默认当前时间           |
+| **索引**    |             | idx_note_id, idx_user_id         |
 
 ### note_reaction（互动表）
 
-| 字段名       | 类型        | 说明                            |
-| :----------- | :---------- | :------------------------------ |
-| id           | BIGINT (PK) | 记录ID，自增                    |
-| note_id      | BIGINT      | 笔记ID                          |
-| user_id      | BIGINT      | 用户ID                          |
-| attitude     | TINYINT     | 0 无态度，1 点赞，2 踩          |
-| is_favorite  | TINYINT     | 0 未收藏，1 已收藏              |
-| create_time  | DATETIME    | 创建时间                        |
-| update_time  | DATETIME    | 更新时间                        |
-| **唯一约束** |             | uk_note_user (note_id, user_id) |
-| **索引**     |             | idx_note_id, idx_user_id        |
+| 字段名       | 类型        | 说明                                 |
+| :----------- | :---------- | :----------------------------------- |
+| id           | BIGINT (PK) | 记录 ID，自增                        |
+| note_id      | BIGINT      | 笔记 ID                              |
+| user_id      | BIGINT      | 用户 ID                              |
+| attitude     | TINYINT     | 态度：0 无，1 点赞，2 踩，默认 0     |
+| is_favorite  | TINYINT     | 收藏状态：0 未收藏，1 已收藏，默认 0 |
+| create_time  | DATETIME    | 创建时间，默认当前时间               |
+| update_time  | DATETIME    | 更新时间，自动更新                   |
+| **唯一约束** |             | uk_note_user (note_id, user_id)      |
 
 ## 3. 增强与日志模块（3张表）
 
 ### note_ai_summary（AI 摘要表）
 
-| 字段名      | 类型         | 说明           |
-| :---------- | :----------- | :------------- |
-| note_id     | BIGINT (PK)  | 笔记ID         |
-| summary     | TEXT         | AI生成摘要内容 |
-| keywords    | VARCHAR(255) | 关键词         |
-| create_time | DATETIME     | 创建时间       |
+| 字段名      | 类型         | 说明                   |
+| :---------- | :----------- | :--------------------- |
+| note_id     | BIGINT (PK)  | 笔记 ID                |
+| summary     | TEXT         | AI 生成摘要内容        |
+| keywords    | VARCHAR(255) | 关键词                 |
+| model_name  | VARCHAR(50)  | 使用的 AI 模型         |
+| create_time | DATETIME     | 创建时间，默认当前时间 |
 
-### sys_log_behavior（行为日志表）
+### sys_log_behavior（用户行为日志表）
 
-| 字段名      | 类型         | 说明                               |
-| :---------- | :----------- | :--------------------------------- |
-| id          | BIGINT (PK)  | 日志ID，自增                       |
-| user_id     | BIGINT       | 用户ID                             |
-| action_type | TINYINT      | 行为类型：1 浏览，2 搜索           |
-| content     | VARCHAR(255) | 行为内容（浏览笔记ID或搜索关键词） |
-| create_time | DATETIME     | 发生时间                           |
-| **索引**    |              | idx_user_id, idx_action_type       |
+| 字段名      | 类型         | 说明                     |
+| :---------- | :----------- | :----------------------- |
+| id          | BIGINT (PK)  | 日志 ID，自增            |
+| user_id     | BIGINT       | 用户 ID                  |
+| action_type | TINYINT      | 行为类型：1 浏览，2 搜索 |
+| content     | VARCHAR(255) | 内容（笔记 ID 或关键词） |
+| create_time | DATETIME     | 发生时间，默认当前时间   |
+| **索引**    |              | idx_user_id              |
 
 ### sys_log_operation（系统操作审计表）
 
@@ -226,3 +261,33 @@
 | error_msg      | TEXT         | 失败原因                                                 |
 | create_time    | DATETIME     | 触发时间                                                 |
 | **索引**       |              | idx_user_id, idx_module, idx_create_time                 |
+
+## 4. 数据字典模块（2 张表）
+
+### sys_dict_type（字典类型表）
+
+| 字段名       | 类型         | 说明                         |
+| :----------- | :----------- | :--------------------------- |
+| dict_id      | BIGINT (PK)  | 字典主键，自增               |
+| dict_name    | VARCHAR(100) | 字典名称                     |
+| dict_type    | VARCHAR(100) | 字典类型                     |
+| status       | TINYINT      | 状态：1 正常，0 停用，默认 1 |
+| remark       | VARCHAR(500) | 备注                         |
+| create_time  | DATETIME     | 创建时间，默认当前时间       |
+| **唯一约束** |              | uk_dict_type (dict_type)     |
+
+### sys_dict_data（字典数据表）
+
+| 字段名      | 类型         | 说明                                                 |
+| :---------- | :----------- | :--------------------------------------------------- |
+| data_id     | BIGINT (PK)  | 数据主键，自增                                       |
+| dict_type   | VARCHAR(100) | 字典类型                                             |
+| dict_label  | VARCHAR(100) | 标签                                                 |
+| dict_value  | VARCHAR(100) | 键值                                                 |
+| tag_type    | VARCHAR(100) | UI 样式（success/info/warning/danger），默认 primary |
+| sort_order  | INT          | 排序，默认 0                                         |
+| status      | TINYINT      | 状态：1 正常，0 停用，默认 1                         |
+| remark      | VARCHAR(500) | 备注                                                 |
+| create_time | DATETIME     | 创建时间，默认当前时间                               |
+| **索引**    |              | idx_dict_type                                        |
+
