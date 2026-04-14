@@ -2,7 +2,7 @@
 
 ## 一、统一响应格式
 
-统一响应格式参见：[Result.java](../../../smart-note-system/common/src/main/java/com/littlewin/common/core/Result.java)
+统一响应格式参见：[Result.java](/smart-note-system/common/src/main/java/com/littlewin/common/core/Result.java)
 
 ## 二、Web 管理端接口（/api/admin）
 
