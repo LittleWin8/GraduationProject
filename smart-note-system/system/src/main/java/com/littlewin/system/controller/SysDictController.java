@@ -1,6 +1,8 @@
 package com.littlewin.system.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
+import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;
 import com.littlewin.system.domain.entity.SysDictType;
 import com.littlewin.system.service.SysDictService;
@@ -27,12 +29,13 @@ public class SysDictController {
     }
 
     /**
-     * 查询所有字典类型
-     * 给后台字典管理页面使用
+     * 分页查询字典类型
+     * 检索条件：字典名称、字典状态
      */
     @GetMapping("/type/list")
-    public Result<List<SysDictType>> typeList() {
-        List<SysDictType> list = dictService.selectDictTypeList();
-        return Result.success(list);
+    public Result<IPage<SysDictType>> typeList(DictTypeQueryDTO queryDTO) {
+        // 统一风格：调用 service 获取分页对象
+        return Result.success(dictService.selectDictTypePage(queryDTO));
     }
+
 }

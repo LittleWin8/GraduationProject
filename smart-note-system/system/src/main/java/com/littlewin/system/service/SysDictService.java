@@ -1,5 +1,7 @@
 package com.littlewin.system.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;
 import com.littlewin.system.domain.entity.SysDictType;
 
@@ -10,5 +12,5 @@ public interface SysDictService {
     List<SysDictData> selectDictDataByType(String dictType);
 
     /** 获取所有字典类型列表 (后台管理用) */
-    List<SysDictType> selectDictTypeList();
+    IPage<SysDictType> selectDictTypePage(DictTypeQueryDTO queryDTO);
 }

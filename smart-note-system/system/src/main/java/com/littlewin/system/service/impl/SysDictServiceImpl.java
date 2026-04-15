@@ -1,6 +1,10 @@
 package com.littlewin.system.service.impl;
 
+import cn.hutool.core.lang.Dict;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;
 import com.littlewin.system.domain.entity.SysDictType;
 import com.littlewin.system.mapper.SysDictDataMapper;
@@ -29,7 +33,10 @@ public class SysDictServiceImpl implements SysDictService {
     }
 
     @Override
-    public List<SysDictType> selectDictTypeList() {
-        return dictTypeMapper.selectList(null);
+    public IPage<SysDictType> selectDictTypePage(DictTypeQueryDTO queryDTO) {
+        // 1. 创建 MyBatis-Plus 分页对象
+        Page<SysDictType> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
+        // 2. 执行 SQL 查询
+        return dictTypeMapper.selectDictTypePageList(page, queryDTO);
     }
 }

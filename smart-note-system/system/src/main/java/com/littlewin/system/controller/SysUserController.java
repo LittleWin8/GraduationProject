@@ -27,7 +27,6 @@ public class SysUserController {
      */
     @GetMapping("/list")
     public Result<IPage<UserListVO>> list(UserQueryDTO queryDTO) {
-        // 使用你项目中的 Result 工具类包装一下
         return Result.success(sysUserService.getUserPageList(queryDTO));
     }
 }
