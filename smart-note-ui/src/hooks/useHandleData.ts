@@ -27,7 +27,7 @@ export const useHandleData = (
         if (!res) return reject(false);
         ElMessage({
           type: "success",
-          message: `${message}成功!`
+          message: `操作成功!`
         });
         resolve(true);
       })

@@ -29,6 +29,11 @@ public class SysLogServiceImpl implements SysLogService {
         recordOperation(user, businessId, "AI", action, LogStatus.SUCCESS, desc, errorMsg);
     }
 
+    @Override
+    public void recordDictLog(AdminLoginDTO user, Long businessId, LogAction action, LogStatus status, String desc, String errorMsg) {
+        recordOperation(user, businessId, "DICT", action, status, desc, errorMsg);
+    }
+
     @Async("layoutThreadPool") // 配置专门的线程池执行异步任务
     @Override
     public void recordOperation(AdminLoginDTO user, Long businessId, String module, LogAction action, LogStatus status, String desc, String errorMsg) {

@@ -38,4 +38,20 @@ public class SysDictController {
         return Result.success(dictService.selectDictTypePage(queryDTO));
     }
 
+    /**
+     * 修改字典类型(支持全量编辑和局部状态切换)
+     */
+    @PutMapping("/type/edit")
+    public Result edit(@RequestBody SysDictType dictType) {
+        // 1. 强制校验主键，防止全表更新
+        if (dictType.getDictId() == null) {
+            return Result.error("操作失败：字典ID不能为空");
+        }
+
+        // 2. 执行更新
+        // 如果前端只传 { "dictId": 1, "status": 0 }，
+        boolean success = dictService.updateDictType(dictType);
+        return success ? Result.success("修改成功") : Result.error("修改失败");
+    }
+
 }

@@ -40,7 +40,6 @@
         WHERE ur.user_id = #{userId}
           AND r.status = 1
           AND m.menu_type IN ('M', 'C')
-          AND m.is_hide = 0
         ORDER BY m.parent_id, m.sort_order
     </select>
 
