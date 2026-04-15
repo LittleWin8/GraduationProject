@@ -9,6 +9,9 @@ spring:
     name: smart-note-admin  # 服务名，Spring Cloud 改造会用到
   profiles:
     active: dev  # 开发用 dev，上线改 prod
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 
   # ===============================
@@ -35,13 +38,6 @@ spring:
       idle-timeout: 600000   # 空闲连接最大存活时间（10分钟）
       max-lifetime: 1800000  # 连接最大生命周期（30分钟）
       connection-timeout: 30000 # 获取连接超时时间（30秒）
-
-  # ===============================
-  # JSON 序列化配置（统一时间格式）
-  # ===============================
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: Asia/Shanghai
 
 # ===============================
 # MyBatis-Plus 配置

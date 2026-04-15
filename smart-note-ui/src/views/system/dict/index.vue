@@ -1,6 +1,6 @@
 <template>
   <div class="table-box">
-    <ProTable ref="proTable" :columns="columns" :request-api="getTableList" :data-callback="dataCallback">
+    <ProTable ref="proTable" :columns="columns" :request-api="getTableList" :data-callback="dataCallback" row-key="dictId">
       <template #tableHeader="scope">
         <el-button type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增字典</el-button>
         <el-button type="danger" :icon="Delete" plain :disabled="!scope.isSelected" @click="batchDelete(scope.selectedListIds)">
@@ -68,7 +68,7 @@ const columns = reactive<ColumnProps[]>([
   { type: "selection", fixed: "left", width: 70 },
   { prop: "dictId", label: "字典编号", width: 100 },
   { prop: "dictName", label: "字典名称", search: { el: "input" } },
-  { prop: "dictType", label: "字典类型", search: { el: "input" } },
+  { prop: "dictType", label: "字典类型" },
   {
     prop: "status",
     label: "状态",
@@ -96,7 +96,7 @@ const columns = reactive<ColumnProps[]>([
 
 // 删除和批量删除逻辑保持不变...
 const deleteDict = async (row: any) => {
-  await useHandleData(deleteDictType, { id: row.dictId }, `删除字典【${row.dictName}】`);
+  await useHandleData(deleteDictType, { ids: [row.dictId] }, `删除字典【${row.dictName}】`);
   proTable.value?.getTableList();
 };
 
