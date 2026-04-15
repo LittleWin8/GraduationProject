@@ -85,7 +85,6 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
         }
     }
 
-    // SysDictServiceImpl.java
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -158,7 +157,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean insertDictData(SysDictData dictData) {
-        // 校验在该字典类型下，键值(dictValue)是否重复
+        // 1. 校验在该字典类型下，键值(dictValue)是否重复
         long count = dictDataMapper.selectCount(new LambdaQueryWrapper<SysDictData>()
                 .eq(SysDictData::getDictType, dictData.getDictType())
                 .eq(SysDictData::getDictValue, dictData.getDictValue()));
@@ -166,8 +165,21 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
             throw new RuntimeException("键值【" + dictData.getDictValue() + "】已存在，请勿重复添加");
         }
 
+        // 2. 执行插入
+        boolean success = dictDataMapper.insert(dictData) > 0;
+
+        // 3. 记录日志
+        if (success) {
+            String userIdStr = SecurityUtils.getUserId();
+            AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(userIdStr);
+            String desc = String.format("新增字典项：类型[%s], 标签[%s], 键值[%s]",
+                    dictData.getDictType(), dictData.getDictLabel(), dictData.getDictValue());
+
+            sysLogService.recordDictLog(user, dictData.getDataId(), LogAction.CREATE,
+                    LogStatus.SUCCESS, desc, null);
+        }
         // 执行插入
-        return dictDataMapper.insert(dictData) > 0;
+        return success;
     }
 
     /**
@@ -176,8 +188,27 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateDictData(SysDictData dictData) {
-        // 局部更新：MyBatis Plus 的 updateById 会自动忽略 null 字段
-        return dictDataMapper.updateById(dictData) > 0;
+        // 1. 获取旧数据用于日志对比
+        SysDictData oldData = dictDataMapper.selectById(dictData.getDataId());
+
+        String userIdStr = SecurityUtils.getUserId();
+        AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(userIdStr);
+        String desc = String.format("修改字典项【%s】，所属类型[%s]",
+                oldData.getDictLabel(), oldData.getDictType());
+
+        try {
+            // 2. 执行更新
+            boolean success = dictDataMapper.updateById(dictData) > 0;
+            if (success) {
+                sysLogService.recordDictLog(user, dictData.getDataId(), LogAction.UPDATE,
+                        LogStatus.SUCCESS, desc, null);
+            }
+            return success;
+        } catch (Exception e) {
+            sysLogService.recordDictLog(user, dictData.getDataId(), LogAction.UPDATE,
+                    LogStatus.FAIL, desc, e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -186,7 +217,21 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean deleteDictDataByIds(List<Long> ids) {
-        return dictDataMapper.deleteBatchIds(ids) > 0;
+        String userIdStr = SecurityUtils.getUserId();
+        AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(userIdStr);
+
+        // 循环删除以记录详细日志（如果数据量极大，建议权衡性能改用批量日志）
+        for (Long id : ids) {
+            SysDictData data = dictDataMapper.selectById(id);
+            if (data != null) {
+                dictDataMapper.deleteById(id);
+                String desc = String.format("删除字典项：类型[%s], 标签[%s]",
+                        data.getDictType(), data.getDictLabel());
+                sysLogService.recordDictLog(user, id, LogAction.DELETE,
+                        LogStatus.SUCCESS, desc, null);
+            }
+        }
+        return true;
     }
 
 }
