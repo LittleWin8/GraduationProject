@@ -31,7 +31,8 @@ public interface SysDictService extends IService<SysDictType> {
      */
     boolean deleteDictTypeByIds(List<Long> dictIds);
 
-    // SysDictService.java
+    /** 根据字典类型获取数据列表 (前端最常用) */
+    List<SysDictData> selectDictDataByType(String dictType);
 
     /**
      * 分页查询字典数据列表

@@ -131,6 +131,14 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
         return true;
     }
 
+    @Override
+    public List<SysDictData> selectDictDataByType(String dictType) {
+        return dictDataMapper.selectList(new LambdaQueryWrapper<SysDictData>()
+                .eq(SysDictData::getDictType, dictType)
+                .eq(SysDictData::getStatus, 1) // 仅查询正常状态
+                .orderByAsc(SysDictData::getSortOrder));
+    }
+
 
     /**
      * 分页查询字典数据

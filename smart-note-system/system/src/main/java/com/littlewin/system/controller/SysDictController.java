@@ -67,6 +67,16 @@ public class SysDictController {
     }
 
     /**
+     * 根据字典类型查询字典数据
+     * 给 Geeker-admin 表单下拉框使用
+     */
+    @GetMapping("/type/{dictType}")
+    public Result<List<SysDictData>> dictData(@PathVariable("dictType") String dictType) {
+        List<SysDictData> list = dictService.selectDictDataByType(dictType);
+        return Result.success(list);
+    }
+
+    /**
      * 分页查询字典数据项
      */
     @GetMapping("/data/list")

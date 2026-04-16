@@ -23,8 +23,10 @@ public class UserQueryDTO implements Serializable {
     private Integer gender;
     /** 城市 */
     private String city;
-    /** 角色ID (用于按角色检索用户) */
-    private String roleName;
+    /** 手机号 */
+    private String phone;
+    /** 角色名 (用于按角色检索用户) */
+    private Integer roleId;
     /** 状态 (1 正常，0 禁用，2 注销) */
     private Integer status;
     /** 注册开始时间 (yyyy-MM-dd HH:mm:ss) */

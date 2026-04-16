@@ -1,6 +1,7 @@
 package com.littlewin.system.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,8 +14,6 @@ import java.time.LocalDateTime;
 @Data
 @TableName("user_info")
 public class UserInfo implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     /**
      * 关联用户ID（手动输入，不自增）
@@ -60,5 +59,6 @@ public class UserInfo implements Serializable {
     /**
      * 最后登录时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime lastLoginTime;
 }

@@ -1,8 +1,6 @@
 package com.littlewin.system.mapper;
 
 import com.littlewin.system.domain.entity.SysMenu;
-import com.littlewin.system.domain.entity.SysUser;
-import com.littlewin.system.domain.entity.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;

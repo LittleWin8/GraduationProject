@@ -91,6 +91,10 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (2030, 2000, 'dict', '/system/dict', '/system/dict/index', 'C', '字典管理', 'Book', 'sys:dict:list', 3);
 
+-- 插入字典数据详情页 (作为字典管理的子路由，但设置为隐藏)
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide,active_menu,sort_order) VALUES
+(2031,2030,'dictData','/system/dict/data/:dictType','/system/dict/detail','C','字典数据','Menu','sys:dict:edit',1,'/system/dict',1);
+
 
 -- ---------------------------------------------
 -- [3000系列] 内容管理 (Content)

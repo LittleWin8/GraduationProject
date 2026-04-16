@@ -11,6 +11,11 @@ export const getUserList = (params: User.ReqUserParams) => {
   return http.get<ResPage<User.ResUserList>>(`/admin/sys/user/list`, params, { loading: false });
 };
 
+// 2. 查看用户详情 (对接后端: GET /api/admin/sys/user/{userId})
+export const getUserDetails = (userId: string | number) => {
+  return http.get<User.ResUserList>(`/admin/sys/user/${userId}`);
+};
+
 // 2. 获取用户角色列表 (用于搜索栏下拉框，对接后端角色表查询)
 export const getUserRole = () => {
   // 假设后端角色列表接口为 /api/admin/sys/role/list
