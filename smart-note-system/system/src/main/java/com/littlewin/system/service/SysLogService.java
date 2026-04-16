@@ -16,6 +16,11 @@ public interface SysLogService {
      */
     void recordDictLog(AdminLoginDTO user, Long businessId, LogAction action, LogStatus status, String desc, String errorMsg);
 
+    /**
+     * 记录用户模块操作日志
+     */
+    void recordUserLog(AdminLoginDTO user, Long businessId, LogAction action, LogStatus status, String desc, String errorMsg);
+
     /** 通用记录方法（供内部或特殊场景使用） */
     void recordOperation(AdminLoginDTO user, Long businessId, String module, LogAction action, LogStatus status, String desc, String errorMsg);
 }

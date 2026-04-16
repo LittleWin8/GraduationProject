@@ -24,7 +24,7 @@
           v-model="drawerProps.row!.identifier"
           placeholder="请填写登录账号"
           clearable
-          :disabled="drawerProps.title === '编辑'"
+          :disabled="drawerProps.isView || drawerProps.title === '编辑'"
         ></el-input>
       </el-form-item>
 
@@ -33,7 +33,7 @@
       </el-form-item>
 
       <el-form-item label="认证类型" prop="authType">
-        <el-tag type="info">{{ drawerProps.row!.authType === "password" ? "账号密码" : "第三方登录" }}</el-tag>
+        <el-tag type="info">{{ drawerProps.row!.authType === "password" ? "管理端用户" : "客户端用户" }}</el-tag>
       </el-form-item>
 
       <el-form-item label="账号状态" prop="status">
@@ -49,6 +49,7 @@
           <el-option label="男" :value="1" />
           <el-option label="女" :value="2" />
           <el-option label="未知" :value="0" />
+          <el-option label="沃尔玛购物袋" :value="3" />
         </el-select>
       </el-form-item>
 

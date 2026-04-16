@@ -11,7 +11,7 @@ public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
 
     /**
      * 批量新增用户角色信息
-     * @param userRoleList 用户角色列表
+     * @param userRoleIdList 用户角色列表
      */
-    int batchUserRole(List<SysUserRole> userRoleList);
+    int batchInsertUserRoles(@Param("userId")Long userId, @Param("roleIds")List<Long> userRoleIdList);
 }

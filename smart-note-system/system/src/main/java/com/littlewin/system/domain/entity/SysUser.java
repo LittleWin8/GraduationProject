@@ -12,13 +12,10 @@ public class SysUser implements Serializable {
 
     @TableId(value = "user_id", type = IdType.AUTO)
     private Long userId;
-
     private String nickname;
-
     private String avatar;
-
     private Integer status;
-
+    private Integer del_flag;
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

@@ -44,7 +44,7 @@ export const getUserTreeList = (params: User.ReqUserParams) => {
 
 // 新增用户
 export const addUser = (params: { id: string }) => {
-  return http.post(PORT1 + `/user/add`, params);
+  return http.post(`/admin/sys/user/add`, params);
 };
 
 // 批量添加用户
@@ -76,23 +76,3 @@ export const editUser = (params: { id: string }) => {
 export const exportUserInfo = (params: User.ReqUserParams) => {
   return http.download(PORT1 + `/user/export`, params);
 };
-
-// 获取用户状态字典
-export const getUserStatus = () => {
-  return http.get<User.ResStatus[]>(PORT1 + `/user/status`);
-};
-
-// 获取用户性别字典
-export const getUserGender = () => {
-  return http.get<User.ResGender[]>(PORT1 + `/user/gender`);
-};
-
-// 获取用户部门列表
-export const getUserDepartment = () => {
-  return http.get<User.ResDepartment[]>(PORT1 + `/user/department`, {}, { cancel: false });
-};
-
-// // 获取用户角色字典
-// export const getUserRole = () => {
-//   return http.get<User.ResRole[]>(PORT1 + `/user/role`);
-// };

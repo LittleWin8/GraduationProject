@@ -2,13 +2,13 @@
   <div class="message">
     <el-popover placement="bottom" :width="310" trigger="click">
       <template #reference>
-        <el-badge :value="5" class="item">
+        <el-badge :value="0" class="item">
           <i :class="'iconfont icon-xiaoxi'" class="toolBar-icon"></i>
         </el-badge>
       </template>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="通知(5)" name="first">
-          <div class="message-list">
+        <el-tab-pane label="通知(0)" name="first">
+          <!-- <div class="message-list">
             <div class="message-item">
               <img src="@/assets/images/msg01.png" alt="" class="message-icon" />
               <div class="message-content">
@@ -44,6 +44,10 @@
                 <span class="message-date">一个月前</span>
               </div>
             </div>
+          </div> -->
+          <div class="message-empty">
+            <img src="@/assets/images/notData.png" alt="notData" />
+            <div>暂无通知</div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="消息(0)" name="second">

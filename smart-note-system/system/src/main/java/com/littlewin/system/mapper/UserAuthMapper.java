@@ -1,6 +1,8 @@
 package com.littlewin.system.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.littlewin.system.domain.entity.SysMenu;
+import com.littlewin.system.domain.entity.UserAuth;
 import org.apache.ibatis.annotations.Mapper;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;
@@ -10,12 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 @Mapper
-public interface UserAuthMapper {
+public interface UserAuthMapper extends BaseMapper<UserAuth> {
 
     /**
      * 查询登录用户信息（基础信息+密码）
      */
     AdminLoginDTO selectAdminLoginUser(String username);
+    /**
+     * 检查用户名（user_auth.identifier）
+     */
+    AdminLoginDTO checkIdentifierUnique(String username);
     /**
      * 根据用户ID查询所有权限标识 (perms)
      */

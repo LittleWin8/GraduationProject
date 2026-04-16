@@ -16,4 +16,14 @@ public interface SysUserService {
      * 获取用户详细信息
      */
     UserDetailsVO getUserDetails(Long userId);
+
+    /**
+     * 新增用户（多表关联）
+     */
+    void addUser(UserDetailsVO userDetailsVO);
+
+    /**
+     * 编辑用户（多表关联）
+     */
+    void updateUser(UserDetailsVO user);
 }

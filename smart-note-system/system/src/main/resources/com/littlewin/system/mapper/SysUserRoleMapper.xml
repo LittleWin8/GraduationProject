@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.littlewin.system.mapper.SysUserRoleMapper">
 
-    <insert id="batchUserRole">
+    <insert id="batchInsertUserRoles">
         insert into sys_user_role(user_id, role_id) values
-        <foreach item="item" index="index" collection="list" separator=",">
-            (#{item.userId}, #{item.roleId})
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId}, #{roleId})
         </foreach>
     </insert>
 

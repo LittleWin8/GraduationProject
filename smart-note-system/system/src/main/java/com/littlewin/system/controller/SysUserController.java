@@ -9,7 +9,6 @@ import com.littlewin.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * 账户管理后端接口
@@ -43,23 +42,20 @@ public class SysUserController {
     /**
      * 新增用户
      */
-//    @PostMapping
-//    public Result<Void> add(@RequestBody UserDetailsVO user) {
-//        sysUserService.addUser(user);
-//        return Result.success();
-//    }
+    @PostMapping("/add")
+    public Result<Void> add(@RequestBody UserDetailsVO user) {
+        sysUserService.addUser(user);
+        return Result.success();
+    }
 
     /**
      * 修改用户
      */
-//    @PutMapping
-//    public Result<Void> edit(@RequestBody UserDetailsVO user) {
-//        if (user.getUserId() == null) {
-//            return Result.error("用户ID不能为空");
-//        }
-//        sysUserService.updateUser(user);
-//        return Result.success();
-//    }
+    @PutMapping
+    public Result<Void> edit(@RequestBody UserDetailsVO user) {
+        sysUserService.updateUser(user);
+        return Result.success();
+    }
 //    @DeleteMapping
 //    public Result<Void> delete(@RequestBody List<Long> ids) {
 //        if (ids == null || ids.isEmpty()) {

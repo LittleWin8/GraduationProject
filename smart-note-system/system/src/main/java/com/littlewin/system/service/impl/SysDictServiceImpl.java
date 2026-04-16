@@ -63,8 +63,8 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
 
         // 如果前端传了新的字典名，且与旧名不同，记录变更
         if (dictType.getDictName() != null && !dictType.getDictName().equals(oldDict.getDictName())) {
-            desc.append("，字典名由[").append(oldDict.getDictName())
-                    .append("]变更为[").append(dictType.getDictName()).append("]");
+            desc.append("，字典名由【").append(oldDict.getDictName())
+                    .append("】变更为【").append(dictType.getDictName()).append("】");
         }
 
         try {
@@ -93,7 +93,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
         long count = this.count(new LambdaQueryWrapper<SysDictType>()
                 .eq(SysDictType::getDictType, dictType.getDictType()));
         if (count > 0) {
-            throw new RuntimeException("字典类型[" + dictType.getDictType() + "]已存在");
+            throw new RuntimeException("字典类型【" + dictType.getDictType() + "】已存在");
         }
 
         // 2. 保存并记录日志
@@ -180,7 +180,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
         if (success) {
             String userIdStr = SecurityUtils.getUserId();
             AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(userIdStr);
-            String desc = String.format("新增字典项：类型[%s], 标签[%s], 键值[%s]",
+            String desc = String.format("新增字典项：类型【%s】, 标签【%s】, 键值【%s】",
                     dictData.getDictType(), dictData.getDictLabel(), dictData.getDictValue());
 
             sysLogService.recordDictLog(user, dictData.getDataId(), LogAction.CREATE,
@@ -201,7 +201,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
 
         String userIdStr = SecurityUtils.getUserId();
         AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(userIdStr);
-        String desc = String.format("修改字典项【%s】，所属类型[%s]",
+        String desc = String.format("修改字典项【%s】，所属类型【%s】",
                 oldData.getDictLabel(), oldData.getDictType());
 
         try {
@@ -233,7 +233,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictTy
             SysDictData data = dictDataMapper.selectById(id);
             if (data != null) {
                 dictDataMapper.deleteById(id);
-                String desc = String.format("删除字典项：类型[%s], 标签[%s]",
+                String desc = String.format("删除字典项：类型【%s】, 标签【%s】",
                         data.getDictType(), data.getDictLabel());
                 sysLogService.recordDictLog(user, id, LogAction.DELETE,
                         LogStatus.SUCCESS, desc, null);
