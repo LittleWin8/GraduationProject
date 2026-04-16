@@ -36,8 +36,11 @@
             <if test="query.city != null and query.city != ''">
                 AND i.city = #{query.city}
             </if>
-            <if test="query.roleId != null">
-                AND ur.role_id = #{query.roleId}
+            <if test="query != null and query.roleId != null and !query.roleId.isEmpty()">
+                AND ur.role_id IN
+                <foreach collection="query.roleId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.status != null">
                 AND u.status = #{query.status}

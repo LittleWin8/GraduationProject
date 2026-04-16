@@ -103,5 +103,14 @@
     </update>
 
 
+    <update id="updateIdentifierByUserId">
+        UPDATE user_auth
+        <set>
+            <if test="identifier != null and identifier != ''">
+                identifier = #{identifier},
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
 
 </mapper>

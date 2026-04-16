@@ -24,7 +24,7 @@
           v-model="drawerProps.row!.identifier"
           placeholder="请填写登录账号"
           clearable
-          :disabled="drawerProps.isView || drawerProps.title === '编辑'"
+          :disabled="drawerProps.isView"
         ></el-input>
       </el-form-item>
 
@@ -38,18 +38,20 @@
 
       <el-form-item label="账号状态" prop="status">
         <el-radio-group v-model="drawerProps.row!.status">
-          <el-radio :label="1">正常</el-radio>
-          <el-radio :label="0">禁用</el-radio>
-          <el-radio :label="2">注销</el-radio>
+          <el-radio v-for="item in drawerProps.dicts?.status" :key="item.dictValue" :label="item.dictValue">
+            {{ item.dictLabel }}
+          </el-radio>
         </el-radio-group>
       </el-form-item>
 
       <el-form-item label="用户性别" prop="gender">
         <el-select v-model="drawerProps.row!.gender" placeholder="请选择性别" clearable style="width: 100%">
-          <el-option label="男" :value="1" />
-          <el-option label="女" :value="2" />
-          <el-option label="未知" :value="0" />
-          <el-option label="沃尔玛购物袋" :value="3" />
+          <el-option
+            v-for="item in drawerProps.dicts?.gender"
+            :key="item.dictValue"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          />
         </el-select>
       </el-form-item>
 
@@ -76,17 +78,20 @@
       </el-form-item>
 
       <el-form-item label="用户角色" prop="roleIds">
-        <template v-if="drawerProps.isView">
-          <el-tag v-for="name in drawerProps.row!.roleNames" :key="name" class="mr-1" type="success">
-            {{ name }}
-          </el-tag>
-        </template>
-        <el-select v-else v-model="drawerProps.row!.roleIds" multiple placeholder="请选择角色" style="width: 100%">
+        <el-select
+          v-model="drawerProps.row!.roleIds"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          :max-collapse-tags="3"
+          placeholder="请选择角色"
+          style="width: 100%"
+        >
           <el-option
-            v-for="(name, index) in drawerProps.row!.roleNames"
-            :key="drawerProps.row!.roleIds![index]"
-            :label="name"
-            :value="drawerProps.row!.roleIds![index]"
+            v-for="item in drawerProps.dicts?.roles"
+            :key="item.dictValue"
+            :label="item.dictLabel"
+            :value="item.dictValue"
           />
         </el-select>
       </el-form-item>
@@ -122,6 +127,7 @@ interface DrawerProps {
   title: string;
   isView: boolean;
   row: any;
+  dicts?: any;
   api?: (params: any) => Promise<any>;
   getTableList?: () => void;
 }
@@ -130,7 +136,8 @@ const drawerVisible = ref(false);
 const drawerProps = ref<DrawerProps>({
   isView: false,
   title: "",
-  row: {}
+  row: {},
+  dicts: {}
 });
 
 const acceptParams = (params: DrawerProps) => {

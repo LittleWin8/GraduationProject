@@ -51,11 +51,23 @@ public class SysUserController {
     /**
      * 修改用户
      */
-    @PutMapping
+    @PutMapping("/edit")
     public Result<Void> edit(@RequestBody UserDetailsVO user) {
         sysUserService.updateUser(user);
         return Result.success();
     }
+
+    /**
+     * 重置密码
+     */
+//    @PostMapping("/resetPassword")
+//    public Result<Void> resetPassword(@RequestBody UserUpdateDTO updateDTO) {
+//        if (updateDTO.getUserId() == null) {
+//            return Result.error("用户ID不能为空");
+//        }
+//        sysUserService.resetPassword(updateDTO.getUserId());
+//        return Result.success();
+//    }
 //    @DeleteMapping
 //    public Result<Void> delete(@RequestBody List<Long> ids) {
 //        if (ids == null || ids.isEmpty()) {

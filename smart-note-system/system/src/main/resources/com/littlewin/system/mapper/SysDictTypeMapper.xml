@@ -13,7 +13,7 @@
                 AND status = #{query.status}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY dict_id ASC
     </select>
 
 </mapper>

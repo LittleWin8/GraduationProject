@@ -20,6 +20,7 @@ import com.littlewin.system.mapper.*;
 import com.littlewin.system.service.SysLogService;
 import com.littlewin.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -77,7 +78,7 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional(rollbackFor = Exception.class)
     public void addUser(UserDetailsVO vo) {
         // 1. 业务逻辑校验
-        validateUserBeforeAdd(vo);
+        validateUserBefore(vo,false);
 
         // 2. 插入 sys_user 主表
         SysUser user = new SysUser();
@@ -131,24 +132,65 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public void updateUser(UserDetailsVO user) {
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUser(UserDetailsVO vo) {
 
+        validateUserBefore(vo,true);
+
+        Long userId = vo.getUserId();
+        // 1. 更新主表
+        SysUser user = new SysUser();
+        BeanUtils.copyProperties(vo, user);
+        user.setUpdateTime(LocalDateTime.now());
+        sysUserMapper.updateById(user);
+
+        // 2. 更新认证表 (修改账号名)
+        userAuthMapper.updateIdentifierByUserId(userId, vo.getIdentifier());
+
+        // 3. 更新详细信息表
+        UserInfo info = new UserInfo();
+        BeanUtils.copyProperties(vo, info);
+        info.setUserId(userId);
+        userInfoMapper.updateById(info);
+
+        // 4. 更新角色 (先删再增)
+        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>()
+                .eq(SysUserRole::getUserId, userId));
+        if (!CollectionUtils.isEmpty(vo.getRoleIds())) {
+            userRoleMapper.batchInsertUserRoles(userId, vo.getRoleIds());
+        }
+
+        String userIdStr = SecurityUtils.getUserId();
+        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(userIdStr);
+        // 5. 记录修改日志
+        String desc = "修改用户【" + vo.getIdentifier() + "】的个人信息";
+        sysLogService.recordUserLog(loginDTO, vo.getUserId(), LogAction.CREATE,
+                LogStatus.SUCCESS, desc, null);
     }
+
+
 
     /**
      * 内部校验逻辑
      */
-    private void validateUserBeforeAdd(UserDetailsVO vo) {
+    private void validateUserBefore(UserDetailsVO vo, boolean isUpdate) {
 
         // 检查新增的账户 identifier 字段是否为空
         if (!StringUtils.hasText(vo.getIdentifier())) {
-            throw new ServiceException("新增账户账户名不可为空");
+            throw new ServiceException("账户名不可为空");
         }
 
         // 检查新增的账户 identifier 字段是否已经存在
-        AdminLoginDTO adminLoginDTO = userAuthMapper.checkIdentifierUnique(vo.getIdentifier());
-        if (adminLoginDTO != null) {
-            throw new ServiceException("账号 '" + vo.getIdentifier() + "' 已存在");
+        AdminLoginDTO existingUser = userAuthMapper.checkIdentifierUnique(vo.getIdentifier());
+        if (existingUser != null) {
+            // 如果是更新操作：查到的用户 ID 不等于 当前编辑的用户 ID，说明撞名了
+            if (isUpdate && !existingUser.getUserId().toString().equals(vo.getUserId().toString())) {
+                throw new ServiceException("账号名 " + vo.getIdentifier() + " 已被其他用户占用");
+            }
+            // 如果是新增操作：只要查到数据，就说明已存在
+            if (!isUpdate) {
+                throw new ServiceException("账号名 " + vo.getIdentifier() + " 已存在");
+            }
         }
     }
 

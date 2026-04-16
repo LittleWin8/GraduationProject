@@ -22,7 +22,7 @@ public class UserDetailsVO {
     private Integer gender;
     private String phone;
     private String email;
-    @JsonFormat(pattern = "YYYY-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDate birthday;
     private String city;
     private String signature;

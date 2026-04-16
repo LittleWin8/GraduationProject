@@ -6,6 +6,7 @@ import com.littlewin.system.domain.entity.UserAuth;
 import org.apache.ibatis.annotations.Mapper;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,4 +50,6 @@ public interface UserAuthMapper extends BaseMapper<UserAuth> {
     int updateLoginInfo(@Param("userId") Long userId,
                         @Param("ip") String ip,
                         @Param("loginTime") LocalDateTime loginTime);
+
+    void updateIdentifierByUserId(@Param("userId") Long userId, @Param("identifier") String identifier);
 }

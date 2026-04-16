@@ -116,9 +116,18 @@ const columns = reactive<ColumnProps<any>[]>([
   { prop: "city", label: "城市", search: { el: "input" } },
   {
     prop: "roleId",
-    label: "角色ID",
+    label: "角色",
     isShow: false,
-    search: { el: "input" }
+    enum: () => getDictDataByType("role_name"),
+    fieldNames: { label: "dictLabel", value: "dictValue" },
+    search: {
+      el: "select",
+      props: {
+        multiple: true,
+        "collapse-tags": true,
+        "collapse-tags-tooltip": true
+      }
+    }
   },
   {
     prop: "status",
@@ -171,20 +180,43 @@ const drawerRef = ref<InstanceType<typeof UserDrawer> | null>(null);
 const openDrawer = async (title: string, row: any = {}) => {
   let detailData = { ...row };
 
-  // 如果是“查看”或“编辑”，则先根据 userId 获取详情
   if (title !== "新增" && row.userId) {
     try {
       const { data } = await getUserDetails(row.userId);
       detailData = data;
+
+      // 将详情数据中的数字字段转为字符串，确保与字典匹配
+      if (detailData.gender !== undefined) detailData.gender = String(detailData.gender);
+      if (detailData.status !== undefined) detailData.status = String(detailData.status);
+      // 如果角色是数组，也要确保里面的 ID 是字符串
+      if (Array.isArray(detailData.roleIds)) {
+        detailData.roleIds = detailData.roleIds.map((id: any) => String(id));
+      }
     } catch (error) {
       return console.error("获取用户详情失败", error);
     }
   }
 
+  // 从 proTable 的列配置中安全提取字典
+  const getEnumData = (prop: string) => {
+    const rawEnum = proTable.value?.enumMap.get(prop) || [];
+    return rawEnum.map((item: any) => ({
+      ...item,
+      dictValue: String(item.dictValue)
+    }));
+  };
+
+  const dicts = {
+    gender: getEnumData("gender"),
+    status: getEnumData("status"),
+    roles: getEnumData("roleId")
+  };
+
   const params = {
     title,
     isView: title === "查看",
-    row: detailData, // 这里传的是详情接口返回的完整数据
+    row: detailData,
+    dicts,
     api: title === "新增" ? addUser : title === "编辑" ? editUser : undefined,
     getTableList: proTable.value?.getTableList
   };

@@ -2,6 +2,7 @@ package com.littlewin.system.domain.dto;
 
 import lombok.Data;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 用户查询请求参数对象
@@ -26,7 +27,7 @@ public class UserQueryDTO implements Serializable {
     /** 手机号 */
     private String phone;
     /** 角色名 (用于按角色检索用户) */
-    private Integer roleId;
+    private List<Long> roleId;
     /** 状态 (1 正常，0 禁用，2 注销) */
     private Integer status;
     /** 注册开始时间 (yyyy-MM-dd HH:mm:ss) */
