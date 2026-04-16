@@ -22,9 +22,10 @@ export const getUserRole = () => {
   return http.get<User.ResRole[]>(PORT1 + `/admin/sys/role/list`);
 };
 
-// 3. 删除用户 (根据你的表结构，通常传递 userId)
-export const deleteUser = (params: { userId: string[] }) => {
-  return http.post(PORT1 + `/admin/sys/user/delete`, params);
+// 3. 删除用户 (对接后端: DELETE /api/admin/sys/user/delete)
+export const deleteUser = (ids: string[] | number[]) => {
+  // 必须使用 { data: ids } 的形式，Axios 才会把数组放入请求体中
+  return http.delete(`/admin/sys/user/delete`, ids, { data: ids });
 };
 
 // 4. 切换用户状态
@@ -33,8 +34,8 @@ export const changeUserStatus = (params: { userId: string; status: number }) => 
 };
 
 // 5. 重置用户密码
-export const resetUserPassWord = (params: { userId: string }) => {
-  return http.post(PORT1 + `/admin/sys/user/reset_password`, params);
+export const resetUserPassWord = (params: { userId: string | number }) => {
+  return http.post(`/admin/sys/user/resetPassword`, params);
 };
 
 // 获取树形用户列表

@@ -3,6 +3,7 @@ package com.littlewin.system.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.common.enums.LogAction;
@@ -87,7 +88,7 @@ public class SysUserServiceImpl implements SysUserService {
         user.setStatus(vo.getStatus() != null ? vo.getStatus() : 1);
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
-        user.setDel_flag(0);
+        user.setDelFlag(0);
         int successUser = sysUserMapper.insert(user);
         Long userId = user.getUserId();
 
@@ -169,6 +170,84 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void resetPassword(UserUpdateDTO updateDTO) {
+        // 1. 在服务层判断 ID 是否为空
+        if (updateDTO == null || updateDTO.getUserId() == null) {
+            throw new ServiceException("用户ID不能为空");
+        }
+
+        Long userId = updateDTO.getUserId();
+
+        // 2. 检查用户是否存在且未被逻辑删除
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null || (user.getDelFlag() != null && user.getDelFlag() == 1)) {
+            throw new ServiceException("操作失败：该用户不存在或已被删除");
+        }
+
+        // 3. 执行更新：重置 credential 字段
+        String defaultPassword = PasswordUtils.encodeDefaultPassword();
+        LambdaUpdateWrapper<UserAuth> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserAuth::getUserId, userId)
+                .eq(UserAuth::getAuthType, "password")
+                .set(UserAuth::getCredential, defaultPassword);
+
+        int rows = userAuthMapper.update(null, updateWrapper);
+        if (rows == 0) {
+            throw new ServiceException("该用户没有本地密码账号（可能是第三方登录），无法重置");
+        }
+
+        String userIdStr = SecurityUtils.getUserId();
+        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(userIdStr);
+        // 4. 记录日志
+        String desc = "用户密码重置成功";
+        sysLogService.recordUserLog(loginDTO, user.getUserId(), LogAction.UPDATE,
+                LogStatus.SUCCESS, desc, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUser(Long userId) {
+        if (userId == null) {
+            throw new ServiceException("待删除的用户ID不能为空");
+        }
+
+        // 1. 安全判断：防止管理员“误删自己”
+        String currentAdminId = SecurityUtils.getUserId();
+        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(currentAdminId);
+        if (userId.toString().equals(loginDTO.getUserId().toString())) {
+            throw new ServiceException("系统保护：无法删除当前登录中的管理员账号");
+        }
+
+        // 2. 执行逻辑删除（更新 del_flag 为 1）
+        SysUser user = new SysUser();
+        user.setUserId(userId);
+        user.setDelFlag(1);
+        user.setUpdateTime(LocalDateTime.now());
+
+        int success = sysUserMapper.updateById(user);
+        if (success == 0) {
+            throw new ServiceException("删除失败，用户数据可能已被变动");
+        }
+
+        // 3. 记录日志
+        String desc = "用户被逻辑删除";
+        sysLogService.recordUserLog(loginDTO, user.getUserId(), LogAction.UPDATE,
+                LogStatus.SUCCESS, desc, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteUsers(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            throw new ServiceException("请选择要删除的用户");
+        }
+        // 循环调用单条删除逻辑，复用“自杀检查”和日志记录
+        for (Long id : ids) {
+            deleteUser(id);
+        }
+    }
 
     /**
      * 内部校验逻辑

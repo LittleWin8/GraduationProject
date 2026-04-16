@@ -160,13 +160,15 @@ const sortTable = ({ newIndex, oldIndex }: any) => {
   ElMessage.success("修改列表排序成功");
 };
 
+// 单个删除
 const deleteAccount = async (params: any) => {
-  await useHandleData(deleteUser, { userId: params.userId }, `删除【${params.nickname}】用户`);
+  await useHandleData(deleteUser, [params.userId], `删除【${params.nickname}】用户`);
   proTable.value?.getTableList();
 };
 
+// 批量删除
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(deleteUser, { ids }, "删除所选用户信息");
+  await useHandleData(deleteUser, ids, "删除所选用户信息");
   proTable.value?.clearSelection();
   proTable.value?.getTableList();
 };

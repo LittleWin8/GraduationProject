@@ -15,7 +15,7 @@ public class SysUser implements Serializable {
     private String nickname;
     private String avatar;
     private Integer status;
-    private Integer del_flag;
+    private Integer delFlag;
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
