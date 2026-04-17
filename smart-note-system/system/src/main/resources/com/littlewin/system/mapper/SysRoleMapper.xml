@@ -8,4 +8,17 @@
         WHERE ur.user_id = #{userId}
           AND r.status = 1
     </select>
+
+    <select id="checkRoleKeyUnique" resultType="int">
+        SELECT COUNT(1) FROM sys_role
+        WHERE role_key = #{roleKey}
+        <if test="roleId != null and roleId != ''">
+            AND role_id != #{roleId}
+        </if>
+    </select>
+
+    <select id="selectRoleIdsByUserId" resultType="long">
+        SELECT role_id FROM sys_user_role
+        WHERE user_id = #{userId}
+    </select>
 </mapper>

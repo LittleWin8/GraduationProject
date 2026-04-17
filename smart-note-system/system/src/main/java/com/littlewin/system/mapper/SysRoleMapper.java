@@ -13,4 +13,14 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
      * 根据用户ID查询所属角色列表
      */
     List<SysRole> selectRolesByUserId(@Param("userId") Long userId);
+
+    /**
+     * 检查角色Key是否存在（排除自己）
+     */
+    int checkRoleKeyUnique(@Param("roleKey") String roleKey, @Param("roleId") Long roleId);
+
+    /**
+     * 查询用户已分配的角色ID列表
+     */
+    List<Long> selectRoleIdsByUserId(@Param("userId") Long userId);
 }
