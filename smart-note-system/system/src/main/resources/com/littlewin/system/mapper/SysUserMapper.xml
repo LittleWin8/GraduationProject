@@ -16,9 +16,6 @@
         FROM sys_user u
         LEFT JOIN user_auth a ON u.user_id = a.user_id
         LEFT JOIN user_info i ON u.user_id = i.user_id
-        <if test="query.roleId != null">
-            LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id
-        </if>
         <where>
             u.del_flag = 0
             <if test="query.authType != null and query.authType != ''">
@@ -36,11 +33,16 @@
             <if test="query.city != null and query.city != ''">
                 AND i.city = #{query.city}
             </if>
+            <!-- 如果一个用户存在多个角色，展示一条数据 -->
             <if test="query != null and query.roleId != null and !query.roleId.isEmpty()">
+                AND EXISTS (
+                SELECT 1 FROM sys_user_role ur
+                WHERE ur.user_id = u.user_id
                 AND ur.role_id IN
                 <foreach collection="query.roleId" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
+                )
             </if>
             <if test="query.status != null">
                 AND u.status = #{query.status}

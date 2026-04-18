@@ -14,11 +14,11 @@ import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;
 import com.littlewin.system.service.SysLogService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -60,8 +60,21 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
             return JwtUtils.createToken(username);
         } catch (AuthenticationException e) {
-            sysLogService.recordAuthLog(loginUser, LogStatus.FAIL, LogAction.LOGIN, "登录失败", e.getMessage());
-            throw new ServiceException("登录失败，用户名或密码错误");
+            String msg;
+            if (e instanceof BadCredentialsException) {
+                msg = "用户密码错误";
+            } else if (e instanceof DisabledException) {
+                msg = "您的账号已被禁用，请联系管理员";
+            } else if (e instanceof AccountExpiredException) {
+                msg = "您的账号已注销";
+            } else if (e instanceof UsernameNotFoundException) {
+                msg = e.getMessage();
+            } else {
+                msg = "登录失败：" + e.getMessage();
+            }
+
+            // 记录失败日志并抛出自定义异常给前端
+            throw new ServiceException(msg);
         }
     }
 

@@ -3,6 +3,8 @@ package com.littlewin.system.service.impl;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,7 +35,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         if (user.getStatus() == 0) {
-            throw new UsernameNotFoundException("登录用户：" + username + " 已禁用");
+            // 抛出禁用异常
+            throw new DisabledException("对不起，您的账号已被禁用");
+        }
+
+        if (user.getStatus() == 2) {
+            // 抛出账户过期/注销异常
+            throw new AccountExpiredException("对不起，您的账号已注销");
         }
 
         // 2. 加载权限标志位

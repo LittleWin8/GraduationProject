@@ -1,47 +1,5 @@
-import { ResPage } from "@/api/interface/index";
+import { ResPage, Dict } from "@/api/interface/index";
 import http from "@/api";
-
-/**
- * @name 字典管理模块 (对应后端 /api/admin/sys/dict)
- */
-export namespace Dict {
-  // 字典类型请求参数
-  export interface ReqDictTypeParams {
-    pageNum: number;
-    pageSize: number;
-    dictName?: string;
-    status?: number;
-  }
-  // 字典类型响应对象
-  export interface ResDictType {
-    dictId: number;
-    dictName: string;
-    dictType: string;
-    status: number;
-    remark: string;
-    createTime: string;
-  }
-  // 字典数据请求参数
-  export interface ReqDictDataParams {
-    pageNum: number;
-    pageSize: number;
-    dictType: string; // 必传：关联的字典类型
-    dictLabel?: string; // 搜索：标签
-    status?: number; // 搜索：状态
-  }
-  // 字典数据响应对象
-  export interface ResDictData {
-    dataId: number;
-    dictType: string;
-    dictLabel: string;
-    dictValue: string;
-    tagType: string;
-    sortOrder: number;
-    status: number;
-    remark: string;
-    createTime: string;
-  }
-}
 
 /**
  * ================= 字典类型 (Type) 管理 =================

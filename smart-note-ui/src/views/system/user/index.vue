@@ -44,7 +44,7 @@ import ImportExcel from "@/components/ImportExcel/index.vue";
 import UserDrawer from "./components/UserDrawer.vue";
 import { ProTableInstance, ColumnProps } from "@/components/ProTable/interface";
 import { CirclePlus, Delete, EditPen, View, Refresh } from "@element-plus/icons-vue";
-import { getUserList, deleteUser, editUser, addUser, resetUserPassWord, getUserDetails } from "@/api/modules/user";
+import { getUserList, deleteUser, editUser, addUser, resetUserPassword, getUserDetails } from "@/api/modules/user";
 import { getDictDataByType } from "@/api/modules/dict";
 
 // const router = useRouter();
@@ -61,7 +61,7 @@ const initParam = reactive({});
 // 适配后端分页数据结构 Result<data: { records: [], total: 0 }>
 const dataCallback = (data: any) => {
   data.records.forEach((item: any) => {
-    item.gender = String(item.gender); // 👈 就加这一行
+    item.gender = String(item.gender);
   });
 
   return {
@@ -174,7 +174,7 @@ const batchDelete = async (ids: string[]) => {
 };
 
 const resetPass = async (params: any) => {
-  await useHandleData(resetUserPassWord, { userId: params.userId }, `重置【${params.nickname}】密码`);
+  await useHandleData(resetUserPassword, { userId: params.userId }, `重置【${params.nickname}】密码`);
   proTable.value?.getTableList();
 };
 
