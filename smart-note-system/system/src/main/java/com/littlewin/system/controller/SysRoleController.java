@@ -114,7 +114,7 @@ public class SysRoleController {
      * 7. 修改角色状态
      */
     @PutMapping("/status")
-    public Result<?> changeStatus(@RequestParam Long roleId, @RequestParam Integer status) {
+    public Result<?> changeStatus(@RequestParam("roleId") Long roleId, @RequestParam("status") Integer status) {
         if (roleService.changeStatus(roleId, status)) {
             return Result.success();
         }

@@ -8,8 +8,6 @@ import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.common.utils.ServletUtils;
 import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.domain.entity.SysMenu;
-import com.littlewin.system.domain.entity.SysUser;
-import com.littlewin.system.domain.entity.UserInfo;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;

@@ -10,6 +10,7 @@ import com.littlewin.system.domain.entity.SysUserRole;
 import com.littlewin.system.mapper.SysRoleMapper;
 import com.littlewin.system.mapper.SysRoleMenuMapper;
 import com.littlewin.system.mapper.SysUserRoleMapper;
+import com.littlewin.system.service.SysLogService;
 import com.littlewin.system.service.SysRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
