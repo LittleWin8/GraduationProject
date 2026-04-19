@@ -24,16 +24,6 @@
             <artifactId>common</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.littlewin</groupId>
-            <artifactId>system</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.littlewin</groupId>
-            <artifactId>note</artifactId>
-        </dependency>
-
         <!-- Spring Security 核心（权限控制） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -75,5 +65,4 @@
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
     </dependencies>
-
 </project>
