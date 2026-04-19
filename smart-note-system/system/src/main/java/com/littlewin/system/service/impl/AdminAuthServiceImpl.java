@@ -2,7 +2,6 @@ package com.littlewin.system.service.impl;
 
 import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.enums.LogModule;
-import com.littlewin.common.enums.LogStatus;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
@@ -12,10 +11,10 @@ import com.littlewin.common.utils.ServletUtils;
 import com.littlewin.common.core.AdminLoginDTO;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.vo.MenuVO;
+import com.littlewin.system.domain.vo.UserInfoVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -58,7 +57,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
             // 记录登录日志
             LogContext.setBusinessId(loginUser.getUserId());
-            LogContext.setDesc("登录成功：" + username);
+            LogContext.setDesc("登录成功【" + username + "】");
 
             return JwtUtils.createToken(username);
         } catch (AuthenticationException e) {
@@ -86,30 +85,25 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         AdminLoginDTO loginUser = SecurityUtils.getLoginUser();
         if (loginUser != null) {
             LogContext.setBusinessId(loginUser.getUserId());
-            LogContext.setDesc("退出登录：" + loginUser.getUsername());
+            LogContext.setDesc("退出登录【" + loginUser.getUsername()+ "】");
         }
         SecurityContextHolder.clearContext();
     }
 
 
     @Override
-    public Map<String, Object> getUserInfo() {
-        // 1. 获取当前登录用户名并查询 authUser
-        String username = SecurityUtils.getUserId();
-        AdminLoginDTO authUser = userAuthMapper.selectAdminLoginUser(username);
+    public UserInfoVO getUserInfo() {
+        // 1. 获取当前登录用户
+        AdminLoginDTO authUser = SecurityUtils.getLoginUser();
         if (authUser == null) throw new ServiceException("用户不存在");
 
         // 2. 优化：1次联查获取 3 表数据
-        Map<String, Object> userInfo = userAuthMapper.selectFullUserInfoById(authUser.getUserId());
+        UserInfoVO userInfo = userAuthMapper.selectFullUserInfoById(authUser.getUserId());
         if (userInfo == null) throw new ServiceException("获取详细资料失败");
 
         // 3. 角色列表是 1:N 关系，保留独立查询以避免 SQL 结果集膨胀
         List<String> roles = userAuthMapper.selectRoleKeysByUserId(authUser.getUserId());
-
-        // 4. 组装最终结果
-        userInfo.put("roles", roles);
-        // 处理可能为 null 的头像
-        userInfo.put("avatar", userInfo.get("avatar") == null ? "" : userInfo.get("avatar"));
+        userInfo.setRoles(roles);
 
         return userInfo;
     }
@@ -119,8 +113,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      */
     @Override
     public List<MenuVO> getAuthMenuList() {
-        String username = SecurityUtils.getUserId();
-        AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(username);
+        AdminLoginDTO user = SecurityUtils.getLoginUser();
         if (user == null) throw new ServiceException("获取用户信息失败");
 
         // 只查询类型为 M(目录) 和 C(菜单) 的数据
@@ -134,8 +127,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      */
     @Override
     public Map<String, List<String>> getAuthButtonList() {
-        String username = SecurityUtils.getUserId();
-        AdminLoginDTO user = userAuthMapper.selectAdminLoginUser(username);
+        AdminLoginDTO user = SecurityUtils.getLoginUser();
         if (user == null) return new HashMap<>();
 
         // 1. 从数据库获取该用户拥有的所有按钮级权限 (menu_type = 'F')

@@ -42,10 +42,17 @@ export namespace Login {
   // 适配后端的 getUserInfo 接口返回的数据结构
   export interface ResUserInfo {
     userId: number;
-    name: string;
-    account: string; // 对应后端的 identifier
-    avatar: string;
-    roles: string[]; // 对应后端的 role_key 数组
+    name: string;      // 对应后端 nickname
+    account: string;   // 对应后端 identifier
+    avatar: string | null;
+    createTime: string; // 账号创建时间
+    gender: number;    // 性别：0 未知, 1 男, 2 女
+    phone: string;
+    email: string;
+    birthday: string;
+    city: string;
+    signature: string;
+    roles: string[];   
   }
   export interface ResAuthButtons {
     [key: string]: string[];

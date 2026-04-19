@@ -3,6 +3,7 @@ package com.littlewin.system.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.UserAuth;
+import com.littlewin.system.domain.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Mapper;
 import com.littlewin.common.core.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;
@@ -41,7 +42,7 @@ public interface UserAuthMapper extends BaseMapper<UserAuth> {
     /**
      * 联查获取用户所有详细信息（User + Info + Auth）
      */
-    Map<String, Object> selectFullUserInfoById(@Param("userId") Long userId);
+    UserInfoVO selectFullUserInfoById(@Param("userId") Long userId);
 
     /**
      * 更新用户最后登录信息

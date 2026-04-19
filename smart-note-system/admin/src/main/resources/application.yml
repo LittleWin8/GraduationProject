@@ -48,6 +48,7 @@ mybatis-plus:
     # 控制台打印 SQL，开发阶段强烈建议打开
     map-underscore-to-camel-case: true
     # 数据库字段下划线 -> Java 驼峰
+    mapper-locations: classpath*:com/littlewin/**/mapper/*.xml
 
   global-config:
     db-config:

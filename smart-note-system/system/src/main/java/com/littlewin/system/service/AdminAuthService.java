@@ -1,6 +1,7 @@
 package com.littlewin.system.service;
 
 import com.littlewin.system.domain.vo.MenuVO;
+import com.littlewin.system.domain.vo.UserInfoVO;
 
 import java.util.List;
 import java.util.Map;
@@ -20,5 +21,5 @@ public interface AdminAuthService {
     Map<String, List<String>> getAuthButtonList();
 
     //获取用户信息
-    Map<String, Object> getUserInfo();
+    UserInfoVO getUserInfo();
 }
