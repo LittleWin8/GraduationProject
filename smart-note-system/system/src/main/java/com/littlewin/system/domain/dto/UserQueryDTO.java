@@ -34,4 +34,9 @@ public class UserQueryDTO implements Serializable {
     private String startTime;
     /** 注册结束时间 (yyyy-MM-dd HH:mm:ss) */
     private String endTime;
+
+    /** 排序字段 (对应数据库列名) */
+    private String orderColumn;
+    /** 排序规则 (ascending / descending) */
+    private String orderRule;
 }

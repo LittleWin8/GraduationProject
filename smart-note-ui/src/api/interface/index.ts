@@ -65,6 +65,10 @@ export namespace User {
     status?: number;
     startTime?: string; // 创建时间-开始
     endTime?: string; // 创建时间-结束
+    /** 排序字段 (对应数据库列名，如 u.user_id) */
+    orderColumn?: string;
+    /** 排序规则 (ascending / descending) */
+    orderRule?: string;
   }
 
   export interface UserListVO {

@@ -223,8 +223,10 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    @Log(module = LogModule.USER, action = LogAction.DELETE, desc = "逻辑删除用户")
     @Transactional(rollbackFor = Exception.class)
     public void batchDeleteUsers(List<Long> ids) {
+        LogContext.setDesc("批量删除用户，ID列表：" + ids.toString());
         if (CollUtil.isEmpty(ids)) {
             throw new ServiceException("请选择要删除的用户");
         }

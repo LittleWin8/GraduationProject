@@ -8,6 +8,7 @@
       :data-callback="dataCallback"
       @drag-sort="sortTable"
       row-key="userId"
+      @sort-change="handleSortChange"
     >
       <template #tableHeader="scope">
         <el-button type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增用户</el-button>
@@ -72,12 +73,21 @@ const dataCallback = (data: any) => {
 
 // 请求拦截：拆分日期范围，适配后端 startTime/endTime
 const getTableList = (params: any) => {
+  console.log("ProTable 传出的原始参数:", params);
   let newParams = JSON.parse(JSON.stringify(params));
   if (newParams.createTime && newParams.createTime.length) {
     newParams.startTime = newParams.createTime[0];
     newParams.endTime = newParams.createTime[1];
   }
   delete newParams.createTime;
+
+  if (sortParam.orderColumn) {
+    newParams.orderColumn = sortParam.orderColumn;
+    newParams.orderRule = sortParam.orderRule;
+  }
+
+  console.log("最终发送给后端的参数:", newParams);
+
   return getUserList(newParams);
 };
 
@@ -86,7 +96,8 @@ const columns = reactive<ColumnProps<any>[]>([
   { type: "selection", fixed: "left", width: 70 },
   {
     prop: "userId",
-    label: "用户ID"
+    label: "用户ID",
+    sortable: "custom"
   },
   {
     prop: "nickname", // 对应后端 nickname
@@ -144,7 +155,7 @@ const columns = reactive<ColumnProps<any>[]>([
     prop: "createTime",
     label: "注册时间",
     width: 180,
-    isShow: false,
+    sortable: "custom",
     search: {
       el: "date-picker",
       span: 2,
@@ -175,6 +186,31 @@ const batchDelete = async (ids: string[]) => {
 
 const resetPass = async (params: any) => {
   await useHandleData(resetUserPassword, { userId: params.userId }, `重置【${params.nickname}】密码`);
+  proTable.value?.getTableList();
+};
+
+const sortParam = reactive({
+  orderColumn: "",
+  orderRule: ""
+});
+
+// 处理排序点击事件
+const handleSortChange = ({ prop, order }: any) => {
+  console.log(`正在排序字段: ${prop}, 顺序: ${order}`);
+
+  const columnMap: Record<string, string> = {
+    userId: "u.user_id",
+    createTime: "u.create_time"
+  };
+  if (!order) {
+    sortParam.orderColumn = "";
+    sortParam.orderRule = "";
+  } else {
+    sortParam.orderColumn = columnMap[prop] || "";
+    sortParam.orderRule = order;
+  }
+
+  // 触发刷新
   proTable.value?.getTableList();
 };
 

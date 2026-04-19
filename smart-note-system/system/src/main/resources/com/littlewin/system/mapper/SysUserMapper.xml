@@ -54,7 +54,16 @@
                 AND u.create_time &lt;= #{query.endTime}
             </if>
         </where>
-        ORDER BY u.create_time DESC
+        <choose>
+            <when test="query.orderColumn != null and query.orderColumn != ''">
+                ORDER BY ${query.orderColumn}
+                <if test="query.orderRule == 'descending'">DESC</if>
+                <if test="query.orderRule == 'ascending'">ASC</if>
+            </when>
+            <otherwise>
+                ORDER BY u.user_id ASC
+            </otherwise>
+        </choose>
     </select>
 
     <select id="selectUserDetailsById" resultType="com.littlewin.system.domain.vo.UserDetailsVO">
