@@ -2,7 +2,6 @@ package com.littlewin.system.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.littlewin.system.domain.dto.AdminLoginDTO;
 import com.littlewin.system.domain.dto.DictDataQueryDTO;
 import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;

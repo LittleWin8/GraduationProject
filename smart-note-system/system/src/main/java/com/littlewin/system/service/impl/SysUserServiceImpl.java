@@ -1,24 +1,25 @@
 package com.littlewin.system.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.common.enums.LogAction;
+import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.enums.LogStatus;
 import com.littlewin.common.exception.ServiceException;
+import com.littlewin.common.log.annotation.Log;
+import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.PasswordUtils;
 import com.littlewin.common.utils.SecurityUtils;
-import com.littlewin.system.domain.dto.AdminLoginDTO;
+import com.littlewin.common.core.AdminLoginDTO;
 import com.littlewin.system.domain.dto.UserQueryDTO;
 import com.littlewin.system.domain.dto.UserUpdateDTO;
 import com.littlewin.system.domain.entity.*;
 import com.littlewin.system.domain.vo.UserDetailsVO;
 import com.littlewin.system.domain.vo.UserListVO;
 import com.littlewin.system.mapper.*;
-import com.littlewin.system.service.SysLogService;
 import com.littlewin.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.security.Security;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +41,6 @@ public class SysUserServiceImpl implements SysUserService {
     private final SysUserRoleMapper userRoleMapper;
     private final SysRoleMapper sysRoleMapper;
     private final UserAuthMapper userAuthMapper;
-    private final SysLogService sysLogService;
 
     /**
      * 分页获取用户列表
@@ -76,8 +75,11 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    @Log(module = LogModule.USER, action = LogAction.CREATE)
     @Transactional(rollbackFor = Exception.class)
     public void addUser(UserDetailsVO vo) {
+        LogContext.setDesc("添加用户【" + vo.getIdentifier() + "】");
+
         // 1. 业务逻辑校验
         validateUserBefore(vo,false);
 
@@ -91,6 +93,9 @@ public class SysUserServiceImpl implements SysUserService {
         user.setDelFlag(0);
         int successUser = sysUserMapper.insert(user);
         Long userId = user.getUserId();
+
+        // 绑定业务ID到日志
+        LogContext.setBusinessId(userId);
 
         // 3. 插入 user_auth 认证表
         UserAuth auth = new UserAuth();
@@ -115,26 +120,16 @@ public class SysUserServiceImpl implements SysUserService {
         if (!CollectionUtils.isEmpty(vo.getRoleIds())) {
             userRoleMapper.batchInsertUserRoles(userId, vo.getRoleIds());
         }
-
-        String userIdStr = SecurityUtils.getUserId();
-        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(userIdStr);
-        if (successUser == 1
-                && successUserInfo == 1
-                && successUseAuth == 1) {
-            String desc = "添加用户【" + vo.getIdentifier() + "】成功";
-            sysLogService.recordUserLog(loginDTO, userId, LogAction.CREATE,
-                    LogStatus.SUCCESS, desc, null);
-        }else {
-            String desc = "添加用户【" + vo.getIdentifier() + "】失败";
-            sysLogService.recordUserLog(loginDTO, userId, LogAction.CREATE,
-                    LogStatus.FAIL, desc, null);
-        }
-
     }
 
     @Override
+    @Log(module = LogModule.USER, action = LogAction.UPDATE)
     @Transactional(rollbackFor = Exception.class)
     public void updateUser(UserDetailsVO vo) {
+
+        // 设置动态描述
+        LogContext.setDesc("修改用户【" + vo.getIdentifier() + "】个人信息");
+        LogContext.setBusinessId(vo.getUserId());
 
         validateUserBefore(vo,true);
 
@@ -161,16 +156,11 @@ public class SysUserServiceImpl implements SysUserService {
             userRoleMapper.batchInsertUserRoles(userId, vo.getRoleIds());
         }
 
-        String userIdStr = SecurityUtils.getUserId();
-        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(userIdStr);
-        // 5. 记录修改日志
-        String desc = "修改用户【" + vo.getIdentifier() + "】的个人信息";
-        sysLogService.recordUserLog(loginDTO, vo.getUserId(), LogAction.CREATE,
-                LogStatus.SUCCESS, desc, null);
     }
 
 
     @Override
+    @Log(module = LogModule.USER, action = LogAction.UPDATE, desc = "重置用户密码")
     @Transactional(rollbackFor = Exception.class)
     public void resetPassword(UserUpdateDTO updateDTO) {
         // 1. 在服务层判断 ID 是否为空
@@ -179,6 +169,7 @@ public class SysUserServiceImpl implements SysUserService {
         }
 
         Long userId = updateDTO.getUserId();
+        LogContext.setBusinessId(userId); // 记录被重置的用户ID
 
         // 2. 检查用户是否存在且未被逻辑删除
         SysUser user = sysUserMapper.selectById(userId);
@@ -198,20 +189,19 @@ public class SysUserServiceImpl implements SysUserService {
             throw new ServiceException("该用户没有本地密码账号（可能是第三方登录），无法重置");
         }
 
-        String userIdStr = SecurityUtils.getUserId();
-        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(userIdStr);
-        // 4. 记录日志
-        String desc = "用户密码重置成功";
-        sysLogService.recordUserLog(loginDTO, user.getUserId(), LogAction.UPDATE,
-                LogStatus.SUCCESS, desc, null);
     }
 
+    /**
+     * 删除用户
+     */
     @Override
+    @Log(module = LogModule.USER, action = LogAction.DELETE, desc = "逻辑删除用户")
     @Transactional(rollbackFor = Exception.class)
     public void deleteUser(Long userId) {
         if (userId == null) {
             throw new ServiceException("待删除的用户ID不能为空");
         }
+        LogContext.setBusinessId(userId);
 
         // 1. 安全判断：防止管理员“误删自己”
         String currentAdminId = SecurityUtils.getUserId();
@@ -230,11 +220,6 @@ public class SysUserServiceImpl implements SysUserService {
         if (success == 0) {
             throw new ServiceException("删除失败，用户数据可能已被变动");
         }
-
-        // 3. 记录日志
-        String desc = "用户被逻辑删除";
-        sysLogService.recordUserLog(loginDTO, user.getUserId(), LogAction.UPDATE,
-                LogStatus.SUCCESS, desc, null);
     }
 
     @Override

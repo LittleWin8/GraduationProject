@@ -1,17 +1,19 @@
 package com.littlewin.system.service.impl;
 
 import com.littlewin.common.enums.LogAction;
+import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.enums.LogStatus;
 import com.littlewin.common.exception.ServiceException;
+import com.littlewin.common.log.annotation.Log;
+import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.JwtUtils;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.common.utils.ServletUtils;
-import com.littlewin.system.domain.dto.AdminLoginDTO;
+import com.littlewin.common.core.AdminLoginDTO;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.service.AdminAuthService;
-import com.littlewin.system.service.SysLogService;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -31,9 +33,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Resource
     private UserAuthMapper userAuthMapper;
 
-    @Resource
-    private SysLogService sysLogService;
-
     private final AuthenticationManager authenticationManager;
 
     public AdminAuthServiceImpl(AuthenticationManager authenticationManager) {
@@ -41,20 +40,25 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     @Override
+    @Log(module = LogModule.AUTH, action = LogAction.LOGIN)
     public String login(String username, String password) {
-        AdminLoginDTO loginUser = userAuthMapper.selectAdminLoginUser(username);
+
+        LogContext.setDesc("用户登录：" + username);
+
         try {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(username, password);
             authenticationManager.authenticate(authenticationToken);
 
+            AdminLoginDTO loginUser = userAuthMapper.selectAdminLoginUser(username);
 
             // 往用户信息表插入最后登录ip和登录时间
             String ip = ServletUtils.getClientIp();
             userAuthMapper.updateLoginInfo(loginUser.getUserId(), ip, LocalDateTime.now());
 
             // 记录登录日志
-            sysLogService.recordAuthLog(loginUser, LogStatus.SUCCESS, LogAction.LOGIN, "登录成功", null);
+            LogContext.setBusinessId(loginUser.getUserId());
+            LogContext.setDesc("登录成功：" + username);
 
             return JwtUtils.createToken(username);
         } catch (AuthenticationException e) {
@@ -77,14 +81,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     @Override
+    @Log(module = LogModule.AUTH, action = LogAction.LOGOUT, desc = "用户退出登录")
     public void logout() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth != null) {
-            AdminLoginDTO loginUser = userAuthMapper.selectAdminLoginUser(auth.getName());
-            if (loginUser != null) {
-                sysLogService.recordAuthLog(loginUser, LogStatus.SUCCESS, LogAction.LOGOUT, "用户退出登录", null);
-            }
+        AdminLoginDTO loginUser = SecurityUtils.getLoginUser();
+        if (loginUser != null) {
+            LogContext.setBusinessId(loginUser.getUserId());
+            LogContext.setDesc("退出登录：" + loginUser.getUsername());
         }
         SecurityContextHolder.clearContext();
     }

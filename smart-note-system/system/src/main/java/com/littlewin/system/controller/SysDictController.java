@@ -3,6 +3,7 @@ package com.littlewin.system.controller;
 import cn.hutool.core.lang.Dict;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
+import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.system.domain.dto.DictDataQueryDTO;
 import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;
@@ -35,6 +36,7 @@ public class SysDictController {
      */
     @PutMapping("/type/edit")
     public Result edit(@RequestBody SysDictType dictType) {
+
         // 1. 强制校验主键，防止全表更新
         if (dictType.getDictId() == null) {
             return Result.error("操作失败：字典ID不能为空");

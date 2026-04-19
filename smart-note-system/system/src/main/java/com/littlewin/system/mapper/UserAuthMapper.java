@@ -4,9 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.UserAuth;
 import org.apache.ibatis.annotations.Mapper;
-import com.littlewin.system.domain.dto.AdminLoginDTO;
+import com.littlewin.common.core.AdminLoginDTO;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.littlewin.system.mapper;
+package com.littlewin.common.log.mapper;
 
-import com.littlewin.system.domain.entity.SysLogOperation;
+import com.littlewin.common.log.entity.SysLogOperation;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

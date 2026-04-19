@@ -17,6 +17,7 @@
         <module>framework</module>
         <module>system</module>
         <module>note</module>
+        <module>common-log</module>
     </modules>
 
     <properties>
@@ -32,6 +33,7 @@
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <mzt-log.version>2.0.2</mzt-log.version>
     </properties>
 
     <dependencyManagement>
@@ -118,6 +120,13 @@
                 <version>${commons-lang3.version}</version>
             </dependency>
 
+            <!-- mzt-biz-log 日志框架 -->
+            <dependency>
+                <groupId>io.github.mouzt</groupId>
+                <artifactId>bizlog-sdk</artifactId>
+                <version>${mzt-log.version}</version>
+            </dependency>
+
             <!-- 模块依赖管理 -->
             <dependency>
                 <groupId>com.littlewin</groupId>
@@ -137,6 +146,11 @@
             <dependency>
                 <groupId>com.littlewin</groupId>
                 <artifactId>note</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.littlewin</groupId>
+                <artifactId>common-log</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

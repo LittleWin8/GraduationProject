@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.littlewin.system.mapper.UserAuthMapper">
 
-    <select id="selectAdminLoginUser" resultType="com.littlewin.system.domain.dto.AdminLoginDTO">
+    <select id="selectAdminLoginUser" resultType="com.littlewin.common.core.AdminLoginDTO">
         SELECT
             u.user_id    AS userId,
             u.status     AS status,
@@ -17,7 +17,7 @@
         LIMIT 1
     </select>
 
-    <select id="checkIdentifierUnique" resultType="com.littlewin.system.domain.dto.AdminLoginDTO">
+    <select id="checkIdentifierUnique" resultType="com.littlewin.common.core.AdminLoginDTO">
         SELECT
             u.user_id    AS userId,
             u.status     AS status,

@@ -1,4 +1,4 @@
-package com.littlewin.system.domain.dto;
+package com.littlewin.common.core;
 
 import lombok.Data;
 

@@ -1,6 +1,7 @@
 package com.littlewin.system.service.impl;
 
-import com.littlewin.system.domain.dto.AdminLoginDTO;
+import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginUser;
 import com.littlewin.system.mapper.UserAuthMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -53,9 +54,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .collect(Collectors.toList());
 
         // 4. 构建 Spring Security 的 UserDetails 对象
-        return User.withUsername(user.getUsername())
-                .password(user.getPassword()) // 这里的密码必须是数据库里存的加密后的字符串
-                .authorities(authorities)
-                .build();
+        return new LoginUser(user, authorities);
     }
 }
