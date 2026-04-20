@@ -178,11 +178,12 @@ INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark) VALUES
 (4, '认证类型', 'auth_type', 1, '区分管理端(pwd)与客户端(wx)'),
 (5, '笔记公开性', 'note_public', 1, 'note.is_public'),
 (6, '互动态度', 'reaction_attitude', 1, 'note_reaction.attitude'),
-(7, '操作类型', 'operation_type', 1, '审计日志操作行为');
+(7, '操作类型', 'operation_type', 1, '审计日志操作行为'),
+(8, '角色名称', 'role_name', 1, 'sys_role.role_id');
 
--- 6.2 字典数据 (适配 Geeker-Admin Tag 样式)
+-- 6.2 字典数据
 INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_order) VALUES
--- 认证类型 (你的核心诉求：区分端)
+-- 认证类型
 ('auth_type', '账号密码(管理端)', 'password', 'primary', 1),
 ('auth_type', '微信登录(客户端)', 'wx_openid', 'success', 2),
 
@@ -216,4 +217,8 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 ('operation_type', '创建', '3', 'primary', 3),
 ('operation_type', '修改', '4', 'warning', 4),
 ('operation_type', '删除', '5', 'danger', 5),
-('operation_type', '审核', '6', 'success', 6);
+('operation_type', '审核', '6', 'success', 6),
+
+-- 角色名称
+('role_name', '超级管理员', '1', 'danger', 1),
+('role_name', '内容运营', '2', 'success', 2);
