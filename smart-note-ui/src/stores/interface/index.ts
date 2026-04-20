@@ -33,8 +33,15 @@ export interface UserState {
     userId: number; // 后端返回的 userId
     name: string; // 用户昵称
     account: string; // 后端返回的 identifier/账号
-    avatar: string; // 头像
+    avatar: string  | null; // 头像
     roles: string[]; // 角色列表
+    createTime?: string;
+    gender?: number;
+    phone?: string;
+    email?: string;
+    birthday?: string;
+    city?: string;
+    signature?: string;
   };
 }
 

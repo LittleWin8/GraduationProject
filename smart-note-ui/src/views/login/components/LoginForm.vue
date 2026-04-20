@@ -1,7 +1,7 @@
 <template>
   <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="large">
     <el-form-item prop="username">
-      <el-input v-model="loginForm.username" placeholder="用户名：admin / editor">
+      <el-input v-model="loginForm.username" placeholder="账号：admin / editor">
         <template #prefix>
           <el-icon class="el-input__icon">
             <user />
@@ -84,6 +84,8 @@ const login = (formEl: FormInstance | undefined) => {
       // 3.清空 tabs、keepAlive 数据
       tabsStore.setTabs([]);
       keepAliveStore.setKeepAliveName([]);
+
+      await userStore.getUserInfoAction();
 
       // 4.跳转到首页
       router.push(HOME_URL);

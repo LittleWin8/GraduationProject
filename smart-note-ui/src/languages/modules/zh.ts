@@ -22,7 +22,7 @@ export default {
     weakMode: "色弱模式",
     fullScreen: "全屏",
     exitFullScreen: "退出全屏",
-    personalData: "个人信息",
+    personalData: "个人中心",
     changePassword: "修改密码",
     logout: "退出登录"
   }

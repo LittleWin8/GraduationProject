@@ -150,10 +150,16 @@ public class SysUserServiceImpl implements SysUserService {
         userInfoMapper.updateById(info);
 
         // 4. 更新角色 (先删再增)
-        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>()
-                .eq(SysUserRole::getUserId, userId));
-        if (!CollectionUtils.isEmpty(vo.getRoleIds())) {
-            userRoleMapper.batchInsertUserRoles(userId, vo.getRoleIds());
+        if (vo.getRoleIds() != null) {
+
+            // 先删（包括“剥夺角色”的情况）
+            userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>()
+                    .eq(SysUserRole::getUserId, userId));
+
+            // 如果不是空数组，才新增
+            if (!vo.getRoleIds().isEmpty()) {
+                userRoleMapper.batchInsertUserRoles(userId, vo.getRoleIds());
+            }
         }
 
     }
@@ -250,7 +256,7 @@ public class SysUserServiceImpl implements SysUserService {
         AdminLoginDTO existingUser = userAuthMapper.checkIdentifierUnique(vo.getIdentifier());
         if (existingUser != null) {
             // 如果是更新操作：查到的用户 ID 不等于 当前编辑的用户 ID，说明撞名了
-            if (isUpdate && !existingUser.getUserId().toString().equals(vo.getUserId().toString())) {
+            if (isUpdate && !existingUser.getUserId().equals(vo.getUserId())) {
                 throw new ServiceException("账号名 " + vo.getIdentifier() + " 已被其他用户占用");
             }
             // 如果是新增操作：只要查到数据，就说明已存在

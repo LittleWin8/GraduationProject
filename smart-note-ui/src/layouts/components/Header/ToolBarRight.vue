@@ -2,10 +2,10 @@
   <div class="tool-bar-ri">
     <div class="header-icon">
       <AssemblySize id="assemblySize" />
-      <Language id="language" />
+      <Language id="language" v-if="false" />
       <SearchMenu id="searchMenu" />
       <ThemeSetting id="themeSetting" />
-      <Message id="message" />
+      <Message id="message" v-if="false" />
       <Fullscreen id="fullscreen" />
     </div>
     <span class="username">{{ username }}</span>

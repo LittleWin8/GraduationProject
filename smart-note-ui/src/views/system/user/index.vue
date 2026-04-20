@@ -113,7 +113,7 @@ const columns = reactive<ColumnProps<any>[]>([
   },
   {
     prop: "identifier",
-    label: "用户名",
+    label: "登陆账号",
     search: { el: "input" }
   },
   {

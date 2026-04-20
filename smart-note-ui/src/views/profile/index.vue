@@ -39,6 +39,7 @@
               <el-tab-pane label="基本资料" name="info">
                 <div class="tab-content">
                   <el-descriptions :column="responsiveColumns" border class="info-descriptions">
+                    <el-descriptions-item label="用户ID">{{ userInfo.userId }}</el-descriptions-item>
                     <el-descriptions-item label="登录账号">{{ userInfo.account }}</el-descriptions-item>
                     <el-descriptions-item label="用户昵称">{{ userInfo.name }}</el-descriptions-item>
                     <el-descriptions-item label="性别">
@@ -56,7 +57,7 @@
                   </el-descriptions>
 
                   <div class="tab-footer">
-                    <el-button type="primary" :icon="Edit" round>编辑资料</el-button>
+                    <el-button type="primary" :icon="Edit" round @click="openUserDrawer">编辑资料</el-button>
                   </div>
                 </div>
               </el-tab-pane>
@@ -85,23 +86,49 @@
         </el-col>
       </el-row>
     </div>
+    <UserDrawer ref="userDrawerRef" />
   </div>
 </template>
 
 <script setup lang="ts" name="personalInfo">
-import { ref, onMounted, onUnmounted } from "vue";
-import { getUserInfoApi } from "@/api/modules/login";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useUserStore } from "@/stores/modules/user";
 import { getDictDataByType } from "@/api/modules/dict";
-import { Dict, Login } from "@/api/interface/index";
+import { Dict } from "@/api/interface/index";
 import { Calendar, Postcard, Edit, Lock, Iphone } from "@element-plus/icons-vue";
+import defaultAvatarImg from "@/assets/images/avatar.gif";
+import UserDrawer from "./components/personalDrawer.vue";
+import { editUser } from "@/api/modules/user";
 
-const defaultAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix";
+const userStore = useUserStore();
+const defaultAvatar = defaultAvatarImg;
 const activeTab = ref("info");
 
-const userInfo = ref<Partial<Login.ResUserInfo>>({});
+const userInfo = computed(() => userStore.userInfo);
 const genderDict = ref<Dict.ResDictData[]>([]);
 
 const responsiveColumns = ref(2);
+
+const userDrawerRef = ref<InstanceType<typeof UserDrawer> | null>(null);
+
+// 5. 打开抽屉的方法
+const openUserDrawer = () => {
+  // 如果没有在 template 里写 <UserDrawer />，这里会报错或没反应
+  const info = userStore.userInfo;
+
+  const rowData = {
+    ...info,
+    userId: info.userId,
+    identifier: info.account,
+    nickname: info.name,
+    gender: String(info.gender)
+  };
+
+  userDrawerRef.value?.acceptParams({
+    row: rowData,
+    api: editUser
+  });
+};
 
 const handleResize = () => {
   responsiveColumns.value = window.innerWidth < 768 ? 1 : 2;
@@ -111,9 +138,12 @@ onMounted(async () => {
   handleResize();
   window.addEventListener("resize", handleResize);
 
-  const [userRes, genderRes] = await Promise.all([getUserInfoApi(), getDictDataByType("user_gender")]);
-  userInfo.value = userRes.data;
-  genderDict.value = genderRes.data;
+  if (!userInfo.value.userId) {
+    await userStore.getUserInfoAction();
+  }
+
+  const { data } = await getDictDataByType("user_gender");
+  genderDict.value = data;
 });
 
 onUnmounted(() => {

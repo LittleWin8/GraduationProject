@@ -19,7 +19,7 @@
         </UploadImg>
       </el-form-item>
 
-      <el-form-item label="用户账号" prop="identifier">
+      <el-form-item label="登录账号" prop="identifier">
         <el-input
           v-model="drawerProps.row!.identifier"
           placeholder="请填写登录账号"
