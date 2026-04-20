@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="tsx" name="useProTable">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, onActivated } from "vue";
 // import { useRouter } from "vue-router";
 // import { User } from "@/api/interface";
 import { useHandleData } from "@/hooks/useHandleData";
@@ -48,13 +48,23 @@ import { CirclePlus, Delete, EditPen, View, Refresh } from "@element-plus/icons-
 import { getUserList, deleteUser, editUser, addUser, resetUserPassword, getUserDetails } from "@/api/modules/user";
 import { getDictDataByType } from "@/api/modules/dict";
 
-// const router = useRouter();
 const proTable = ref<ProTableInstance>();
 
-// 跳转详情页
-// const toDetail = () => {
-//   router.push(`/proTable/useProTable/detail/${Math.random().toFixed(3)}?params=detail-page`);
-// };
+// 主动刷新浏览器缓存获取最新角色字典
+const roleDict = ref<any[]>([]);
+
+const getRoleList = async () => {
+  const { data } = await getDictDataByType("role_name");
+  roleDict.value = data;
+};
+
+onMounted(() => {
+  getRoleList();
+});
+
+onActivated(() => {
+  getRoleList();
+});
 
 // 初始化请求参数
 const initParam = reactive({});
@@ -85,8 +95,6 @@ const getTableList = (params: any) => {
     newParams.orderColumn = sortParam.orderColumn;
     newParams.orderRule = sortParam.orderRule;
   }
-
-  console.log("最终发送给后端的参数:", newParams);
 
   return getUserList(newParams);
 };
@@ -129,7 +137,7 @@ const columns = reactive<ColumnProps<any>[]>([
     prop: "roleId",
     label: "角色",
     isShow: false,
-    enum: () => getDictDataByType("role_name"),
+    enum: roleDict,
     fieldNames: { label: "dictLabel", value: "dictValue" },
     search: {
       el: "select",
@@ -216,6 +224,11 @@ const handleSortChange = ({ prop, order }: any) => {
 
 const drawerRef = ref<InstanceType<typeof UserDrawer> | null>(null);
 const openDrawer = async (title: string, row: any = {}) => {
+  await getRoleList();
+  if (proTable.value?.enumMap) {
+    proTable.value.enumMap.set("roleId", roleDict.value);
+  }
+
   let detailData = { ...row };
 
   if (title !== "新增" && row.userId) {

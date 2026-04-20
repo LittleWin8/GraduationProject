@@ -60,6 +60,7 @@ const handleStatusChange = async (row: any) => {
 // 4. 表格列配置
 const columns = reactive<ColumnProps[]>([
   { type: "selection", fixed: "left", width: 70 },
+  { prop: "roleId", label: "角色ID" },
   { prop: "roleName", label: "角色名称", search: { el: "input" } },
   { prop: "roleKey", label: "权限字符", search: { el: "input" } },
   { prop: "sortOrder", label: "排序", width: 80 },

@@ -80,6 +80,8 @@ wx:
     dev-mode: true           # true=开发模式（启用 mock），上线前改为 false
     dev:
       mock-openid: oDevUser1234567890abc  # 开发用固定 openid
+    api:
+      code2session: https://api.weixin.qq.com/sns/jscode2session
 
 # ===============================
 # 日志级别
