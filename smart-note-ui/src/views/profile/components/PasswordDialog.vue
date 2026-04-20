@@ -20,12 +20,17 @@
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
+import { LOGIN_URL } from "@/config";
 import { ElMessage, type FormInstance } from "element-plus";
-// import { resetUserPassword } from "@/api/modules/user";
+import { updateSecurityApi, logoutApi } from "@/api/modules/login";
+import { useUserStore } from "@/stores/modules/user";
 
+const userStore = useUserStore();
 const dialogVisible = ref(false);
 const loading = ref(false);
 const pwdFormRef = ref<FormInstance>();
+const router = useRouter();
 
 const pwdForm = reactive({
   oldPassword: "",
@@ -63,12 +68,26 @@ const submit = async () => {
     if (!valid) return;
     try {
       loading.value = true;
-      // 调用后端接口
-      //   await resetUserPassword({
-      //     password: pwdForm.newPassword
-      //   });
-      ElMessage.success("密码修改成功，请牢记新密码");
+
+      await updateSecurityApi({
+        type: 1,
+        oldField: pwdForm.oldPassword,
+        newField: pwdForm.newPassword
+      });
+
+      ElMessage.success("密码修改成功，请重新登录");
       dialogVisible.value = false;
+
+      try {
+        await logoutApi();
+      } catch (e) {
+        console.warn("调用注销接口失败，强制清理本地数据");
+      }
+
+      await userStore.logoutAction();
+
+      router.replace(LOGIN_URL);
+    } catch (err) {
     } finally {
       loading.value = false;
     }

@@ -2,7 +2,9 @@ package com.littlewin.system.controller;
 
 import com.littlewin.common.constants.Constants;
 import com.littlewin.common.core.Result;
+import com.littlewin.system.domain.dto.SecurityUpdateDTO;
 import com.littlewin.system.service.AdminAuthService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -64,5 +66,10 @@ public class AdminAuthController {
         return Result.success(adminAuthService.getUserInfo());
     }
 
+    @PostMapping("/update")
+    public Result<String> update(@Valid @RequestBody SecurityUpdateDTO dto) {
+        adminAuthService.updateSecurityInfo(dto);
+        return Result.success("修改成功");
+    }
 
 }

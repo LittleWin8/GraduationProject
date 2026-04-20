@@ -6,21 +6,28 @@ import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.JwtUtils;
+import com.littlewin.common.utils.PasswordUtils;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.common.utils.ServletUtils;
 import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.system.domain.dto.SecurityUpdateDTO;
 import com.littlewin.system.domain.entity.SysMenu;
+import com.littlewin.system.domain.entity.UserAuth;
+import com.littlewin.system.domain.entity.UserInfo;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.domain.vo.UserInfoVO;
 import com.littlewin.system.mapper.UserAuthMapper;
+import com.littlewin.system.mapper.UserInfoMapper;
 import com.littlewin.system.service.AdminAuthService;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import jakarta.annotation.Resource;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,6 +38,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Resource
     private UserAuthMapper userAuthMapper;
+    @Resource
+    private UserInfoMapper userInfoMapper;
 
     private final AuthenticationManager authenticationManager;
 
@@ -41,6 +50,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     @Log(module = LogModule.AUTH, action = LogAction.LOGIN)
     public String login(String username, String password) {
+
 
         LogContext.setDesc("用户登录：" + username);
 
@@ -57,6 +67,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
             // 记录登录日志
             LogContext.setBusinessId(loginUser.getUserId());
+            LogContext.setUsername(loginUser.getUsername());
             LogContext.setDesc("登录成功【" + username + "】");
 
             return JwtUtils.createToken(username);
@@ -75,6 +86,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             }
 
             // 记录失败日志并抛出自定义异常给前端
+            LogContext.setUsername(username);
             throw new ServiceException(msg);
         }
     }
@@ -87,7 +99,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             LogContext.setBusinessId(loginUser.getUserId());
             LogContext.setDesc("退出登录【" + loginUser.getUsername()+ "】");
         }
-        SecurityContextHolder.clearContext();
     }
 
 
@@ -106,6 +117,69 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         userInfo.setRoles(roles);
 
         return userInfo;
+    }
+
+    @Log(module = LogModule.AUTH, action = LogAction.UPDATE)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateSecurityInfo(SecurityUpdateDTO dto) {
+        // 假设通过工具类获取当前登录用户的 ID
+        AdminLoginDTO loginDTO = SecurityUtils.getLoginUser();
+
+        LogContext.setBusinessId(loginDTO.getUserId());
+        LogContext.setDesc("修改密码");
+
+        if (Integer.valueOf(1).equals(dto.getType())) {
+            // --- 逻辑 A：修改密码 ---
+            // 1. 查询该用户类型为 'password' 的认证记录
+            UserAuth auth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
+                    .eq(UserAuth::getUserId, loginDTO.getUserId())
+                    .eq(UserAuth::getAuthType, "password"));
+
+            if (auth == null) throw new ServiceException("未找到密码认证记录");
+
+            // 2. 校验旧密码（oldField 存的是原密码）
+            if (!PasswordUtils.matches(dto.getOldField(), auth.getCredential())) {
+                throw new ServiceException("原密码输入错误");
+            }
+
+            // 3. 加密新密码（newField 存的是新密码）并保存
+            auth.setCredential(PasswordUtils.encode(dto.getNewField()));
+            userAuthMapper.updateById(auth);
+
+        } else if (Integer.valueOf(2).equals(dto.getType())) {
+            // --- 逻辑 B：更换手机号 ---
+            String newPhone = dto.getNewField();
+            String code = dto.getOldField();
+
+            LogContext.setBusinessId(loginDTO.getUserId());
+            LogContext.setDesc("修改绑定手机号");
+
+            // 1. 校验验证码 (暂时不打算实现)
+            // if (!smsService.verify(newPhone, code)) throw new RuntimeException("验证码无效");
+
+            // 2. 检查新手机号是否被其他人占用
+            boolean exists = userInfoMapper.exists(new LambdaQueryWrapper<UserInfo>()
+                    .eq(UserInfo::getPhone, newPhone)
+                    .ne(UserInfo::getUserId, loginDTO.getUserId()));
+            if (exists) throw new ServiceException("该手机号已被其他账号绑定");
+
+            // 3. 更新 user_info 表
+            UserInfo info = userInfoMapper.selectById(loginDTO.getUserId());
+            if (info == null) {
+                // 如果该用户在 user_info 中尚无记录，则新增
+                info = new UserInfo();
+                info.setUserId(loginDTO.getUserId());
+                info.setPhone(newPhone);
+                userInfoMapper.insert(info);
+            } else {
+                info.setPhone(newPhone);
+                userInfoMapper.updateById(info);
+            }
+
+        } else {
+            throw new ServiceException("不支持的修改类型");
+        }
     }
 
     /**

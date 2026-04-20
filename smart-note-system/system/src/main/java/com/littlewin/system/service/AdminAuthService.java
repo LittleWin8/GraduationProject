@@ -1,5 +1,6 @@
 package com.littlewin.system.service;
 
+import com.littlewin.system.domain.dto.SecurityUpdateDTO;
 import com.littlewin.system.domain.vo.MenuVO;
 import com.littlewin.system.domain.vo.UserInfoVO;
 
@@ -20,6 +21,9 @@ public interface AdminAuthService {
     // 获取按钮列表
     Map<String, List<String>> getAuthButtonList();
 
-    //获取用户信息
+    // 获取用户信息
     UserInfoVO getUserInfo();
+
+    // 修改个人手机号和密码
+    void updateSecurityInfo(SecurityUpdateDTO dto);
 }

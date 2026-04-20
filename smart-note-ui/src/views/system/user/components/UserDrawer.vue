@@ -56,11 +56,11 @@
       </el-form-item>
 
       <el-form-item label="手机号码" prop="phone">
-        <el-input v-model="drawerProps.row!.phone" placeholder="请填写手机号码" clearable></el-input>
+        <el-input v-model="drawerProps.row!.phone" disabled />
       </el-form-item>
 
       <el-form-item label="电子邮箱" prop="email">
-        <el-input v-model="drawerProps.row!.email" placeholder="请填写邮箱" clearable></el-input>
+        <el-input v-model="drawerProps.row!.email" disabled />
       </el-form-item>
 
       <el-form-item label="出生日期" prop="birthday">

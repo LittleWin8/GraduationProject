@@ -35,3 +35,8 @@ export const logoutApi = () => {
   // 对应后端 @PostMapping("/logout")
   return http.post(`/admin/auth/logout`);
 };
+
+// 用户修改密码/手机号
+export const updateSecurityApi = (params: { type: number; oldField: string; newField: string }) => {
+  return http.post(`/admin/auth//update`, params);
+};

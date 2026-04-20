@@ -1,6 +1,7 @@
 package com.littlewin.common.log.aspect;
 
 
+import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.core.AdminLoginDTO;
@@ -13,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -20,26 +23,35 @@ import java.time.LocalDateTime;
 
 @Aspect
 @Component
+@Order(1)
 public class LogAspect {
     @Resource
     private LogAsyncManager logAsyncManager;
 
     @Around("@annotation(controllerLog)")
     public Object around(ProceedingJoinPoint joinPoint, Log controllerLog) throws Throwable {
+        AdminLoginDTO currentUser = null;
+        try {
+            currentUser = SecurityUtils.getLoginUser();
+        } catch (Exception ignored) {}
+
         Object result;
         try {
             result = joinPoint.proceed(); // 执行业务
-            handleLog(controllerLog, null); // 成功：errorMsg为空，status为1
+            handleLog(controllerLog, null, currentUser); // 成功：errorMsg为空，status为1
             return result;
         } catch (Exception e) {
-            handleLog(controllerLog, e); // 失败：填充errorMsg，status为0
+            handleLog(controllerLog, e, currentUser); // 失败：填充errorMsg，status为0
             throw e;
         } finally {
             LogContext.clear(); // 必做：清空ThreadLocal
+            if (controllerLog.action() == LogAction.LOGOUT) {
+                SecurityContextHolder.clearContext();
+            }
         }
     }
 
-    private void handleLog(Log controllerLog, Exception e) {
+    private void handleLog(Log controllerLog, Exception e, AdminLoginDTO currentUser) {
         SysLogOperation log = new SysLogOperation();
 
         // 1. 状态判断
@@ -68,12 +80,21 @@ public class LogAspect {
             log.setRequestMethod(request.getMethod());
         }
 
-        // 5. 用户信息 (从你的SecurityUtils拿)
-        AdminLoginDTO user = SecurityUtils.getLoginUser();
-        if (user != null) {
-            log.setUserId(user.getUserId());
-            log.setUsername(user.getUsername());
+        // 5. 用户信息获取逻辑优化
+        Long userId = LogContext.getBusinessId();
+        String username = LogContext.getUsername();
+
+        // 如果 Context 里没有（比如非登录接口），再从 SecurityContext 获取
+        if (userId == null || username == null) {
+            AdminLoginDTO user = currentUser != null ? currentUser : SecurityUtils.getLoginUser();
+            if (user != null) {
+                userId = user.getUserId();
+                username = user.getUsername();
+            }
         }
+
+        log.setUserId(userId);
+        log.setUsername(username);
 
         // 6. 设置发生时间
         log.setCreateTime(LocalDateTime.now());

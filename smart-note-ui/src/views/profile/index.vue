@@ -21,7 +21,7 @@
             <div class="user-detail-list">
               <div class="detail-item">
                 <el-icon><Postcard /></el-icon>
-                <span class="label">账户名：</span>
+                <span class="label">登录账户：</span>
                 <span class="value">{{ userInfo.account }}</span>
               </div>
               <div class="detail-item">
@@ -69,7 +69,7 @@
                       <span class="s-title">账户密码</span>
                       <span class="s-desc">定期更换密码有助于账户安全</span>
                     </div>
-                    <el-button type="primary" link :icon="Lock">修改</el-button>
+                    <el-button type="primary" link :icon="Lock" @click="openPasswordDialog">修改</el-button>
                   </div>
                   <el-divider class="custom-divider" />
                   <div class="security-item">
@@ -77,7 +77,7 @@
                       <span class="s-title">绑定手机</span>
                       <span class="s-desc">已绑定手机：{{ userInfo.phone || "未绑定" }}</span>
                     </div>
-                    <el-button type="primary" link :icon="Iphone">更换</el-button>
+                    <el-button type="primary" link :icon="Iphone" @click="openPhoneDialog">更换</el-button>
                   </div>
                 </div>
               </el-tab-pane>
@@ -87,6 +87,8 @@
       </el-row>
     </div>
     <UserDrawer ref="userDrawerRef" />
+    <PasswordDialog ref="passwordRef" />
+    <PhoneDialog ref="phoneRef" />
   </div>
 </template>
 
@@ -98,6 +100,8 @@ import { Dict } from "@/api/interface/index";
 import { Calendar, Postcard, Edit, Lock, Iphone } from "@element-plus/icons-vue";
 import defaultAvatarImg from "@/assets/images/avatar.gif";
 import UserDrawer from "./components/personalDrawer.vue";
+import PasswordDialog from "./components/passwordDialog.vue";
+import PhoneDialog from "./components/phoneDialog.vue";
 import { editUser } from "@/api/modules/user";
 
 const userStore = useUserStore();
@@ -110,8 +114,10 @@ const genderDict = ref<Dict.ResDictData[]>([]);
 const responsiveColumns = ref(2);
 
 const userDrawerRef = ref<InstanceType<typeof UserDrawer> | null>(null);
+const passwordRef = ref();
+const phoneRef = ref();
 
-// 5. 打开抽屉的方法
+// 打开抽屉的方法
 const openUserDrawer = () => {
   // 如果没有在 template 里写 <UserDrawer />，这里会报错或没反应
   const info = userStore.userInfo;
@@ -128,6 +134,16 @@ const openUserDrawer = () => {
     row: rowData,
     api: editUser
   });
+};
+
+// 修改密码点击
+const openPasswordDialog = () => {
+  passwordRef.value.acceptParams();
+};
+
+// 更换手机点击
+const openPhoneDialog = () => {
+  phoneRef.value.acceptParams(userStore.userInfo.phone);
 };
 
 const handleResize = () => {
