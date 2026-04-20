@@ -16,7 +16,7 @@
     </ProTable>
 
     <RoleDrawer ref="drawerRef" />
-    <!-- <RolePermissionDrawer ref="permissionRef" /> -->
+    <RolePermissionDrawer ref="permissionRef" />
   </div>
 </template>
 
@@ -26,7 +26,7 @@ import { ProTableInstance, ColumnProps } from "@/components/ProTable/interface";
 import { CirclePlus, Delete, EditPen, Lock } from "@element-plus/icons-vue";
 import ProTable from "@/components/ProTable/index.vue";
 import RoleDrawer from "./components/RoleDrawer.vue";
-// import RolePermissionDrawer from "./components/RolePermissionDrawer.vue";
+import RolePermissionDrawer from "./components/RolePermissionDrawer.vue";
 import { useHandleData } from "@/hooks/useHandleData";
 import { getRoleList, deleteRole, deleteRoles, addRole, editRole, changeRoleStatus } from "@/api/modules/role";
 

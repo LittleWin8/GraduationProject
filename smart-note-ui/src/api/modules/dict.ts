@@ -30,8 +30,10 @@ export const editDictType = (params: any) => {
  * 4. 删除字典类型
  * 按照你之前的风格，通常是传递 ID
  */
-export const deleteDictType = (params: { ids: string[] | number[] }) => {
-  return http.delete(`/admin/sys/dict/type/delete`, params);
+export const deleteDictType = (ids: number[]) => {
+  return http.delete(`/admin/sys/dict/type/delete`, {
+    data: ids
+  });
 };
 
 /**
@@ -74,8 +76,10 @@ export const editDictData = (params: any) => {
  * 4. 删除字典数据
  * 对接后端: DELETE /api/admin/sys/dict/data/delete
  */
-export const deleteDictData = (params: { ids: string[] | number[] }) => {
-  return http.delete(`/admin/sys/dict/data/delete`, params);
+export const deleteDictData = (ids: number[]) => {
+  return http.delete(`/admin/sys/dict/data/delete`, {
+    data: ids // 对应后端的 @RequestBody
+  });
 };
 
 /**

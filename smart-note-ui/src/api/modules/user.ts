@@ -32,5 +32,7 @@ export const resetUserPassword = (data: User.UserUpdateDTO) => {
 
 // 6. 批量删除用户
 export const deleteUser = (ids: number[]) => {
-  return http.post(`/admin/sys/user/delete`, ids);
+  return http.delete(`/admin/sys/user/delete`, {
+    data: ids
+  });
 };

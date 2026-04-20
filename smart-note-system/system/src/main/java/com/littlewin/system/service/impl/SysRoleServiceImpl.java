@@ -3,6 +3,10 @@ package com.littlewin.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.littlewin.common.enums.LogAction;
+import com.littlewin.common.enums.LogModule;
+import com.littlewin.common.log.annotation.Log;
+import com.littlewin.common.log.context.LogContext;
 import com.littlewin.system.domain.dto.RoleDTO;
 import com.littlewin.system.domain.entity.SysRole;
 import com.littlewin.system.domain.entity.SysRoleMenu;
@@ -39,6 +43,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
+    @Log(module = LogModule.ROLE, action = LogAction.CREATE, desc = "新增角色信息")
     @Transactional(rollbackFor = Exception.class)
     public boolean insertRole(RoleDTO roleDTO) {
         SysRole role = new SysRole();
@@ -49,7 +54,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         role.setCreateTime(LocalDateTime.now());
 
         boolean result = save(role);
-
+        LogContext.setBusinessId(role.getRoleId());
         // 如果角色创建成功且有菜单权限，则分配菜单
         if (result && roleDTO.getMenuIds() != null && !roleDTO.getMenuIds().isEmpty()) {
             List<SysRoleMenu> roleMenus = new ArrayList<>();
@@ -66,7 +71,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Log(module = LogModule.ROLE, action = LogAction.UPDATE, desc = "修改角色信息")
     public boolean updateRole(RoleDTO roleDTO) {
+        LogContext.setBusinessId(roleDTO.getRoleId());
         SysRole role = new SysRole();
         role.setRoleId(roleDTO.getRoleId());
         role.setRoleName(roleDTO.getRoleName());
@@ -100,6 +107,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Log(module = LogModule.ROLE, action = LogAction.DELETE, desc = "删除角色信息")
     public boolean deleteRoleById(Long roleId) {
         // 删除角色菜单关联
         LambdaQueryWrapper<SysRoleMenu> rmWrapper = new LambdaQueryWrapper<>();
@@ -112,12 +120,15 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         userRoleMapper.delete(urWrapper);
 
         // 删除角色
+        LogContext.setDesc("删除角色ID：" + roleId);
         return removeById(roleId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Log(module = LogModule.ROLE, action = LogAction.DELETE, desc = "删除角色信息")
     public boolean deleteRoleByIds(List<Long> roleIds) {
+        LogContext.setDesc("删除角色ID列表：" + roleIds);
         for (Long roleId : roleIds) {
             deleteRoleById(roleId);
         }
@@ -141,7 +152,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     }
 
     @Override
+    @Log(module = LogModule.ROLE, action = LogAction.UPDATE, desc = "修改角色状态")
     public boolean changeStatus(Long roleId, Integer status) {
+        LogContext.setBusinessId(roleId);
         LambdaUpdateWrapper<SysRole> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SysRole::getRoleId, roleId)
                 .set(SysRole::getStatus, status);

@@ -83,7 +83,7 @@ public class SysRoleController {
      * 4. 删除角色
      */
     @DeleteMapping("/{roleId}")
-    public Result<?> remove(@PathVariable Long roleId) {
+    public Result<?> remove(@PathVariable("roleId") Long roleId) {
         if (roleService.deleteRoleById(roleId)) {
             return Result.success();
         }
@@ -105,7 +105,7 @@ public class SysRoleController {
      * 6. 查询角色详情
      */
     @GetMapping("/{roleId}")
-    public Result<SysRole> getInfo(@PathVariable Long roleId) {
+    public Result<SysRole> getInfo(@PathVariable("roleId") Long roleId) {
         SysRole role = roleService.getById(roleId);
         return Result.success(role);
     }
@@ -125,7 +125,7 @@ public class SysRoleController {
      * 8. 查询角色已分配菜单ID列表
      */
     @GetMapping("/menu/{roleId}")
-    public Result<List<Long>> getRoleMenus(@PathVariable Long roleId) {
+    public Result<List<Long>> getRoleMenus(@PathVariable("roleId") Long roleId) {
         List<Long> menuIds = roleMenuService.selectMenuIdsByRoleId(roleId);
         return Result.success(menuIds);
     }
@@ -155,7 +155,7 @@ public class SysRoleController {
      * 11. 获取角色按钮权限标识列表
      */
     @GetMapping("/perms/{roleId}")
-    public Result<List<String>> getRolePerms(@PathVariable Long roleId) {
+    public Result<List<String>> getRolePerms(@PathVariable("roleId") Long roleId) {
         List<String> perms = menuMapper.selectPermsByRoleId(roleId);
         return Result.success(perms);
     }

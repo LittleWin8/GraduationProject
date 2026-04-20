@@ -61,7 +61,7 @@ public class SysDictController {
      * 支持单条删除和批量删除：/api/admin/sys/dict/type/delete?ids=1,2,3
      */
     @DeleteMapping("/type/delete")
-    public Result remove(@RequestParam("ids") List<Long> ids) {
+    public Result remove(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return Result.error("请选择要删除的数据");
         }
@@ -109,7 +109,7 @@ public class SysDictController {
      * 删除字典数据项
      */
     @DeleteMapping("/data/delete")
-    public Result removeData(@RequestParam("ids") List<Long> ids) {
+    public Result removeData(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return Result.error("请选择要删除的数据");
         }

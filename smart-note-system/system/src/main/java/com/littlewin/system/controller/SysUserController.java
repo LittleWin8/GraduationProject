@@ -72,7 +72,7 @@ public class SysUserController {
     /**
      * 批量删除用户
      */
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public Result delete(@RequestBody List<Long> ids) {
         sysUserService.batchDeleteUsers(ids);
         return Result.success("用户删除成功");

@@ -94,14 +94,15 @@ const columns = reactive<ColumnProps[]>([
   { prop: "operation", label: "操作", fixed: "right", width: 250 }
 ]);
 
-// 删除和批量删除逻辑保持不变...
+// 单个删除逻辑
 const deleteDict = async (row: any) => {
-  await useHandleData(deleteDictType, { ids: [row.dictId] }, `删除字典【${row.dictName}】`);
+  await useHandleData(deleteDictType, [row.dictId], `删除字典【${row.dictName}】`);
   proTable.value?.getTableList();
 };
 
+// 批量删除逻辑
 const batchDelete = async (ids: string[]) => {
-  await useHandleData(deleteDictType, { ids }, "删除所选字典数据");
+  await useHandleData(deleteDictType, ids, "删除所选字典数据");
   proTable.value?.clearSelection();
   proTable.value?.getTableList();
 };
