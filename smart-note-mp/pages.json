@@ -43,6 +43,12 @@
 			"style": { 
 				"navigationBarTitleText": "标签笔记" 
 			} 
+		},
+		{
+			"path": "pages/user-info/user-info",
+			"style": {
+				"navigationBarTitleText": ""
+			}
 		}
 	],
 	"globalStyle": {
