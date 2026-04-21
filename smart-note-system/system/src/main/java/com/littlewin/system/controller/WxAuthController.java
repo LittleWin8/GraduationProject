@@ -21,11 +21,15 @@ public class WxAuthController {
     @Log(module = LogModule.AUTH, action = LogAction.LOGIN, desc = "微信小程序登录")
     public Result login(@RequestBody Map<String, String> body) {
         String code = body.get("code");
+        String nickName = body.get("nickName");
+        String avatarUrl = body.get("avatarUrl");
+
         if (code == null) return Result.error("code 不能为空");
-        String token = wxUserService.login(code);
+
+        String token = wxUserService.login(code, nickName, avatarUrl);
 
         Map<String, String> data = new HashMap<>();
-        data.put("token", token); // 微信端可根据需求决定是否加 "Bearer " 前缀
+        data.put("token", token);
         return Result.success(data);
     }
 }

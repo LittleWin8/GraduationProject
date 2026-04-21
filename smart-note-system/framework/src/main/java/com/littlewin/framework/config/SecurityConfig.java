@@ -59,7 +59,7 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         // 登录和退出都设置为 permitAll()
-                        .requestMatchers("/api/admin/auth/login","/api/admin/auth/logout").permitAll()
+                        .requestMatchers("/api/admin/auth/login","/api/admin/auth/logout", "/api/wx/auth/login").permitAll()
                         // 其他所有请求需要认证
                         .anyRequest().authenticated()
                 );
