@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "dayjs": "^1.11.20",
+    "uni-simple-router": "^2.0.8-beta.4",
     "uview-plus": "^3.7.36"
   }
 }

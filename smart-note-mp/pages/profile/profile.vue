@@ -40,6 +40,7 @@
 
 		<view class="u-margin-top-20">
 			<u-cell-group>
+				<u-cell icon="tags" title="我的标签" isLink @click="goToTagManage"></u-cell>
 				<u-cell icon="setting" title="设置" isLink @click="msg"></u-cell>
 				<u-cell icon="info-circle" title="关于我们" isLink @click="msg"></u-cell>
 			</u-cell-group>
@@ -57,6 +58,12 @@ import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 const current = ref(0);
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}];
 const msg = () => uni.showToast({title: '开发中', icon:'none'});
+
+const goToTagManage = () => {
+	uni.navigateTo({
+		url: '/pages/tag-manage/tag-manage'
+	})
+}
 </script>
 
 <style lang="scss">

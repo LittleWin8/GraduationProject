@@ -31,6 +31,18 @@
 			"style": { 
 				"navigationBarTitleText": "个人中心" 
 			}
+		},
+		{ 
+			"path": "pages/tag-manage/tag-manage", 
+			"style": { 
+				"navigationBarTitleText": "我的标签" 
+			} 
+		},
+		{ 
+			"path": "pages/tag-notes/tag-notes", 
+			"style": { 
+				"navigationBarTitleText": "标签笔记" 
+			} 
 		}
 	],
 	"globalStyle": {
