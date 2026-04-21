@@ -15,13 +15,23 @@
 			}
 		},
 		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "智能笔记",
-				"navigationStyle": "default" 
+			"path": "pages/community/community",
+			"style": { 
+				"navigationBarTitleText": "笔记社区" 
+			}
+		},
+		{
+			"path": "pages/create/create",
+			"style": { 
+				"navigationBarTitleText": "发布笔记" 
+			}
+		},
+		{
+			"path": "pages/profile/profile",
+			"style": { 
+				"navigationBarTitleText": "个人中心" 
 			}
 		}
-		
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -29,5 +39,17 @@
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},
-	"uniIdRouter": {}
+	"uniIdRouter": {},
+	"tabBar": {
+			"custom": true,
+			"color": "#909399",
+			"selectedColor": "#1890ff",
+			"backgroundColor": "#FFFFFF",
+			"borderStyle": "white",
+			"list": [
+				{ "pagePath": "pages/community/community", "text": "社区" },
+				{ "pagePath": "pages/create/create", "text": "创作" },
+				{ "pagePath": "pages/profile/profile", "text": "我的" }
+			]
+	}
 }

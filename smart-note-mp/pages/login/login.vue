@@ -1,39 +1,41 @@
 <template>
 	<view class="login-container">
-		<view class="header">
-			<up-image src="/static/logo.png" width="80px" height="80px" shape="circle"></up-image>
-			<view class="title">智能笔记</view>
-			<view class="subtitle">Link you mind,BUild your world</view>
-		</view>
-
-		<view class="form-area">
-			<up-button 
-				type="primary" 
-				icon="weixin-fill" 
-				text="微信一键登录" 
-				size="large" 
-				shape="circle"
-				:loading="loading"
-				@click="handleWechatLogin"
-			></up-button>
-			
-			<view class="auth-tip" v-if="needAuth">
-			        <text>首次登录需要授权获取昵称和头像</text>
+		<view class="content-wrapper">
+			<view class="header">
+				<up-image src="/static/logo.png" width="80px" height="80px" shape="circle"></up-image>
+				<view class="title">Link Mind</view>
+				<view class="subtitle">Link you mind, Build your world</view>
 			</view>
-			
-			<view class="agreement">
-				<label class="agree-label" @click="toggleAgree">
-					<checkbox :checked="isAgree" style="transform: scale(0.8)" />
-					<text class="agree-text">已阅读并同意</text>
-					<text class="agree-link">《用户协议》</text>
-					<text class="agree-text">和</text>
-					<text class="agree-link">《隐私政策》</text>
-				</label>
-			</view>
-		</view>
 
-		<view class="footer">
-			<text>首次登录将自动注册账号</text>
+			<view class="form-area">
+				<up-button 
+					type="primary" 
+					icon="weixin-fill" 
+					text="微信一键登录" 
+					size="large" 
+					shape="circle"
+					:loading="loading"
+					@click="handleWechatLogin"
+				></up-button>
+				
+				<view class="auth-tip" v-if="needAuth">
+					<text>首次登录需要授权获取昵称和头像</text>
+				</view>
+				
+				<view class="agreement">
+					<label class="agree-label" @click="toggleAgree">
+						<checkbox :checked="isAgree" style="transform: scale(0.8)" />
+						<text class="agree-text">已阅读并同意</text>
+						<text class="agree-link">《用户协议》</text>
+						<text class="agree-text">和</text>
+						<text class="agree-link">《隐私政策》</text>
+					</label>
+				</view>
+			</view>
+
+			<view class="footer">
+				<text>首次登录将自动注册账号</text>
+			</view>
 		</view>
 	</view>
 </template>
@@ -103,34 +105,6 @@ const handleWechatLogin = async () => {
 	});
 };
 
-// 获取用户资料
-const getUserProfile = (code) => {
-  uni.getUserProfile({
-    desc: '用于完善用户资料',  // 必填，显示在授权弹窗中
-    success: (profileRes) => {
-      console.log('获取用户信息成功:', profileRes);
-      const userInfo = profileRes.userInfo;
-      loginToServer(code, userInfo);
-    },
-    fail: (err) => {
-      console.error('获取用户信息失败:', err);
-      // 用户拒绝授权，可以用默认昵称
-      uni.showModal({
-        title: '提示',
-        content: '获取昵称和头像失败，将使用默认昵称，是否继续登录？',
-        success: (modalRes) => {
-          if (modalRes.confirm) {
-            // 使用默认信息继续登录
-            loginToServer(code, null);
-          } else {
-            loading.value = false;
-          }
-        }
-      });
-    }
-  });
-};
-
 // 调用后端登录接口
 const loginToServer = async (code, userInfo) => {
   try {
@@ -159,7 +133,7 @@ const loginToServer = async (code, userInfo) => {
         uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
         
         setTimeout(() => {
-          uni.reLaunch({ url: '/pages/index/index' });
+          uni.reLaunch({ url: '/pages/community/community' });
         }, 1500);
       } else {
         uni.showToast({ title: res.msg || '登录失败', icon: 'none' });
@@ -178,68 +152,79 @@ const loginToServer = async (code, userInfo) => {
 
 <style lang="scss" scoped>
 .login-container {
-	padding: 40px 30px;
+	min-height: 100vh;
+	display: flex;
+	background-color: #fff;
+}
+
+.content-wrapper {
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	min-height: 100vh;
-	background-color: #fff;
+	justify-content: center;  /* 关键：垂直居中 */
+	padding: 40px 30px;
 	box-sizing: border-box;
+}
 
-	.header {
-		margin-top: 60px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
+.header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 60px;  /* 改用 margin-bottom，不用 margin-top */
+}
 
-		.title {
-			margin-top: 20px;
-			font-size: 24px;
-			font-weight: bold;
-			color: #333;
-		}
+.title {
+	margin-top: 20px;
+	font-size: 24px;
+	font-weight: bold;
+	color: #333;
+}
 
-		.subtitle {
-			margin-top: 10px;
-			font-size: 14px;
-			color: #999;
-		}
-	}
+.subtitle {
+	margin-top: 10px;
+	font-size: 14px;
+	color: #999;
+}
 
-	.form-area {
-		margin-top: 80px;
-		flex: 1;
-		
-		.agreement {
-			margin-top: 20px;
-			display: flex;
-			justify-content: center;
-			
-			.agree-label {
-				display: flex;
-				align-items: center;
-				gap: 4px;
-				flex-wrap: wrap;
-				justify-content: center;
-			}
-			
-			.agree-text {
-				font-size: 12px;
-				color: #666;
-			}
-			
-			.agree-link {
-				font-size: 12px;
-				color: #007aff;
-			}
-		}
-	}
+.form-area {
+	width: 100%;
+}
 
-	.footer {
-		margin-top: auto;
-		text-align: center;
-		font-size: 12px;
-		color: #ccc;
-		padding-bottom: 30px;
-	}
+.auth-tip {
+	margin-top: 16px;
+	text-align: center;
+	font-size: 12px;
+	color: #ff6b6b;
+}
+
+.agreement {
+	margin-top: 24px;
+	display: flex;
+	justify-content: center;
+}
+
+.agree-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.agree-text {
+	font-size: 12px;
+	color: #666;
+}
+
+.agree-link {
+	font-size: 12px;
+	color: #007aff;
+}
+
+.footer {
+	margin-top: 40px;
+	text-align: center;
+	font-size: 12px;
+	color: #ccc;
 }
 </style>

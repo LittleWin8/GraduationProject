@@ -22,4 +22,31 @@
 		font-size: 14px;
 		line-height: 24px;
 	}
+	
+	/* 引入字体图标 */
+	@font-face {
+	  font-family: 'iconfont';
+	  src: url('/static/fonts/iconfont.ttf') format('truetype');
+	  font-weight: normal;
+	  font-style: normal;
+	}
+	
+	.iconfont {
+	  font-family: 'iconfont' !important;
+	  font-size: 16px;
+	  font-style: normal;
+	  -webkit-font-smoothing: antialiased;
+	  -moz-osx-font-smoothing: grayscale;
+	}
+	
+	/* 定义图标类名 - 只需要一套图标 */
+	.icon-shequ:before {
+	  content: "\e611";
+	}
+	.icon-chuangzuo:before {
+	  content: "\e61e";
+	}
+	.icon-wode:before {
+	  content: "\e601";
+	}
 </style>
