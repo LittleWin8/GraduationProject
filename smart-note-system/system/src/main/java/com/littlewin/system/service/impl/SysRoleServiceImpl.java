@@ -8,12 +8,14 @@ import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.system.domain.dto.RoleDTO;
+import com.littlewin.system.domain.entity.SysDictData;
 import com.littlewin.system.domain.entity.SysRole;
 import com.littlewin.system.domain.entity.SysRoleMenu;
 import com.littlewin.system.domain.entity.SysUserRole;
 import com.littlewin.system.mapper.SysRoleMapper;
 import com.littlewin.system.mapper.SysRoleMenuMapper;
 import com.littlewin.system.mapper.SysUserRoleMapper;
+import com.littlewin.system.service.SysDictService;
 import com.littlewin.system.service.SysRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     private final SysRoleMapper roleMapper;
     private final SysRoleMenuMapper roleMenuMapper;
     private final SysUserRoleMapper userRoleMapper;
+    private final SysDictService sysDictService;
 
     @Override
     public List<SysRole> selectRoleList(SysRole role) {
@@ -54,6 +57,21 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         role.setCreateTime(LocalDateTime.now());
 
         boolean result = save(role);
+
+        // 自动添加字典项
+        if (result) {
+            SysDictData dictData = new SysDictData();
+            dictData.setDictType("role_name");
+            dictData.setDictLabel(role.getRoleName());          // 角色名
+            dictData.setDictValue(role.getRoleId().toString()); // 角色ID
+            dictData.setSortOrder(role.getSortOrder());     // 排序
+            dictData.setStatus(role.getStatus());      // 状态
+            dictData.setCreateTime(LocalDateTime.now());
+
+            // 调用你现有的字典插入方法
+            sysDictService.insertDictData(dictData);
+        }
+
         LogContext.setBusinessId(role.getRoleId());
         // 如果角色创建成功且有菜单权限，则分配菜单
         if (result && roleDTO.getMenuIds() != null && !roleDTO.getMenuIds().isEmpty()) {
