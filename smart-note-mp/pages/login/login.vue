@@ -2,33 +2,35 @@
 	<view class="login-container">
 		<view class="content-wrapper">
 			<view class="header">
-				<up-image src="/static/logo.png" width="80px" height="80px" shape="circle"></up-image>
+				<up-image 
+					class="logo"
+					src="/static/logo.png" 
+					width="160rpx" 
+					height="160rpx" 
+					shape="circle"
+				></up-image>
 				<view class="title">Link Mind</view>
 				<view class="subtitle">Link you mind, Build your world</view>
 			</view>
 
 			<view class="form-area">
 				<up-button 
+					class="login-btn"
 					type="primary" 
-					icon="weixin-fill" 
 					text="微信一键登录" 
 					size="large" 
 					shape="circle"
 					:loading="loading"
-					@click="handleWechatLogin"
+					@click="startLogin"
 				></up-button>
-				
-				<view class="auth-tip" v-if="needAuth">
-					<text>首次登录需要授权获取昵称和头像</text>
-				</view>
 				
 				<view class="agreement">
 					<label class="agree-label" @click="toggleAgree">
 						<checkbox :checked="isAgree" style="transform: scale(0.8)" />
 						<text class="agree-text">已阅读并同意</text>
-						<text class="agree-link">《用户协议》</text>
+						<text class="agree-link" @click.stop="showAgreement('user')">《用户协议》</text>
 						<text class="agree-text">和</text>
-						<text class="agree-link">《隐私政策》</text>
+						<text class="agree-link" @click.stop="showAgreement('privacy')">《隐私政策》</text>
 					</label>
 				</view>
 			</view>
@@ -37,117 +39,194 @@
 				<text>首次登录将自动注册账号</text>
 			</view>
 		</view>
+
+		<!-- 授权弹窗 -->
+		<view class="auth-popup" v-if="showAuthPopup" @click.stop>
+			<view class="popup-mask" @click="closeAuthPopup"></view>
+			<view class="popup-content">
+				<view class="popup-header">
+					<view class="popup-title">完善个人资料</view>
+					<view class="popup-close" @click="closeAuthPopup">×</view>
+				</view>
+				
+				<view class="popup-desc">请授权您的微信头像和昵称</view>
+				
+				<!-- 头像选择 -->
+				<view class="avatar-section">
+					<button 
+						class="avatar-btn"
+						open-type="chooseAvatar"
+						@chooseavatar="onChooseAvatar"
+					>
+						<image 
+							:src="tempAvatar || '/static/default-avatar.png'" 
+							class="avatar-image"
+							mode="aspectFill"
+						></image>
+						<text class="avatar-tip">{{ tempAvatar ? '点击更换头像' : '点击选择头像' }}</text>
+					</button>
+				</view>
+
+				<!-- 昵称输入 -->
+				<view class="nickname-section">
+					<input 
+						class="nickname-input"
+						type="nickname"
+						placeholder="请输入昵称"
+						:value="tempNickname"
+						@blur="onNicknameInput"
+						@confirm="onNicknameConfirm"
+						maxlength="20"
+					/>
+				</view>
+
+				<button 
+					class="confirm-btn"
+					:class="{ 'btn-active': tempAvatar && tempNickname }"
+					:disabled="!tempAvatar || !tempNickname"
+					@click="confirmAuth"
+				>
+					确认授权并登录
+				</button>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { request } from '@/utils/request.js';
+import { ref } from 'vue'
+import { authApi } from '@/api'
 
-const loading = ref(false);
-const isAgree = ref(false);
-const needAuth = ref(false);
+const loading = ref(false)
+const isAgree = ref(false)
+const showAuthPopup = ref(false)
 
-// 切换协议勾选状态
+// 临时存储用户授权信息
+const tempAvatar = ref('')
+const tempNickname = ref('')
+
 const toggleAgree = () => {
-	isAgree.value = !isAgree.value;
-	console.log('协议勾选状态:', isAgree.value);
-};
+	isAgree.value = !isAgree.value
+}
 
-// 微信登录
-const handleWechatLogin = async () => {
-	// 检查是否勾选协议
+const showAgreement = (type) => {
+	const title = type === 'user' ? '用户协议' : '隐私政策'
+	const content = type === 'user' 
+		? '这里是用户协议内容...' 
+		: '这里是隐私政策内容...'
+	
+	uni.showModal({
+		title,
+		content,
+		showCancel: false,
+		confirmText: '我知道了'
+	})
+}
+
+const startLogin = async () => {
 	if (!isAgree.value) {
 		uni.showToast({ 
 			title: '请先阅读并同意用户协议和隐私政策', 
-			icon: 'none',
-			duration: 2000
-		});
-		return;
-	}
-	
-	// 检查微信登录是否可用
-	if (!uni.login) {
-		uni.showToast({ 
-			title: '当前环境不支持微信登录', 
-			icon: 'none' 
-		});
-		return;
+			icon: 'none'
+		})
+		return
 	}
 	
 	loading.value = true;
-	needAuth.value = false;
-	
-	uni.login({
-		provider: 'weixin',
-		success: (loginRes) => {
-			console.log('获取微信code成功:', loginRes.code);
-			loginToServer(loginRes.code);
-		},
-		fail: (err) => {
-			console.error('微信登录失败:', err);
-			loading.value = false;
-			
-			// 详细的错误提示
-			let errorMsg = '微信登录失败';
-			if (err.errMsg) {
-				if (err.errMsg.includes('cancel')) {
-					errorMsg = '取消登录';
-				} else if (err.errMsg.includes('unauthorized')) {
-					errorMsg = '授权失败，请重试';
-				}
-			}
-			uni.showToast({ 
-				title: errorMsg, 
-				icon: 'none' 
-			});
-		}
-	});
+	    try {
+	        
+	        // 获取微信 code
+	        const loginRes = await uni.login({ provider: 'weixin' });
+	        
+	        // --- 尝试静默登录（不传昵称头像） ---
+	        const res = await authApi.login(loginRes.code, {});
+	        
+	        if (res.isNewUser) {
+	            // 是新用户：显示授权弹窗
+	            showAuthPopup.value = true;
+	        } else {
+	            // 是老用户：直接处理登录成功
+				uni.showLoading({ title: '正在登录...', mask: true });
+	            handleLoginSuccess(res.token);
+	        }
+	    } catch (error) {
+	        uni.showToast({ title: '登录失败', icon: 'none' });
+	    } finally {
+	        loading.value = false;
+	    }
+}
+
+// 提取公共登录成功逻辑
+const handleLoginSuccess = (token) => {
+    uni.setStorageSync('token', token);
+    uni.hideLoading();
+    uni.showToast({ title: '登录成功', icon: 'success' });
+    setTimeout(() => {
+        uni.reLaunch({ url: '/pages/community/community' });
+    }, 1500);
 };
 
-// 调用后端登录接口
-const loginToServer = async (code, userInfo) => {
-  try {
-    console.log('请求后端登录接口:', { code, userInfo });
-    
-    const res = await request({
-      url: '/api/wx/auth/login',
-      method: 'POST',
-      data: { 
-        code: code,
-        nickName: userInfo?.nickName,
-        avatarUrl: userInfo?.avatarUrl
-      }
-    });
-    
-    console.log('后端返回数据:', res);
-    
-    if (res && res.code === 200) {
-      if (res.data && res.data.token) {
-        // 保存用户信息到本地
-        if (userInfo) {
-          uni.setStorageSync('userInfo', userInfo);
-        }
-        uni.setStorageSync('token', res.data.token);
-        
-        uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
-        
-        setTimeout(() => {
-          uni.reLaunch({ url: '/pages/community/community' });
-        }, 1500);
-      } else {
-        uni.showToast({ title: res.msg || '登录失败', icon: 'none' });
-      }
-    } else {
-      const errorMsg = res?.msg || res?.message || '登录失败，请重试';
-      uni.showToast({ title: errorMsg, icon: 'none' });
-    }
-  } catch (error) {
-    console.error('登录请求异常:', error);
-  } finally {
-    loading.value = false;
-  }
-};
+const closeAuthPopup = () => {
+	showAuthPopup.value = false
+}
+
+const onChooseAvatar = (e) => {
+	tempAvatar.value = e.detail.avatarUrl
+	uni.showToast({ 
+		title: '头像选择成功', 
+		icon: 'success',
+		duration: 1000
+	})
+}
+
+const onNicknameInput = (e) => {
+	tempNickname.value = e.detail.value
+}
+
+const onNicknameConfirm = (e) => {
+	tempNickname.value = e.detail.value
+	// 如果头像和昵称都已填写，自动触发登录
+	if (tempAvatar.value && tempNickname.value) {
+		confirmAuth()
+	}
+}
+
+const confirmAuth = async () => {
+	// 验证头像
+	if (!tempAvatar.value) {
+		uni.showToast({ title: '请先点击选择头像', icon: 'none' })
+		return
+	}
+	
+	// 验证昵称
+	if (!tempNickname.value || !tempNickname.value.trim()) {
+		uni.showToast({ title: '请填写昵称', icon: 'none' })
+		return
+	}
+	
+	// 关闭弹窗
+	closeAuthPopup()
+	uni.showLoading({ title: '正在创建账号...', mask: true });
+	
+	try {
+	        const loginRes = await uni.login({ provider: 'weixin' });
+	        
+	        // 再次调用后端，此时带上头像和昵称
+	        const res = await authApi.login(loginRes.code, {
+	            nickName: tempNickname.value.trim(),
+	            avatarUrl: tempAvatar.value
+	        });
+	
+	        if (res.token) {
+	            handleLoginSuccess(res.token);
+	        }
+	    } catch (error) {
+	        uni.hideLoading();
+	        uni.showToast({ title: '授权登录失败', icon: 'none' });
+	    } finally {
+	        loading.value = false;
+	    }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -161,7 +240,7 @@ const loginToServer = async (code, userInfo) => {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;  /* 关键：垂直居中 */
+	justify-content: center;
 	padding: 40px 30px;
 	box-sizing: border-box;
 }
@@ -170,19 +249,23 @@ const loginToServer = async (code, userInfo) => {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	margin-bottom: 60px;  /* 改用 margin-bottom，不用 margin-top */
+	margin-bottom: 60px;
+}
+
+.logo {
+	margin-bottom: 20px;
 }
 
 .title {
 	margin-top: 20px;
-	font-size: 24px;
+	font-size: 48rpx;
 	font-weight: bold;
 	color: #333;
 }
 
 .subtitle {
 	margin-top: 10px;
-	font-size: 14px;
+	font-size: 28rpx;
 	color: #999;
 }
 
@@ -190,11 +273,13 @@ const loginToServer = async (code, userInfo) => {
 	width: 100%;
 }
 
-.auth-tip {
-	margin-top: 16px;
-	text-align: center;
-	font-size: 12px;
-	color: #ff6b6b;
+.login-btn {
+	background: linear-gradient(135deg, #07c160, #05a54e);
+	border: none;
+	
+	&:active {
+		opacity: 0.8;
+	}
 }
 
 .agreement {
@@ -212,19 +297,182 @@ const loginToServer = async (code, userInfo) => {
 }
 
 .agree-text {
-	font-size: 12px;
+	font-size: 24rpx;
 	color: #666;
 }
 
 .agree-link {
-	font-size: 12px;
-	color: #007aff;
+	font-size: 24rpx;
+	color: #07c160;
 }
 
 .footer {
 	margin-top: 40px;
 	text-align: center;
-	font-size: 12px;
+	font-size: 24rpx;
 	color: #ccc;
+}
+
+
+.auth-popup {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	
+	.popup-mask {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		animation: fadeIn 0.3s ease;
+	}
+	
+	.popup-content {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: #fff;
+		border-radius: 32rpx 32rpx 0 0;
+		padding: 48rpx 32rpx 64rpx;
+		animation: slideUp 0.3s ease;
+		
+		.popup-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 16rpx;
+			
+			.popup-title {
+				font-size: 36rpx;
+				font-weight: bold;
+				color: #333;
+			}
+			
+			.popup-close {
+				font-size: 48rpx;
+				color: #999;
+				line-height: 1;
+				padding: 8rpx;
+				cursor: pointer;
+				
+				&:active {
+					opacity: 0.6;
+				}
+			}
+		}
+		
+		.popup-desc {
+			font-size: 28rpx;
+			color: #999;
+			margin-bottom: 48rpx;
+			padding-bottom: 16rpx;
+			border-bottom: 1rpx solid #f0f0f0;
+		}
+		
+		.avatar-section {
+			display: flex;
+			justify-content: center;
+			margin-bottom: 48rpx;
+			
+			.avatar-btn {
+				background: transparent;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 0;
+				margin: 0;
+				border: none;
+				
+				&::after {
+					border: none;
+				}
+				
+				.avatar-image {
+					width: 120rpx;
+					height: 120rpx;
+					border-radius: 50%;
+					background: #f5f5f5;
+					border: 2rpx solid #e0e0e0;
+					margin-bottom: 16rpx;
+				}
+				
+				.avatar-tip {
+					font-size: 24rpx;
+					color: #07c160;
+				}
+			}
+		}
+		
+		.nickname-section {
+			margin-bottom: 48rpx;
+			
+			.nickname-input {
+				width: 100%;
+				height: 88rpx;
+				border: 2rpx solid #e0e0e0;
+				border-radius: 16rpx;
+				padding: 0 24rpx;
+				font-size: 28rpx;
+				box-sizing: border-box;
+				background: #fff;
+				
+				&:focus {
+					border-color: #07c160;
+				}
+				
+				&::placeholder {
+					color: #ccc;
+				}
+			}
+		}
+		
+		.confirm-btn {
+			width: 100%;
+			height: 88rpx;
+			background: #e0e0e0;
+			color: #fff;
+			border-radius: 44rpx;
+			font-size: 32rpx;
+			font-weight: 500;
+			border: none;
+			transition: all 0.3s ease;
+			
+			&.btn-active {
+				background: linear-gradient(135deg, #07c160, #05a54e);
+				
+				&:active {
+					opacity: 0.8;
+				}
+			}
+			
+			&[disabled] {
+				opacity: 0.6;
+			}
+		}
+	}
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 </style>

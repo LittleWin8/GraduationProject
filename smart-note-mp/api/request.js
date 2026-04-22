@@ -53,3 +53,5 @@ export const request = (options) => {
         })
     })
 }
+
+export default request

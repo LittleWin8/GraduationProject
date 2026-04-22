@@ -52,6 +52,10 @@ public class LogAspect {
     }
 
     private void handleLog(Log controllerLog, Exception e, AdminLoginDTO currentUser) {
+        if (controllerLog.action() == LogAction.LOGIN && LogContext.getDesc() == null) {
+            return;
+        }
+
         SysLogOperation log = new SysLogOperation();
 
         // 1. 状态判断

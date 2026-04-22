@@ -25,11 +25,8 @@ public class WxAuthController {
         String avatarUrl = body.get("avatarUrl");
 
         if (code == null) return Result.error("code 不能为空");
+        Map<String, Object> loginData = wxUserService.login(code, nickName, avatarUrl);
 
-        String token = wxUserService.login(code, nickName, avatarUrl);
-
-        Map<String, String> data = new HashMap<>();
-        data.put("token", token);
-        return Result.success(data);
+        return Result.success(loginData);
     }
 }

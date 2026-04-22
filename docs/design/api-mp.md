@@ -57,12 +57,8 @@
   "code": 200,
   "msg": "success",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
-    "userInfo": {
-      "userId": 1,
-      "nickname": "张三",
-      "avatar": "https://example.com/avatar.jpg"
-    }
+    "isNewUser": false,
+    "token": "eyJhbGciOiJIUzI1NiIs..."
   },
   "timestamp": 1703123456789
 }

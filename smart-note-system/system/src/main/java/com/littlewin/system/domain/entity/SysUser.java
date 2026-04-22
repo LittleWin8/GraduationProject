@@ -12,6 +12,7 @@ public class SysUser implements Serializable {
 
     @TableId(value = "user_id", type = IdType.AUTO)
     private Long userId;
+    @TableField("nickname")
     private String nickname;
     private String avatar;
     private Integer status;
