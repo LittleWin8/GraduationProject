@@ -81,7 +81,9 @@ public class WxUserServiceImpl implements WxUserService {
                 SysUser user = new SysUser();
                 user.setUserId(userId);
                 user.setNickname(nickName);
-                user.setAvatar(avatarUrl);
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    user.setAvatar(avatarUrl);
+                }
                 sysUserMapper.updateById(user);
             }
 

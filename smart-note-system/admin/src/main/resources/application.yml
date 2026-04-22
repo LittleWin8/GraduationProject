@@ -45,7 +45,7 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # 控制台打印 SQL，开发阶段强烈建议打开
+    # 控制台打印 SQL
     map-underscore-to-camel-case: true
     # 数据库字段下划线 -> Java 驼峰
     mapper-locations: classpath*:com/littlewin/**/mapper/*.xml
@@ -77,9 +77,6 @@ wx:
   mp:
     app-id: ${WX_MP_APPID}   # 小程序 AppID
     secret: ${WX_MP_SECRET}  # 小程序 Secret
-    dev-mode: true           # true=开发模式（启用 mock），上线前改为 false
-    dev:
-      mock-openid: oDevUser1234567890abc  # 开发用固定 openid
     api:
       code2session: https://api.weixin.qq.com/sns/jscode2session
 
