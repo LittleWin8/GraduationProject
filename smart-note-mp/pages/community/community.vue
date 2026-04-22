@@ -23,7 +23,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { mockNotes } from '@/common/mock.js';
-import NoteCard from '@/components/NoteCard.vue';
+import NoteCard from '@/components/notecard/index.vue';
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 
 // ✅ 移除 export default，在 <script setup> 中导入的组件可以直接使用

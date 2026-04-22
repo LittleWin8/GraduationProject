@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { mockNotes } from '@/common/mock.js'
-import NoteCard from '@/components/NoteCard.vue'
+import NoteCard from '@/components/notecard/index.vue';
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 
 const tagId = ref('')

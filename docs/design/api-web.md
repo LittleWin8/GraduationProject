@@ -1,4 +1,4 @@
-# 系统后端API接口设计文档
+# Web端 API 文档
 
 ## 一、统一响应格式
 
@@ -337,21 +337,4 @@
 }
 ```
 
-## 三、微信小程序接口（/api/app）
-
->  *待开发*
-
-
-
-## 四、接口汇总表
-
-| 模块     | 接口             | 路径                                  | 方式 |
-| :------- | :--------------- | :------------------------------------ | :--- |
-| 认证     | 登录             | `/api/admin/auth/login`               | POST |
-| 认证     | 退出             | `/api/admin/auth/logout`              | POST |
-| 认证     | 获取菜单列表     | `/api/admin/auth/getAuthMenuList`     | GET  |
-| 认证     | 获取按钮权限     | `/api/admin/auth/getAuthButtonList`   | GET  |
-| 认证     | 获取用户信息     | `/api/admin/auth/getUserInfo`         | GET  |
-| 账户管理 | 用户分页列表     | `/api/admin/sys/user/list`            | GET  |
-| 字典管理 | 按类型查字典数据 | `/api/admin/sys/dict/type/{dictType}` | GET  |
-| 字典管理 | 查所有字典类型   | `/api/admin/sys/dict/type/list`       | GET  |
+## 
