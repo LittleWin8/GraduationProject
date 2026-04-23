@@ -124,7 +124,7 @@ public class WxUserServiceImpl implements WxUserService {
         LoginDTO authUser = SecurityUtils.getLoginUser();
         if (authUser == null) throw new ServiceException("用户不存在");
 
-        // 2. 优化：1次联查获取 3 表数据
+        // 2. 获取登录用户的详细信息
         UserInfoVO userInfo = userAuthMapper.selectFullUserInfoById(authUser.getUserId());
         if (userInfo == null) throw new ServiceException("获取详细资料失败");
 

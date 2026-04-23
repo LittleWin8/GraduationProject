@@ -18,6 +18,16 @@ public interface UserAuthMapper extends BaseMapper<UserAuth> {
      * 查询登录用户信息（基础信息+密码）
      */
     LoginDTO selectAdminLoginUser(String username);
+
+    /**
+     * 根据用户ID查询登录用户信息（适配微信用户）
+     * 对应 XML 中的 selectWxLoginUserById
+     *
+     * @param userId 用户ID
+     * @return 登录用户数据传输对象
+     */
+    LoginDTO selectWxLoginUserById(@Param("userId") Long userId);
+
     /**
      * 检查用户名（user_auth.identifier）
      */

@@ -2,7 +2,12 @@
 	<view class="profile-container">
 		<!-- 头像区域 - 添加点击事件 -->
 		<view class="header-box u-flex u-col-center" @click="goToUserInfo">
-			<u-avatar :src="userInfo.avatar" size="60"></u-avatar>
+			<Avatar 
+				:src="userInfo.avatar"
+				:size="100"
+				shape="circle"
+				default-type="user"
+			></Avatar>
 			<view class="u-margin-left-30">
 				<view class="u-font-36 u-main-color u-font-weight">{{ userInfo.nickname }}</view>
 				<view class="u-font-24 u-tips-color u-margin-top-10">{{ userInfo.bio }}</view>
@@ -55,22 +60,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 
-const current = ref(0);
-const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}];
+const current = ref(0)
+const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
 
 // 用户信息（模拟数据）
 const userInfo = ref({
-	avatar: 'https://via.placeholder.com/100',
+	avatar: '',  // 改为空字符串，使用默认头像
 	nickname: '极客开发者',
 	bio: '坚持记录，沉淀知识。',
 	email: 'geek@example.com',
 	phone: '138****8888',
 	gender: '男',
-	location: '中国·北京',
+	location: '中国·大连',
 	registerTime: '2024-01-15',
 	stats: {
 		notes: 12,
@@ -88,14 +93,12 @@ const myNotes = ref([
 
 // 模拟接口：获取用户信息
 const fetchUserInfo = async () => {
-	// 模拟网络请求延迟
 	await new Promise(resolve => setTimeout(resolve, 500))
 	
-	// 模拟后端返回的数据
-	const mockData = {
+	return {
 		code: 200,
 		data: {
-			avatar: 'https://via.placeholder.com/100',
+			avatar: '',  // 改为空字符串
 			nickname: '极客开发者',
 			bio: '坚持记录，沉淀知识。',
 			email: 'geek@example.com',
@@ -110,8 +113,6 @@ const fetchUserInfo = async () => {
 			}
 		}
 	}
-	
-	return mockData
 }
 
 // 模拟接口：获取我的笔记列表
@@ -133,7 +134,6 @@ const loadPageData = async () => {
 	uni.showLoading({ title: '加载中...' })
 	
 	try {
-		// 并行请求用户信息和笔记列表
 		const [userRes, notesRes] = await Promise.all([
 			fetchUserInfo(),
 			fetchMyNotes()
@@ -156,7 +156,6 @@ const loadPageData = async () => {
 
 // 跳转到个人详细信息页
 const goToUserInfo = () => {
-	// 将用户信息作为参数传递
 	const userData = encodeURIComponent(JSON.stringify(userInfo.value))
 	uni.navigateTo({
 		url: `/pages/user-info/user-info?data=${userData}`
@@ -173,7 +172,6 @@ const msg = () => {
 	uni.showToast({ title: '开发中', icon: 'none' })
 }
 
-// 页面显示时加载数据
 onShow(() => {
 	loadPageData()
 })

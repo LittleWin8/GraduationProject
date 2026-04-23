@@ -25,7 +25,8 @@ export const APIS = {
   
   // 用户模块（合并了统计和收藏列表）
   USER: {
-    INFO: '/api/wx/user',           // GET/PUT
+	DETAIL: '/api/wx/auth/getUserInfo',
+    INFO: '/api/wx/user',           // PUT
     STATS: '/api/wx/user/stats'     // 返回：笔记数、点赞数、收藏数、收藏列表
   },
   

@@ -36,7 +36,7 @@ public record LoginUser(LoginDTO adminLoginDTO,
 
     @Override
     public boolean isEnabled() {
-        // 假设 1 为正常
+        //  1 为正常
         return adminLoginDTO.getStatus() != null && adminLoginDTO.getStatus() == 1;
     }
 }

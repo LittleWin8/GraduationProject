@@ -95,7 +95,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { authApi } from '@/api'
+import { authApi, userApi } from '@/api'
 
 const loading = ref(false)
 const isAgree = ref(false)
@@ -157,9 +157,24 @@ const startLogin = async () => {
 }
 
 // 提取公共登录成功逻辑
-const handleLoginSuccess = (token) => {
-    uni.setStorageSync('token', token);
+const handleLoginSuccess = async (token) => {
+    console.log('登录成功，token:', token)  // 打印 token
+    uni.setStorageSync('token', token)
+        
+    // 验证是否存成功
+    const savedToken = uni.getStorageSync('token')
+    console.log('存储后的 token:', savedToken)
     uni.hideLoading();
+	
+	 // 获取并存储完整用户信息
+    try {
+        const userInfo = await userApi.getUserInfo()
+        uni.setStorageSync('userInfo', userInfo)
+        console.log('用户信息已缓存:', userInfo)
+    } catch (error) {
+        console.error('获取用户信息失败:', error)
+    }
+	
     uni.showToast({ title: '登录成功', icon: 'success' });
     setTimeout(() => {
         uni.reLaunch({ url: '/pages/community/community' });

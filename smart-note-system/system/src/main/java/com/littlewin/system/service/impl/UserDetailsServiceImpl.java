@@ -30,6 +30,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 1. 从数据库查询用户信息
         LoginDTO user = userAuthMapper.selectAdminLoginUser(username);
 
+        // 2. 如果查不到管理员，尝试按 userId 查询微信用户
+        if (user == null) {
+            try {
+                // 微信生成的 Token 里 Subject 存的是 userId
+                Long userId = Long.parseLong(username);
+                user = userAuthMapper.selectWxLoginUserById(userId);
+            } catch (NumberFormatException e) {
+                // 如果 username 不是数字，说明它既不是管理员也不是有效的微信ID
+                throw new UsernameNotFoundException("用户不存在：" + username);
+            }
+        }
+
         if (user == null) {
             throw new UsernameNotFoundException("登录用户：" + username + " 不存在");
         }

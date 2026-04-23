@@ -5,7 +5,7 @@ export const userApi = {
   // 获取个人信息
   getUserInfo() {
     return request({
-      url: APIS.USER.INFO,
+      url: APIS.USER.DETAIL,
       method: 'GET'
     })
   },

@@ -4,10 +4,11 @@ import com.littlewin.common.core.Result;
 import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.log.annotation.Log;
+import com.littlewin.common.log.context.LogContext;
+import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.system.service.WxUserService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -34,6 +35,7 @@ public class WxAuthController {
     @Log(module = LogModule.AUTH, action = LogAction.LOGOUT, desc = "退出登录")
     public Result logout() {
 
+        LogContext.setBusinessId(SecurityUtils.getLoginUser().getUserId());
         //  后期加 Redis 黑名单
         return Result.success("退出成功");
     }
