@@ -4,10 +4,19 @@ export const request = (options) => {
     return new Promise((resolve, reject) => {
         const token = uni.getStorageSync('token')
         
+        // 处理 GET 请求的 params 参数
+        let url = config.baseURL + options.url
+        if (options.method === 'GET' && options.params) {
+            const queryParams = new URLSearchParams(options.params).toString()
+            if (queryParams) {
+                url += '?' + queryParams
+            }
+        }
+        
         uni.request({
-            url: config.baseURL + options.url,
+            url: url,
             method: options.method || 'GET',
-            data: options.data || {},
+            data: options.method === 'GET' ? undefined : (options.data || {}),
             timeout: config.timeout,
             header: {
                 'Content-Type': 'application/json',
@@ -24,7 +33,10 @@ export const request = (options) => {
                     if (result.code === 200) {
                         resolve(result.data)
                     } else if (result.code === 401) {
+                        // 清除本地存储
                         uni.removeStorageSync('token')
+                        uni.removeStorageSync('userInfo')
+                        // 跳转到登录页
                         uni.reLaunch({ url: '/pages/login/login' })
                         reject(new Error(result.msg || '登录已过期'))
                     } else {
@@ -33,6 +45,7 @@ export const request = (options) => {
                     }
                 } else if (res.statusCode === 401) {
                     uni.removeStorageSync('token')
+                    uni.removeStorageSync('userInfo')
                     uni.reLaunch({ url: '/pages/login/login' })
                     reject(new Error('登录已过期'))
                 } else {

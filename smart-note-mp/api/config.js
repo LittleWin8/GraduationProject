@@ -27,7 +27,7 @@ export const APIS = {
   USER: {
 	DETAIL: '/api/wx/auth/getUserInfo',
     INFO: '/api/wx/user',           // PUT
-    STATS: '/api/wx/user/stats'     // 返回：笔记数、点赞数、收藏数、收藏列表
+    STATS: '/api/wx/note/stats'     // 返回：笔记数、点赞数、收藏数、收藏列表
   },
   
   // 笔记模块
@@ -39,7 +39,9 @@ export const APIS = {
     DELETE: '/api/wx/notes',        // /{id}?permanent=false/true
     RESTORE: '/api/wx/notes',       // /{id}/restore
     AI_SUMMARY: '/api/wx/notes/ai/summary',
-    UPLOAD: '/api/wx/notes/attachment'
+    UPLOAD: '/api/wx/notes/attachment',
+	MY_NOTES: '/api/wx/note/my-notes',  // 我的笔记列表
+	STATS: '/api/wx/note/stats'         // 统计数据
   },
   
   // 分类模块

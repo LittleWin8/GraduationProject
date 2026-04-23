@@ -24,8 +24,7 @@ export const userApi = {
   getStats(page = 1, size = 20) {
     return request({
       url: APIS.USER.STATS,
-      method: 'GET',
-      data: { page, size }
+      method: 'GET'
     })
   }
 }

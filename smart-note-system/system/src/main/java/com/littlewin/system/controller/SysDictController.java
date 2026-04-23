@@ -1,9 +1,7 @@
 package com.littlewin.system.controller;
 
-import cn.hutool.core.lang.Dict;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
-import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.system.domain.dto.DictDataQueryDTO;
 import com.littlewin.system.domain.dto.DictTypeQueryDTO;
 import com.littlewin.system.domain.entity.SysDictData;

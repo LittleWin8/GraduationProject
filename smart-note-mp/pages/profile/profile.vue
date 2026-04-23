@@ -9,8 +9,8 @@
 				default-type="user"
 			></Avatar>
 			<view class="u-margin-left-30">
-				<view class="u-font-36 u-main-color u-font-weight">{{ userInfo.nickname }}</view>
-				<view class="u-font-24 u-tips-color u-margin-top-10">{{ userInfo.bio }}</view>
+				<view class="u-font-36 u-main-color u-font-weight">{{ userInfo.nickname || userInfo.name }}</view>
+				<view class="u-font-24 u-tips-color u-margin-top-10">{{ userInfo.signature || userInfo.bio || '暂无签名' }}</view>
 			</view>
 			<view class="edit-icon">
 				<u-icon name="edit-pen" color="#999" size="32"></u-icon>
@@ -19,15 +19,15 @@
 
 		<u-grid :border="false" col="3" customStyle="background:#fff; padding:30rpx 0;">
 			<u-grid-item>
-				<text class="num">{{ userInfo.stats.notes }}</text>
+				<text class="num">{{ userInfo.stats?.notes || 0 }}</text>
 				<text class="label">笔记</text>
 			</u-grid-item>
 			<u-grid-item>
-				<text class="num">{{ userInfo.stats.likes }}</text>
+				<text class="num">{{ userInfo.stats?.likes || 0 }}</text>
 				<text class="label">获赞</text>
 			</u-grid-item>
 			<u-grid-item>
-				<text class="num">{{ userInfo.stats.favorites }}</text>
+				<text class="num">{{ userInfo.stats?.favorites || 0 }}</text>
 				<text class="label">收藏</text>
 			</u-grid-item>
 		</u-grid>
@@ -35,11 +35,32 @@
 		<view class="u-margin-top-20">
 			<u-tabs :list="tabs" @click="e => current = e.index"></u-tabs>
 			<view class="list-content">
-				<u-empty v-if="current === 1" mode="list" text="暂无收藏" marginTop="100"></u-empty>
-				<u-cell-group v-else>
-					<u-cell v-for="(n, i) in myNotes" :key="i" :title="n.title" :label="n.updateTime" isLink>
+				<!-- 我的收藏列表 -->
+				<u-empty v-if="current === 1 && favoritesList.length === 0" mode="list" text="暂无收藏" marginTop="100"></u-empty>
+				<u-cell-group v-else-if="current === 1">
+					<u-cell v-for="(item, i) in favoritesList" :key="i" :title="item.title" :label="item.updateTime" isLink @click="goToNoteDetail(item.noteId)">
+						<template #icon>
+							<u-icon name="star" size="18" customStyle="margin-right:10rpx" color="#f5a623"></u-icon>
+						</template>
+					</u-cell>
+				</u-cell-group>
+				
+				<!-- 我的笔记列表 -->
+				<u-empty v-else-if="current === 0 && myNotesList.length === 0" mode="list" text="暂无笔记" marginTop="100"></u-empty>
+				<u-cell-group v-else-if="current === 0">
+					<u-cell v-for="(item, i) in myNotesList" :key="i" :title="item.title" :label="item.updateTime" isLink @click="goToNoteDetail(item.noteId)">
 						<template #icon>
 							<u-icon name="file-text" size="18" customStyle="margin-right:10rpx"></u-icon>
+						</template>
+					</u-cell>
+				</u-cell-group>
+				
+				<!-- 赞过列表 -->
+				<u-empty v-else-if="current === 2 && likedList.length === 0" mode="list" text="暂无赞过" marginTop="100"></u-empty>
+				<u-cell-group v-else-if="current === 2">
+					<u-cell v-for="(item, i) in likedList" :key="i" :title="item.title" :label="item.updateTime" isLink @click="goToNoteDetail(item.noteId)">
+						<template #icon>
+							<u-icon name="thumb-up" size="18" customStyle="margin-right:10rpx" color="#1890ff"></u-icon>
 						</template>
 					</u-cell>
 				</u-cell-group>
@@ -61,104 +82,225 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
+import { noteApi, interactionApi } from '@/api'
 
 const current = ref(0)
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
 
-// 用户信息（模拟数据）
+// 用户信息（从缓存读取）
 const userInfo = ref({
-	avatar: '',  // 改为空字符串，使用默认头像
-	nickname: '极客开发者',
-	bio: '坚持记录，沉淀知识。',
-	email: 'geek@example.com',
-	phone: '138****8888',
-	gender: '男',
-	location: '中国·大连',
-	registerTime: '2024-01-15',
+	avatar: '',
+	nickname: '',
+	name: '',
+	signature: '',
+	bio: '',
 	stats: {
-		notes: 12,
-		likes: 128,
-		favorites: 45
+		notes: 0,
+		likes: 0,
+		favorites: 0
 	}
 })
 
-// 我的笔记列表（模拟数据）
-const myNotes = ref([
-	{ id: 1, title: 'Vue3 组合式API详解', updateTime: '2026-04-20' },
-	{ id: 2, title: '微信小程序开发踩坑记录', updateTime: '2026-04-18' },
-	{ id: 3, title: 'TypeScript 泛型使用指南', updateTime: '2026-04-15' }
-])
+// 我的笔记列表
+const myNotesList = ref([])
 
-// 模拟接口：获取用户信息
-const fetchUserInfo = async () => {
-	await new Promise(resolve => setTimeout(resolve, 500))
-	
-	return {
-		code: 200,
-		data: {
-			avatar: '',  // 改为空字符串
-			nickname: '极客开发者',
-			bio: '坚持记录，沉淀知识。',
-			email: 'geek@example.com',
-			phone: '138****8888',
-			gender: '男',
-			location: '中国·北京',
-			registerTime: '2024-01-15',
-			stats: {
-				notes: 12,
-				likes: 128,
-				favorites: 45
-			}
-		}
-	}
-}
+// 我的收藏列表
+const favoritesList = ref([])
 
-// 模拟接口：获取我的笔记列表
-const fetchMyNotes = async () => {
-	await new Promise(resolve => setTimeout(resolve, 300))
-	
-	return {
-		code: 200,
-		data: [
-			{ id: 1, title: 'Vue3 组合式API详解', updateTime: '2026-04-20' },
-			{ id: 2, title: '微信小程序开发踩坑记录', updateTime: '2026-04-18' },
-			{ id: 3, title: 'TypeScript 泛型使用指南', updateTime: '2026-04-15' }
-		]
-	}
-}
+// 赞过列表
+const likedList = ref([])
 
-// 加载页面数据
-const loadPageData = async () => {
-	uni.showLoading({ title: '加载中...' })
-	
+// 加载状态
+const loading = ref(false)
+
+// 从缓存加载用户信息
+const loadUserInfoFromCache = () => {
 	try {
-		const [userRes, notesRes] = await Promise.all([
-			fetchUserInfo(),
-			fetchMyNotes()
-		])
-		
-		if (userRes.code === 200) {
-			userInfo.value = userRes.data
+		const cached = uni.getStorageSync('userInfo')
+		if (cached && cached.userId) {
+			console.log('从缓存加载用户信息:', cached)
+			userInfo.value = {
+				...userInfo.value,
+				avatar: cached.avatar || '',
+				nickname: cached.nickname || cached.name || '用户',
+				name: cached.name || '',
+				signature: cached.signature || '',
+				bio: cached.signature || cached.bio || '暂无签名',
+				location: cached.city || '',
+				registerTime: cached.createTime || '',
+				stats: cached.stats || { notes: 0, likes: 0, favorites: 0 }
+			}
+			return true
 		}
-		
-		if (notesRes.code === 200) {
-			myNotes.value = notesRes.data
+		console.log('缓存中无用户信息')
+		return false
+	} catch (error) {
+		console.error('读取用户缓存失败:', error)
+		return false
+	}
+}
+
+// 更新缓存中的统计数据
+const updateStatsCache = (stats) => {
+	try {
+		const cached = uni.getStorageSync('userInfo')
+		if (cached) {
+			cached.stats = stats
+			uni.setStorageSync('userInfo', cached)
+			// 同时更新当前显示
+			userInfo.value.stats = stats
 		}
 	} catch (error) {
-		console.error('加载数据失败:', error)
-		uni.showToast({ title: '加载失败', icon: 'none' })
-	} finally {
-		uni.hideLoading()
+		console.error('更新统计数据缓存失败:', error)
 	}
 }
 
-// 跳转到个人详细信息页
+// 获取我的笔记列表（分页）
+const fetchMyNotes = async (isLoadMore = false) => {
+	try {
+		const res = await noteApi.getMyNotes(1, 50)
+		if (res && res.records) {
+			myNotesList.value = res.records.map(item => ({
+				noteId: item.noteId,
+				title: item.title,
+				updateTime: item.updateTime ? item.updateTime.split('T')[0] : ''
+			}))
+		}
+	} catch (error) {
+		console.error('获取我的笔记列表失败:', error)
+	}
+}
+
+// 获取收藏列表
+const fetchFavorites = async () => {
+	try {
+		// 使用互动接口获取收藏列表
+		const res = await interactionApi.getFavorites(1, 50)
+		if (res && res.records) {
+			favoritesList.value = res.records.map(item => ({
+				noteId: item.noteId,
+				title: item.title,
+				updateTime: item.updateTime ? item.updateTime.split('T')[0] : ''
+			}))
+		}
+	} catch (error) {
+		console.error('获取收藏列表失败:', error)
+	}
+}
+
+// 获取赞过列表
+const fetchLiked = async () => {
+	try {
+		// 使用互动接口获取点赞列表
+		const res = await interactionApi.getLiked(1, 50)
+		if (res && res.records) {
+			likedList.value = res.records.map(item => ({
+				noteId: item.noteId,
+				title: item.title,
+				updateTime: item.updateTime ? item.updateTime.split('T')[0] : ''
+			}))
+		}
+	} catch (error) {
+		console.error('获取赞过列表失败:', error)
+	}
+}
+
+// 静默获取最新统计数据
+const fetchLatestStats = async () => {
+	try {
+		const stats = await noteApi.getStats()
+		console.log('获取最新统计数据:', stats)
+		if (stats) {
+			updateStatsCache({
+				notes: stats.notes || 0,
+				likes: stats.likes || 0,
+				favorites: stats.favorites || 0
+			})
+		}
+	} catch (error) {
+		console.error('获取统计数据失败:', error)
+	}
+}
+
+// 根据当前 tab 加载对应数据
+const loadCurrentTabData = async () => {
+	if (current.value === 0) {
+		await fetchMyNotes()
+	} else if (current.value === 1) {
+		await fetchFavorites()
+	} else if (current.value === 2) {
+		await fetchLiked()
+	}
+}
+
+// 静默刷新所有数据（后台更新）
+const silentRefresh = async () => {
+	console.log('开始静默刷新个人中心数据...')
+	try {
+		// 并行请求所有数据
+		await Promise.all([
+			fetchLatestStats(),      // 更新统计数据
+			fetchMyNotes(),          // 更新我的笔记
+			fetchFavorites(),        // 更新收藏列表
+			fetchLiked()             // 更新赞过列表
+		])
+		console.log('静默刷新完成')
+	} catch (error) {
+		console.error('静默刷新失败:', error)
+	}
+}
+
+// 页面显示时加载数据
+onShow(() => {
+	// 1. 先从缓存加载用户信息（立即显示）
+	const hasCache = loadUserInfoFromCache()
+	
+	if (hasCache) {
+		// 有缓存：立即显示缓存数据 + 静默更新
+		console.log('有缓存数据，后台静默更新中...')
+		silentRefresh()
+	} else {
+		// 无缓存：显示 loading 并请求数据
+		console.log('无缓存数据，请求后端...')
+		uni.showLoading({ title: '加载中...', mask: true })
+		Promise.all([
+			fetchLatestStats(),
+			fetchMyNotes(),
+			fetchFavorites(),
+			fetchLiked()
+		]).finally(() => {
+			uni.hideLoading()
+		})
+	}
+})
+
+// 下拉刷新
+onPullDownRefresh(() => {
+	console.log('下拉刷新...')
+	Promise.all([
+		fetchLatestStats(),
+		fetchMyNotes(),
+		fetchFavorites(),
+		fetchLiked()
+	]).finally(() => {
+		uni.stopPullDownRefresh()
+		uni.showToast({ title: '刷新成功', icon: 'success', duration: 1000 })
+	})
+})
+
+// 跳转到个人信息页
 const goToUserInfo = () => {
-	const userData = encodeURIComponent(JSON.stringify(userInfo.value))
 	uni.navigateTo({
-		url: `/pages/user-info/user-info?data=${userData}`
+		url: '/pages/user-info/user-info'
+	})
+}
+
+// 跳转到笔记详情
+const goToNoteDetail = (noteId) => {
+	uni.navigateTo({
+		url: `/pages/note-detail/note-detail?id=${noteId}`
 	})
 }
 
@@ -171,10 +313,6 @@ const goToTagManage = () => {
 const msg = () => {
 	uni.showToast({ title: '开发中', icon: 'none' })
 }
-
-onShow(() => {
-	loadPageData()
-})
 </script>
 
 <style lang="scss">

@@ -95,7 +95,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { authApi, userApi } from '@/api'
+import { authApi, userApi, noteApi } from '@/api'
 
 const loading = ref(false)
 const isAgree = ref(false)
@@ -123,6 +123,45 @@ const showAgreement = (type) => {
 	})
 }
 
+// 预加载所有个人数据（登录成功后调用）
+const preloadUserData = async () => {
+	console.log('开始预加载用户数据...')
+	
+	try {
+		// 并行请求所有需要缓存的数据
+		const [userInfo, stats] = await Promise.all([
+			userApi.getUserInfo(),
+			noteApi.getStats()  // 获取统计数据（笔记数、获赞数、收藏数）
+		])
+		
+		// 合并用户信息和统计数据
+		const fullUserInfo = {
+			...userInfo,
+			stats: {
+				notes: stats?.notes || 0,
+				likes: stats?.likes || 0,
+				favorites: stats?.favorites || 0
+			}
+		}
+		
+		// 存入缓存
+		uni.setStorageSync('userInfo', fullUserInfo)
+		console.log('用户数据预加载完成，已缓存:', fullUserInfo)
+		
+		return fullUserInfo
+	} catch (error) {
+		console.error('预加载用户数据失败:', error)
+		// 即使失败，也至少保存基础用户信息
+		const userInfo = uni.getStorageSync('userInfo')
+		if (!userInfo || !userInfo.stats) {
+			uni.setStorageSync('userInfo', {
+				...userInfo,
+				stats: { notes: 0, likes: 0, favorites: 0 }
+			})
+		}
+	}
+}
+
 const startLogin = async () => {
 	if (!isAgree.value) {
 		uni.showToast({ 
@@ -133,52 +172,48 @@ const startLogin = async () => {
 	}
 	
 	loading.value = true;
-	    try {
-	        
-	        // 获取微信 code
-	        const loginRes = await uni.login({ provider: 'weixin' });
-	        
-	        // --- 尝试静默登录（不传昵称头像） ---
-	        const res = await authApi.login(loginRes.code, {});
-	        
-	        if (res.isNewUser) {
-	            // 是新用户：显示授权弹窗
-	            showAuthPopup.value = true;
-	        } else {
-	            // 是老用户：直接处理登录成功
-				uni.showLoading({ title: '正在登录...', mask: true });
-	            handleLoginSuccess(res.token);
-	        }
-	    } catch (error) {
-	        uni.showToast({ title: '登录失败', icon: 'none' });
-	    } finally {
-	        loading.value = false;
-	    }
+	try {
+		// 获取微信 code
+		const loginRes = await uni.login({ provider: 'weixin' });
+		
+		// 尝试静默登录（不传昵称头像）
+		const res = await authApi.login(loginRes.code, {});
+		
+		if (res.isNewUser) {
+			// 是新用户：显示授权弹窗
+			showAuthPopup.value = true;
+		} else {
+			// 是老用户：直接处理登录成功
+			uni.showLoading({ title: '正在登录...', mask: true });
+			await handleLoginSuccess(res.token);
+		}
+	} catch (error) {
+		console.error('登录失败:', error)
+		uni.showToast({ title: '登录失败', icon: 'none' });
+	} finally {
+		loading.value = false;
+	}
 }
 
 // 提取公共登录成功逻辑
 const handleLoginSuccess = async (token) => {
-    console.log('登录成功，token:', token)  // 打印 token
-    uni.setStorageSync('token', token)
-        
-    // 验证是否存成功
-    const savedToken = uni.getStorageSync('token')
-    console.log('存储后的 token:', savedToken)
-    uni.hideLoading();
+	console.log('登录成功，token:', token)
+	uni.setStorageSync('token', token)
 	
-	 // 获取并存储完整用户信息
-    try {
-        const userInfo = await userApi.getUserInfo()
-        uni.setStorageSync('userInfo', userInfo)
-        console.log('用户信息已缓存:', userInfo)
-    } catch (error) {
-        console.error('获取用户信息失败:', error)
-    }
+	// 验证是否存成功
+	const savedToken = uni.getStorageSync('token')
+	console.log('存储后的 token:', savedToken)
+	uni.hideLoading();
 	
-    uni.showToast({ title: '登录成功', icon: 'success' });
-    setTimeout(() => {
-        uni.reLaunch({ url: '/pages/community/community' });
-    }, 1500);
+	// 预加载所有个人数据（用户信息 + 统计数据）
+	uni.showLoading({ title: '加载中...', mask: true });
+	await preloadUserData();
+	uni.hideLoading();
+	
+	uni.showToast({ title: '登录成功', icon: 'success' });
+	setTimeout(() => {
+		uni.reLaunch({ url: '/pages/community/community' });
+	}, 1500);
 };
 
 const closeAuthPopup = () => {
@@ -224,23 +259,24 @@ const confirmAuth = async () => {
 	uni.showLoading({ title: '正在创建账号...', mask: true });
 	
 	try {
-	        const loginRes = await uni.login({ provider: 'weixin' });
-	        
-	        // 再次调用后端，此时带上头像和昵称
-	        const res = await authApi.login(loginRes.code, {
-	            nickName: tempNickname.value.trim(),
-	            avatarUrl: tempAvatar.value
-	        });
-	
-	        if (res.token) {
-	            handleLoginSuccess(res.token);
-	        }
-	    } catch (error) {
-	        uni.hideLoading();
-	        uni.showToast({ title: '授权登录失败', icon: 'none' });
-	    } finally {
-	        loading.value = false;
-	    }
+		const loginRes = await uni.login({ provider: 'weixin' });
+		
+		// 再次调用后端，此时带上头像和昵称
+		const res = await authApi.login(loginRes.code, {
+			nickName: tempNickname.value.trim(),
+			avatarUrl: tempAvatar.value
+		});
+
+		if (res.token) {
+			await handleLoginSuccess(res.token);
+		}
+	} catch (error) {
+		console.error('授权登录失败:', error)
+		uni.hideLoading();
+		uni.showToast({ title: '授权登录失败', icon: 'none' });
+	} finally {
+		loading.value = false;
+	}
 }
 </script>
 
