@@ -7,13 +7,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.enums.LogModule;
-import com.littlewin.common.enums.LogStatus;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.PasswordUtils;
 import com.littlewin.common.utils.SecurityUtils;
-import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginDTO;
 import com.littlewin.system.domain.dto.UserQueryDTO;
 import com.littlewin.system.domain.dto.UserUpdateDTO;
 import com.littlewin.system.domain.entity.*;
@@ -211,7 +210,7 @@ public class SysUserServiceImpl implements SysUserService {
 
         // 1. 安全判断：防止管理员“误删自己”
         String currentAdminId = SecurityUtils.getUserId();
-        AdminLoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(currentAdminId);
+        LoginDTO loginDTO = userAuthMapper.selectAdminLoginUser(currentAdminId);
         if (userId.toString().equals(loginDTO.getUserId().toString())) {
             throw new ServiceException("系统保护：无法删除当前登录中的管理员账号");
         }
@@ -253,7 +252,7 @@ public class SysUserServiceImpl implements SysUserService {
         }
 
         // 检查新增的账户 identifier 字段是否已经存在
-        AdminLoginDTO existingUser = userAuthMapper.checkIdentifierUnique(vo.getIdentifier());
+        LoginDTO existingUser = userAuthMapper.checkIdentifierUnique(vo.getIdentifier());
         if (existingUser != null) {
             // 如果是更新操作：查到的用户 ID 不等于 当前编辑的用户 ID，说明撞名了
             if (isUpdate && !existingUser.getUserId().equals(vo.getUserId())) {

@@ -5,12 +5,11 @@ import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.UserAuth;
 import com.littlewin.system.domain.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Mapper;
-import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginDTO;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface UserAuthMapper extends BaseMapper<UserAuth> {
@@ -18,11 +17,11 @@ public interface UserAuthMapper extends BaseMapper<UserAuth> {
     /**
      * 查询登录用户信息（基础信息+密码）
      */
-    AdminLoginDTO selectAdminLoginUser(String username);
+    LoginDTO selectAdminLoginUser(String username);
     /**
      * 检查用户名（user_auth.identifier）
      */
-    AdminLoginDTO checkIdentifierUnique(String username);
+    LoginDTO checkIdentifierUnique(String username);
     /**
      * 根据用户ID查询所有权限标识 (perms)
      */

@@ -9,7 +9,7 @@ import com.littlewin.common.utils.JwtUtils;
 import com.littlewin.common.utils.PasswordUtils;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.common.utils.ServletUtils;
-import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginDTO;
 import com.littlewin.system.domain.dto.SecurityUpdateDTO;
 import com.littlewin.system.domain.entity.SysMenu;
 import com.littlewin.system.domain.entity.UserAuth;
@@ -21,7 +21,6 @@ import com.littlewin.system.mapper.UserInfoMapper;
 import com.littlewin.system.service.AdminAuthService;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -59,7 +58,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     new UsernamePasswordAuthenticationToken(username, password);
             authenticationManager.authenticate(authenticationToken);
 
-            AdminLoginDTO loginUser = userAuthMapper.selectAdminLoginUser(username);
+            LoginDTO loginUser = userAuthMapper.selectAdminLoginUser(username);
 
             // 往用户信息表插入最后登录ip和登录时间
             String ip = ServletUtils.getClientIp();
@@ -94,7 +93,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     @Log(module = LogModule.AUTH, action = LogAction.LOGOUT, desc = "用户退出登录")
     public void logout() {
-        AdminLoginDTO loginUser = SecurityUtils.getLoginUser();
+        LoginDTO loginUser = SecurityUtils.getLoginUser();
         if (loginUser != null) {
             LogContext.setBusinessId(loginUser.getUserId());
             LogContext.setDesc("退出登录【" + loginUser.getUsername()+ "】");
@@ -105,7 +104,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public UserInfoVO getUserInfo() {
         // 1. 获取当前登录用户
-        AdminLoginDTO authUser = SecurityUtils.getLoginUser();
+        LoginDTO authUser = SecurityUtils.getLoginUser();
         if (authUser == null) throw new ServiceException("用户不存在");
 
         // 2. 优化：1次联查获取 3 表数据
@@ -124,7 +123,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Transactional(rollbackFor = Exception.class)
     public void updateSecurityInfo(SecurityUpdateDTO dto) {
         // 假设通过工具类获取当前登录用户的 ID
-        AdminLoginDTO loginDTO = SecurityUtils.getLoginUser();
+        LoginDTO loginDTO = SecurityUtils.getLoginUser();
 
         LogContext.setBusinessId(loginDTO.getUserId());
         LogContext.setDesc("修改密码");
@@ -187,7 +186,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      */
     @Override
     public List<MenuVO> getAuthMenuList() {
-        AdminLoginDTO user = SecurityUtils.getLoginUser();
+        LoginDTO user = SecurityUtils.getLoginUser();
         if (user == null) throw new ServiceException("获取用户信息失败");
 
         // 只查询类型为 M(目录) 和 C(菜单) 的数据
@@ -201,7 +200,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      */
     @Override
     public Map<String, List<String>> getAuthButtonList() {
-        AdminLoginDTO user = SecurityUtils.getLoginUser();
+        LoginDTO user = SecurityUtils.getLoginUser();
         if (user == null) return new HashMap<>();
 
         // 1. 从数据库获取该用户拥有的所有按钮级权限 (menu_type = 'F')

@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  * 安全上下文容器：包装 DTO，实现 UserDetails 接口
  */
-public record LoginUser(AdminLoginDTO adminLoginDTO,
+public record LoginUser(LoginDTO adminLoginDTO,
                         Collection<? extends GrantedAuthority> authorities) implements UserDetails {
 
     @Override

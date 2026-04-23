@@ -1,6 +1,6 @@
 package com.littlewin.common.utils;
 
-import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginDTO;
 import com.littlewin.common.core.LoginUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,7 +17,7 @@ public class SecurityUtils {
     /**
      * 获取当前登录用户
      */
-    public static AdminLoginDTO getLoginUser() {
+    public static LoginDTO getLoginUser() {
         Authentication authentication = getAuthentication();
 
         if (authentication == null) {

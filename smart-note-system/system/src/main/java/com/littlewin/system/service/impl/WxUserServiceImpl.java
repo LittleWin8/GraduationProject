@@ -1,14 +1,17 @@
 package com.littlewin.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.littlewin.common.core.LoginDTO;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.JwtUtils;
+import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.common.utils.ServletUtils;
 import com.littlewin.common.utils.WechatApiUtils;
 import com.littlewin.system.domain.entity.SysUser;
 import com.littlewin.system.domain.entity.UserAuth;
 import com.littlewin.system.domain.entity.UserInfo;
+import com.littlewin.system.domain.vo.UserInfoVO;
 import com.littlewin.system.mapper.SysUserMapper;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.mapper.UserInfoMapper;
@@ -113,5 +116,18 @@ public class WxUserServiceImpl implements WxUserService {
         result.put("isNewUser", false);
         result.put("token", JwtUtils.createToken(userId.toString()));
         return result;
+    }
+
+    @Override
+    public UserInfoVO getUserInfo() {
+        // 1. 获取当前登录用户
+        LoginDTO authUser = SecurityUtils.getLoginUser();
+        if (authUser == null) throw new ServiceException("用户不存在");
+
+        // 2. 优化：1次联查获取 3 表数据
+        UserInfoVO userInfo = userAuthMapper.selectFullUserInfoById(authUser.getUserId());
+        if (userInfo == null) throw new ServiceException("获取详细资料失败");
+
+        return userInfo;
     }
 }

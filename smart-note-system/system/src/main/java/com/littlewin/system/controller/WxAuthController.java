@@ -29,4 +29,17 @@ public class WxAuthController {
 
         return Result.success(loginData);
     }
+
+    @PostMapping("/logout")
+    @Log(module = LogModule.AUTH, action = LogAction.LOGOUT, desc = "退出登录")
+    public Result logout() {
+
+        //  后期加 Redis 黑名单
+        return Result.success("退出成功");
+    }
+
+    @GetMapping("/getUserInfo")
+    public Result getUserInfo() {
+        return Result.success(wxUserService.getUserInfo());
+    }
 }

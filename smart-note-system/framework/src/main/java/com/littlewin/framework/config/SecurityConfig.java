@@ -33,7 +33,7 @@ public class SecurityConfig {
     /**
      * 2. 暴露 AuthenticationManager Bean
      * 这一步是为了解决 "找不到 'AuthenticationManager' 类型的 Bean" 的问题
-     * 这样你的 AdminAuthServiceImpl 才能注入并使用它
+     * 这样 AdminAuthServiceImpl 才能注入并使用它
      */
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {

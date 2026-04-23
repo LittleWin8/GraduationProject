@@ -4,7 +4,7 @@ package com.littlewin.common.log.aspect;
 import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
-import com.littlewin.common.core.AdminLoginDTO;
+import com.littlewin.common.core.LoginDTO;
 import com.littlewin.common.log.entity.SysLogOperation;
 import com.littlewin.common.log.manager.LogAsyncManager;
 import com.littlewin.common.utils.SecurityUtils;
@@ -30,7 +30,7 @@ public class LogAspect {
 
     @Around("@annotation(controllerLog)")
     public Object around(ProceedingJoinPoint joinPoint, Log controllerLog) throws Throwable {
-        AdminLoginDTO currentUser = null;
+        LoginDTO currentUser = null;
         try {
             currentUser = SecurityUtils.getLoginUser();
         } catch (Exception ignored) {}
@@ -51,7 +51,7 @@ public class LogAspect {
         }
     }
 
-    private void handleLog(Log controllerLog, Exception e, AdminLoginDTO currentUser) {
+    private void handleLog(Log controllerLog, Exception e, LoginDTO currentUser) {
         if (controllerLog.action() == LogAction.LOGIN && LogContext.getDesc() == null) {
             return;
         }
@@ -90,7 +90,7 @@ public class LogAspect {
 
         // 如果 Context 里没有（比如非登录接口），再从 SecurityContext 获取
         if (userId == null || username == null) {
-            AdminLoginDTO user = currentUser != null ? currentUser : SecurityUtils.getLoginUser();
+            LoginDTO user = currentUser != null ? currentUser : SecurityUtils.getLoginUser();
             if (user != null) {
                 userId = user.getUserId();
                 username = user.getUsername();
