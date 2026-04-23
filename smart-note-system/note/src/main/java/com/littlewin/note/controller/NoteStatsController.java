@@ -3,6 +3,8 @@ package com.littlewin.note.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
 import com.littlewin.common.utils.SecurityUtils;
+import com.littlewin.note.domain.vo.FavoriteNoteVO;
+import com.littlewin.note.domain.vo.LikedNoteVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
 import com.littlewin.note.domain.vo.NoteStatsVO;
 import com.littlewin.note.service.NoteStatsService;
@@ -29,6 +31,24 @@ public class NoteStatsController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         Long userId = SecurityUtils.getLoginUser().getUserId();
         IPage<MyNoteVO> page = noteStatsService.getMyNotes(userId, pageNum, pageSize);
+        return Result.success(page);
+    }
+
+    @GetMapping("/favorites")
+    public Result<IPage<FavoriteNoteVO>> getFavorites(
+            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        Long userId = SecurityUtils.getLoginUser().getUserId();
+        IPage<FavoriteNoteVO> page = noteStatsService.getFavorites(userId, pageNum, pageSize);
+        return Result.success(page);
+    }
+
+    @GetMapping("/liked")
+    public Result<IPage<LikedNoteVO>> getLiked(
+            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        Long userId = SecurityUtils.getLoginUser().getUserId();
+        IPage<LikedNoteVO> page = noteStatsService.getLiked(userId, pageNum, pageSize);
         return Result.success(page);
     }
 }

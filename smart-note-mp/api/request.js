@@ -1,22 +1,35 @@
 import { config } from './config.js'
 
+// 将对象转换为查询字符串（兼容微信小程序）
+const encodeQueryParams = (params) => {
+  if (!params) return ''
+  const queryParts = []
+  for (const key in params) {
+    if (params.hasOwnProperty(key) && params[key] !== undefined && params[key] !== null) {
+      const value = params[key]
+      queryParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    }
+  }
+  return queryParts.join('&')
+}
+
 export const request = (options) => {
     return new Promise((resolve, reject) => {
         const token = uni.getStorageSync('token')
         
-        // 处理 GET 请求的 params 参数
+        // 处理 GET 和 DELETE 请求的 params 参数（兼容微信小程序）
         let url = config.baseURL + options.url
-        if (options.method === 'GET' && options.params) {
-            const queryParams = new URLSearchParams(options.params).toString()
-            if (queryParams) {
-                url += '?' + queryParams
+        if ((options.method === 'GET' || options.method === 'DELETE') && options.params) {
+            const queryString = encodeQueryParams(options.params)
+            if (queryString) {
+                url += '?' + queryString
             }
         }
         
         uni.request({
             url: url,
             method: options.method || 'GET',
-            data: options.method === 'GET' ? undefined : (options.data || {}),
+            data: (options.method === 'GET' || options.method === 'DELETE') ? undefined : (options.data || {}),
             timeout: config.timeout,
             header: {
                 'Content-Type': 'application/json',

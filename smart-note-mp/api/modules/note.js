@@ -109,19 +109,37 @@ export const noteApi = {
   
   // 获取我的笔记列表（分页）
   getMyNotes(page = 1, size = 10) {
-      return request({
-          url: APIS.NOTE.MY_NOTES,
-          method: 'GET',
-          data: { pageNum: page, pageSize: size }  // 注意参数名
+    return request({
+    url: APIS.NOTE.MY_NOTES,
+        method: 'GET',
+        params: { pageNum: page, pageSize: size }
       })
-  },
+    },
   
   // 获取统计数据（笔记数、获赞数、收藏数）
   getStats() {
-      return request({
-          url: APIS.NOTE.STATS,
-          method: 'GET'
+    return request({
+        url: APIS.NOTE.STATS,
+        method: 'GET'
       })
-  }
+  },
+  
+   // 获取收藏列表
+    getFavorites(page = 1, size = 10) {
+      return request({
+        url: APIS.NOTE.FAVORITES,
+        method: 'GET',
+        params: { pageNum: page, pageSize: size }
+      })
+    },
+    
+    // 获取点赞列表
+    getLiked(page = 1, size = 10) {
+      return request({
+        url: APIS.NOTE.LIKED,
+        method: 'GET',
+        params: { pageNum: page, pageSize: size }
+      })
+    }
   
 }

@@ -84,7 +84,7 @@
 import { ref } from 'vue'
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
-import { noteApi, interactionApi } from '@/api'
+import { noteApi } from '@/api'
 
 const current = ref(0)
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
@@ -176,8 +176,7 @@ const fetchMyNotes = async (isLoadMore = false) => {
 // 获取收藏列表
 const fetchFavorites = async () => {
 	try {
-		// 使用互动接口获取收藏列表
-		const res = await interactionApi.getFavorites(1, 50)
+		const res = await noteApi.getFavorites(1, 50)
 		if (res && res.records) {
 			favoritesList.value = res.records.map(item => ({
 				noteId: item.noteId,
@@ -193,8 +192,7 @@ const fetchFavorites = async () => {
 // 获取赞过列表
 const fetchLiked = async () => {
 	try {
-		// 使用互动接口获取点赞列表
-		const res = await interactionApi.getLiked(1, 50)
+		const res = await noteApi.getLiked(1, 50)
 		if (res && res.records) {
 			likedList.value = res.records.map(item => ({
 				noteId: item.noteId,
@@ -221,17 +219,6 @@ const fetchLatestStats = async () => {
 		}
 	} catch (error) {
 		console.error('获取统计数据失败:', error)
-	}
-}
-
-// 根据当前 tab 加载对应数据
-const loadCurrentTabData = async () => {
-	if (current.value === 0) {
-		await fetchMyNotes()
-	} else if (current.value === 1) {
-		await fetchFavorites()
-	} else if (current.value === 2) {
-		await fetchLiked()
 	}
 }
 

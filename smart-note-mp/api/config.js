@@ -41,7 +41,9 @@ export const APIS = {
     AI_SUMMARY: '/api/wx/notes/ai/summary',
     UPLOAD: '/api/wx/notes/attachment',
 	MY_NOTES: '/api/wx/note/my-notes',  // 我的笔记列表
-	STATS: '/api/wx/note/stats'         // 统计数据
+	STATS: '/api/wx/note/stats'         ,// 统计数据
+	FAVORITES: '/api/wx/note/favorites',  // 新增：收藏列表
+	LIKED: '/api/wx/note/liked'           // 新增：点赞列表
   },
   
   // 分类模块

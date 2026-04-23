@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.note.domain.entity.Note;
 import com.littlewin.note.domain.entity.NoteReaction;
+import com.littlewin.note.domain.vo.FavoriteNoteVO;
+import com.littlewin.note.domain.vo.LikedNoteVO;
 import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.mapper.NoteReactionMapper;
 import com.littlewin.note.service.NoteStatsService;
@@ -77,5 +79,115 @@ public class NoteStatsServiceImpl implements NoteStatsService {
         resultPage.setRecords(records);
 
         return resultPage;
+    }
+
+    @Override
+    public IPage<FavoriteNoteVO> getFavorites(Long userId, Integer pageNum, Integer pageSize) {
+        if (userId == null) {
+            return new Page<>(pageNum, pageSize, 0);
+        }
+
+        try {
+            Page<Note> page = new Page<>(pageNum, pageSize);
+
+            // 关联查询：用户收藏的笔记
+            LambdaQueryWrapper<NoteReaction> reactionWrapper = new LambdaQueryWrapper<>();
+            reactionWrapper.eq(NoteReaction::getUserId, userId)
+                    .eq(NoteReaction::getIsFavorite, 1)
+                    .orderByDesc(NoteReaction::getUpdateTime);
+
+            List<NoteReaction> favorites = noteReactionMapper.selectList(reactionWrapper);
+
+            if (favorites.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+
+            // 获取收藏的笔记ID列表
+            List<Long> noteIds = favorites.stream()
+                    .map(NoteReaction::getNoteId)
+                    .collect(Collectors.toList());
+
+            // 查询笔记详情
+            LambdaQueryWrapper<Note> noteWrapper = new LambdaQueryWrapper<>();
+            noteWrapper.in(Note::getNoteId, noteIds)
+                    .eq(Note::getStatus, 1)
+                    .eq(Note::getDelFlag, 0)
+                    .orderByDesc(Note::getUpdateTime);
+
+            IPage<Note> notePage = noteMapper.selectPage(page, noteWrapper);
+
+            // 转换为VO
+            List<FavoriteNoteVO> records = notePage.getRecords().stream()
+                    .map(note -> FavoriteNoteVO.builder()
+                            .noteId(note.getNoteId())
+                            .title(note.getTitle())
+                            .updateTime(note.getUpdateTime())
+                            .viewCount(note.getViewCount())
+                            .isPublic(note.getIsPublic())
+                            .build())
+                    .collect(Collectors.toList());
+
+            IPage<FavoriteNoteVO> resultPage = new Page<>(pageNum, pageSize, notePage.getTotal());
+            resultPage.setRecords(records);
+            return resultPage;
+
+        } catch (Exception e) {
+            return new Page<>(pageNum, pageSize, 0);
+        }
+    }
+
+    @Override
+    public IPage<LikedNoteVO> getLiked(Long userId, Integer pageNum, Integer pageSize) {
+        if (userId == null) {
+            return new Page<>(pageNum, pageSize, 0);
+        }
+
+        try {
+            Page<Note> page = new Page<>(pageNum, pageSize);
+
+            // 关联查询：用户点赞的笔记（attitude = 1 表示点赞）
+            LambdaQueryWrapper<NoteReaction> reactionWrapper = new LambdaQueryWrapper<>();
+            reactionWrapper.eq(NoteReaction::getUserId, userId)
+                    .eq(NoteReaction::getAttitude, 1)
+                    .orderByDesc(NoteReaction::getUpdateTime);
+
+            List<NoteReaction> likedList = noteReactionMapper.selectList(reactionWrapper);
+
+            if (likedList.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+
+            // 获取点赞的笔记ID列表
+            List<Long> noteIds = likedList.stream()
+                    .map(NoteReaction::getNoteId)
+                    .collect(Collectors.toList());
+
+            // 查询笔记详情
+            LambdaQueryWrapper<Note> noteWrapper = new LambdaQueryWrapper<>();
+            noteWrapper.in(Note::getNoteId, noteIds)
+                    .eq(Note::getStatus, 1)
+                    .eq(Note::getDelFlag, 0)
+                    .orderByDesc(Note::getUpdateTime);
+
+            IPage<Note> notePage = noteMapper.selectPage(page, noteWrapper);
+
+            // 转换为VO
+            List<LikedNoteVO> records = notePage.getRecords().stream()
+                    .map(note -> LikedNoteVO.builder()
+                            .noteId(note.getNoteId())
+                            .title(note.getTitle())
+                            .updateTime(note.getUpdateTime())
+                            .viewCount(note.getViewCount())
+                            .isPublic(note.getIsPublic())
+                            .build())
+                    .collect(Collectors.toList());
+
+            IPage<LikedNoteVO> resultPage = new Page<>(pageNum, pageSize, notePage.getTotal());
+            resultPage.setRecords(records);
+            return resultPage;
+
+        } catch (Exception e) {
+            return new Page<>(pageNum, pageSize, 0);
+        }
     }
 }
