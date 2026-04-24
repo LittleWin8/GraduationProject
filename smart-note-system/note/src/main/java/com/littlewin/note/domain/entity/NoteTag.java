@@ -19,4 +19,10 @@ public class NoteTag implements Serializable {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
+    /**
+     * 非数据库字段：用于展示该标签下的笔记数量
+     */
+    @TableField(exist = false)
+    private Integer noteCount;
 }

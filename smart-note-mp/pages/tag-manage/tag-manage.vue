@@ -10,10 +10,11 @@
 			/>
 			<u-button 
 				type="primary" 
-				size="small" 
+				size="large" 
 				text="添加" 
 				@click="addTag"
 				style="margin-left: 20rpx;"
+				customStyle="font-size: 30rpx;"
 			/>
 		</view>
 
@@ -26,7 +27,7 @@
 				@click="goToTagNotes(tag)"
 			>
 				<text class="tag-name">{{ tag.name }}</text>
-				<text class="tag-count">{{ tag.noteCount }}篇</text>
+				<text class="tag-count">{{ tag.noteCount || 0 }}篇</text>
 				<u-icon name="close-circle-fill" color="#ff6b6b" size="32" @click.stop="deleteTag(tag.id)"></u-icon>
 			</view>
 			
@@ -58,64 +59,88 @@
 import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
+import { tagApi } from '@/api/index.js'
 
 const newTagName = ref('')
 const myTags = ref([])
+const loading = ref(false)
+const addLoading = ref(false)
 
-// 从本地存储读取标签
-const loadTags = () => {
-	const saved = uni.getStorageSync('user_tags')
-	if (saved) {
-		myTags.value = JSON.parse(saved)
-	} else {
-		// 默认标签
-		myTags.value = [
-			{ id: '1', name: '技术', noteCount: 3 },
-			{ id: '2', name: '生活', noteCount: 2 },
-			{ id: '3', name: '读书', noteCount: 1 }
-		]
+// 从后端加载标签
+const loadTags = async () => {
+	loading.value = true
+	try {
+		const tags = await tagApi.getMyTags()
+		myTags.value = tags || []
+	} catch (error) {
+		console.error('加载标签失败:', error)
+		uni.showToast({ title: '加载标签失败', icon: 'none' })
+		// 如果后端没有数据，使用空数组
+		myTags.value = []
+	} finally {
+		loading.value = false
 	}
 }
 
-// 保存标签
-const saveTags = () => {
-	uni.setStorageSync('user_tags', JSON.stringify(myTags.value))
-}
-
 // 添加标签
-const addTag = () => {
-	if (!newTagName.value.trim()) {
+const addTag = async () => {
+	const name = newTagName.value.trim()
+	if (!name) {
 		uni.showToast({ title: '请输入标签名称', icon: 'none' })
 		return
 	}
 	
 	// 检查是否重复
-	if (myTags.value.some(t => t.name === newTagName.value.trim())) {
+	if (myTags.value.some(t => t.name === name)) {
 		uni.showToast({ title: '标签已存在', icon: 'none' })
 		return
 	}
 	
-	myTags.value.push({
-		id: Date.now().toString(),
-		name: newTagName.value.trim(),
-		noteCount: 0
-	})
-	
-	saveTags()
-	newTagName.value = ''
-	uni.showToast({ title: '添加成功', icon: 'success' })
+	addLoading.value = true
+	try {
+		// 调用后端API创建标签
+		const newTag = await tagApi.createTag(name)
+		
+		// 添加到列表
+		myTags.value.push({
+			id: newTag.id,
+			name: newTag.name,
+			noteCount: 0
+		})
+		
+		newTagName.value = ''
+		uni.showToast({ title: '添加成功', icon: 'success' })
+	} catch (error) {
+		console.error('添加标签失败:', error)
+		// 如果错误信息包含"已存在"，显示友好提示
+		if (error.message && error.message.includes('已存在')) {
+			uni.showToast({ title: '标签已存在', icon: 'none' })
+		} else {
+			uni.showToast({ title: '添加失败，请重试', icon: 'none' })
+		}
+	} finally {
+		addLoading.value = false
+	}
 }
 
 // 删除标签
-const deleteTag = (id) => {
+const deleteTag = async (id) => {
 	uni.showModal({
 		title: '提示',
-		content: '确定要删除这个标签吗？',
-		success: (res) => {
+		content: '确定要删除这个标签吗？删除后笔记将不再关联此标签。',
+		success: async (res) => {
 			if (res.confirm) {
-				myTags.value = myTags.value.filter(t => t.id !== id)
-				saveTags()
-				uni.showToast({ title: '删除成功', icon: 'success' })
+				try {
+					// 调用后端API删除标签
+					await tagApi.deleteTag(id)
+					
+					// 从列表中移除
+					myTags.value = myTags.value.filter(t => t.id !== id)
+					uni.showToast({ title: '删除成功', icon: 'success' })
+				} catch (error) {
+					console.error('删除标签失败:', error)
+					uni.showToast({ title: '删除失败，请重试', icon: 'none' })
+				}
 			}
 		}
 	})
@@ -124,26 +149,40 @@ const deleteTag = (id) => {
 // 跳转到标签笔记页
 const goToTagNotes = (tag) => {
 	uni.navigateTo({
-		url: `/pages/tag-notes/tag-notes?tagId=${tag.id}&tagName=${tag.name}`
+		url: `/pages/tag-notes/tag-notes?tagId=${tag.id}&tagName=${encodeURIComponent(tag.name)}`
 	})
 }
 
 // 推荐标签列表
-const recommendTags = ['AI', '前端', '后端', '产品', '设计', '创业']
+const recommendTags = ['AI', '前端', '后端', '产品', '设计', '创业', '读书', '生活', '技术', '美食']
 
-const addRecommendTag = (tagName) => {
+const addRecommendTag = async (tagName) => {
+	// 检查是否重复
 	if (myTags.value.some(t => t.name === tagName)) {
 		uni.showToast({ title: '标签已存在', icon: 'none' })
 		return
 	}
 	
-	myTags.value.push({
-		id: Date.now().toString(),
-		name: tagName,
-		noteCount: 0
-	})
-	saveTags()
-	uni.showToast({ title: '添加成功', icon: 'success' })
+	try {
+		// 调用后端API创建标签
+		const newTag = await tagApi.createTag(tagName)
+		
+		// 添加到列表
+		myTags.value.push({
+			id: newTag.id,
+			name: newTag.name,
+			noteCount: 0
+		})
+		
+		uni.showToast({ title: '添加成功', icon: 'success' })
+	} catch (error) {
+		console.error('添加推荐标签失败:', error)
+		if (error.message && error.message.includes('已存在')) {
+			uni.showToast({ title: '标签已存在', icon: 'none' })
+		} else {
+			uni.showToast({ title: '添加失败，请重试', icon: 'none' })
+		}
+	}
 }
 
 onShow(() => {

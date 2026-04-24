@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.littlewin.note.mapper.NoteTagMapper">
+
+    <select id="selectTagListWithCount" resultType="com.littlewin.note.domain.entity.NoteTag">
+        SELECT
+            t.tag_id, t.name, t.user_id, t.create_time,
+            COUNT(r.note_id) as noteCount
+        FROM note_tag t
+                 LEFT JOIN note_tag_rel r ON t.tag_id = r.tag_id
+        WHERE t.user_id = #{userId}
+        GROUP BY t.tag_id
+        ORDER BY t.create_time DESC
+    </select>
+
+</mapper>
