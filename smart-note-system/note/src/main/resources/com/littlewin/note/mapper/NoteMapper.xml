@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.littlewin.note.mapper.NoteMapper">
+    <select id="selectMyNoteVOPage" resultType="com.littlewin.note.domain.vo.MyNoteVO">
+        SELECT note_id, title, update_time, view_count, is_public
+        FROM note
+        WHERE user_id = #{userId} AND del_flag = 0
+        <choose>
+            <when test="query.status != null">AND status = #{query.status}</when>
+            <otherwise>AND status = 1</otherwise>
+        </choose>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (title LIKE CONCAT('%', #{query.keyword}, '%') OR content LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        <if test="categoryIds != null and categoryIds.size > 0">
+            AND category_id IN
+            <foreach collection="categoryIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        </if>
+        <if test="query.tagIds != null and query.tagIds.size > 0">
+            AND note_id IN (
+            SELECT note_id FROM note_tag_rel
+            WHERE tag_id IN
+            <foreach collection="query.tagIds" item="tid" open="(" separator="," close=")">#{tid}</foreach>
+            GROUP BY note_id HAVING COUNT(DISTINCT tag_id) = #{query.tagIds.size}
+            )
+        </if>
+        ORDER BY
+        <choose>
+            <when test="query.orderBy == 'viewCount'">view_count</when>
+            <when test="query.orderBy == 'createTime'">create_time</when>
+            <otherwise>update_time</otherwise>
+        </choose>
+        <choose>
+            <when test="query.orderDirection == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+    </select>
+</mapper>

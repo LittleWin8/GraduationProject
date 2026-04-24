@@ -12,8 +12,6 @@ public interface NoteTagRelMapper extends BaseMapper<NoteTagRel> {
     /**
      * 根据标签ID列表查询笔记ID（AND逻辑：包含所有指定标签）
      */
-    @Select("SELECT note_id FROM note_tag_rel WHERE tag_id IN (${tagIds}) " +
-            "GROUP BY note_id HAVING COUNT(DISTINCT tag_id) = #{tagCount}")
-    List<Long> selectNoteIdsByTagIds(@Param("tagIds") String tagIds,
+    List<Long> selectNoteIdsByTagIds(@Param("tagIds") List<Long> tagIds,
                                      @Param("tagCount") int tagCount);
 }
