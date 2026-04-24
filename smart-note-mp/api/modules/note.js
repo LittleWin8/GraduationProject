@@ -13,7 +13,7 @@ export const noteApi = {
     return request({
       url: APIS.NOTE.LIST,
       method: 'GET',
-      data: { type, page, size, ...filters }
+      params: { type, pageNum: page, pageSize: size, ...filters }
     })
   },
   
@@ -52,7 +52,7 @@ export const noteApi = {
     return request({
       url: `${APIS.NOTE.DELETE}/${id}`,
       method: 'DELETE',
-      data: { permanent }
+      params: { permanent }
     })
   },
   
@@ -107,39 +107,84 @@ export const noteApi = {
     })
   },
   
-  // 获取我的笔记列表（分页）
-  getMyNotes(page = 1, size = 10) {
-    return request({
-    url: APIS.NOTE.MY_NOTES,
-        method: 'GET',
-        params: { pageNum: page, pageSize: size }
-      })
-    },
+  // ========== 我的笔记相关 API（支持搜索筛选） ==========
   
-  // 获取统计数据（笔记数、获赞数、收藏数）
-  getStats() {
+  /**
+   * 获取我的笔记列表（支持分页+搜索+筛选）
+   * @param {Object} params - 查询参数
+   * @param {number} params.pageNum - 页码
+   * @param {number} params.pageSize - 每页大小
+   * @param {string} params.keyword - 关键词搜索
+   * @param {number} params.categoryId - 分类ID
+   * @param {string} params.startTime - 开始时间
+   * @param {string} params.endTime - 结束时间
+   * @param {string} params.orderBy - 排序字段
+   * @param {string} params.orderDirection - 排序方向
+   * @param {number} params.status - 状态（0草稿/1正常/2回收站）
+   */
+  getMyNotes(params = {}) {
     return request({
-        url: APIS.NOTE.STATS,
-        method: 'GET'
-      })
+      url: APIS.NOTE.MY_NOTES,
+      method: 'GET',
+      params: {
+        pageNum: params.pageNum || 1,
+        pageSize: params.pageSize || 10,
+        keyword: params.keyword,
+        categoryId: params.categoryId,
+        startTime: params.startTime,
+        endTime: params.endTime,
+        orderBy: params.orderBy,
+        orderDirection: params.orderDirection,
+        status: params.status
+      }
+    })
   },
   
-   // 获取收藏列表
-    getFavorites(page = 1, size = 10) {
-      return request({
-        url: APIS.NOTE.FAVORITES,
-        method: 'GET',
-        params: { pageNum: page, pageSize: size }
-      })
-    },
-    
-    // 获取点赞列表
-    getLiked(page = 1, size = 10) {
-      return request({
-        url: APIS.NOTE.LIKED,
-        method: 'GET',
-        params: { pageNum: page, pageSize: size }
-      })
-    }
+  /**
+   * 获取我的收藏列表
+   */
+  getFavorites(params = {}) {
+    return request({
+      url: APIS.NOTE.FAVORITES,
+      method: 'GET',
+      params: {
+        pageNum: params.pageNum || 1,
+        pageSize: params.pageSize || 10,
+        keyword: params.keyword,
+        categoryId: params.categoryId,
+        startTime: params.startTime,
+        endTime: params.endTime,
+        orderBy: params.orderBy,
+        orderDirection: params.orderDirection
+      }
+    })
+  },
   
+  /**
+   * 获取我的点赞列表
+   */
+  getLiked(params = {}) {
+    return request({
+      url: APIS.NOTE.LIKED,
+      method: 'GET',
+      params: {
+        pageNum: params.pageNum || 1,
+        pageSize: params.pageSize || 10,
+        keyword: params.keyword,
+        categoryId: params.categoryId,
+        startTime: params.startTime,
+        endTime: params.endTime,
+        orderBy: params.orderBy,
+        orderDirection: params.orderDirection
+      }
+    })
+  },
+  
+  // 获取统计数据
+  getStats() {
+    return request({
+      url: APIS.NOTE.STATS,
+      method: 'GET'
+    })
+  }
 }

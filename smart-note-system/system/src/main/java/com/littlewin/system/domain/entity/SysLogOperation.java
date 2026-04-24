@@ -1,9 +1,11 @@
 package com.littlewin.system.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
+@TableName("sys_log_operation")
 public class SysLogOperation {
     private Long id;
     private Long userId;

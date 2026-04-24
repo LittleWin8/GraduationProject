@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("note_attachment")
@@ -14,9 +15,15 @@ public class NoteAttachment implements Serializable {
 
     private Long noteId;
 
+    private Long userId;
+
     private String fileUrl;
 
     private String fileName;
 
+    private String fileSuffix;
+
     private Long fileSize;
+
+    private LocalDateTime createTime;
 }

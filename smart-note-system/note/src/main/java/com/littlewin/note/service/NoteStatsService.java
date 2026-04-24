@@ -1,6 +1,7 @@
 package com.littlewin.note.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.vo.FavoriteNoteVO;
 import com.littlewin.note.domain.vo.LikedNoteVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
@@ -10,35 +11,21 @@ public interface NoteStatsService {
 
     /**
      * 获取用户统计数据
-     * @param userId 用户ID
-     * @return 统计数据
      */
     NoteStatsVO getUserStats(Long userId);
 
     /**
-     * 获取我的笔记列表（分页）
-     * @param userId 用户ID
-     * @param pageNum 页码
-     * @param pageSize 每页大小
-     * @return 分页数据
+     * 查询我的笔记列表（支持搜索/筛选/排序）
      */
-    IPage<MyNoteVO> getMyNotes(Long userId, Integer pageNum, Integer pageSize);
+    IPage<MyNoteVO> queryMyNotes(Long userId, NoteQueryDTO queryDTO);
 
     /**
-     * 获取用户收藏的笔记列表（分页）
-     * @param userId 用户ID
-     * @param pageNum 页码
-     * @param pageSize 每页大小
-     * @return 分页数据
+     * 查询我收藏的笔记列表（支持搜索/筛选/排序）
      */
-    IPage<FavoriteNoteVO> getFavorites(Long userId, Integer pageNum, Integer pageSize);
+    IPage<FavoriteNoteVO> queryFavorites(Long userId, NoteQueryDTO queryDTO);
 
     /**
-     * 获取用户点赞的笔记列表（分页）
-     * @param userId 用户ID
-     * @param pageNum 页码
-     * @param pageSize 每页大小
-     * @return 分页数据
+     * 查询我点赞的笔记列表（支持搜索/筛选/排序）
      */
-    IPage<LikedNoteVO> getLiked(Long userId, Integer pageNum, Integer pageSize);
+    IPage<LikedNoteVO> queryLiked(Long userId, NoteQueryDTO queryDTO);
 }

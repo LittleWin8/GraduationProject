@@ -3,6 +3,7 @@ package com.littlewin.note.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
 import com.littlewin.common.utils.SecurityUtils;
+import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.vo.FavoriteNoteVO;
 import com.littlewin.note.domain.vo.LikedNoteVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
@@ -21,34 +22,24 @@ public class NoteStatsController {
     @GetMapping("/stats")
     public Result<NoteStatsVO> getStats() {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        NoteStatsVO stats = noteStatsService.getUserStats(userId);
-        return Result.success(stats);
+        return Result.success(noteStatsService.getUserStats(userId));
     }
 
     @GetMapping("/my-notes")
-    public Result<IPage<MyNoteVO>> getMyNotes(
-            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public Result<IPage<MyNoteVO>> getMyNotes(NoteQueryDTO queryDTO) {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        IPage<MyNoteVO> page = noteStatsService.getMyNotes(userId, pageNum, pageSize);
-        return Result.success(page);
+        return Result.success(noteStatsService.queryMyNotes(userId, queryDTO));
     }
 
     @GetMapping("/favorites")
-    public Result<IPage<FavoriteNoteVO>> getFavorites(
-            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public Result<IPage<FavoriteNoteVO>> getFavorites(NoteQueryDTO queryDTO) {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        IPage<FavoriteNoteVO> page = noteStatsService.getFavorites(userId, pageNum, pageSize);
-        return Result.success(page);
+        return Result.success(noteStatsService.queryFavorites(userId, queryDTO));
     }
 
     @GetMapping("/liked")
-    public Result<IPage<LikedNoteVO>> getLiked(
-            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+    public Result<IPage<LikedNoteVO>> getLiked(NoteQueryDTO queryDTO) {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        IPage<LikedNoteVO> page = noteStatsService.getLiked(userId, pageNum, pageSize);
-        return Result.success(page);
+        return Result.success(noteStatsService.queryLiked(userId, queryDTO));
     }
 }

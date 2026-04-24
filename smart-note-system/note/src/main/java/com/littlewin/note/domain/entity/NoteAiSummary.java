@@ -17,5 +17,7 @@ public class NoteAiSummary implements Serializable {
 
     private String keywords;
 
+    private String modelName;
+
     private LocalDateTime createTime;
 }
