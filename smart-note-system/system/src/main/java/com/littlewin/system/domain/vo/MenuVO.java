@@ -1,5 +1,6 @@
 package com.littlewin.system.domain.vo;
 
+import com.littlewin.common.core.TreeNode;
 import lombok.Data;
 import java.util.List;
 
@@ -7,7 +8,10 @@ import java.util.List;
  * 适配 Geeker-Admin 的路由菜单 VO
  */
 @Data
-public class MenuVO {
+public class MenuVO implements TreeNode<MenuVO, Long> {
+
+    private Long id;
+    private Long parentId;
     private String path;
     private String name;
     private String component;

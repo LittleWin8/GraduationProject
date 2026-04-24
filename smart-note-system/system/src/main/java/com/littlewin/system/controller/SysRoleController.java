@@ -2,6 +2,7 @@ package com.littlewin.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.littlewin.common.core.Result;
+import com.littlewin.common.utils.TreeUtils;
 import com.littlewin.system.domain.vo.MenuTreeVO;
 import com.littlewin.system.domain.dto.RoleDTO;
 import com.littlewin.system.domain.dto.RoleMenuDTO;
@@ -146,8 +147,20 @@ public class SysRoleController {
      */
     @GetMapping("/menu/tree")
     public Result<List<MenuTreeVO>> getMenuTree() {
+        // 1. 获取所有菜单的扁平列表
         List<SysMenu> menuList = menuMapper.selectMenuTree();
-        List<MenuTreeVO> tree = buildMenuTree(menuList, 0L);
+
+        if (menuList == null || menuList.isEmpty()) {
+            return Result.success(new ArrayList<>());
+        }
+
+        // 2. 将 SysMenu 列表转换为 MenuTreeVO 扁平列表
+        List<MenuTreeVO> flatList = menuList.stream()
+                .map(MenuTreeVO::new)
+                .collect(Collectors.toList());
+
+        // 3. 使用 TreeUtils 构建树形结构 (根节点 parentId 为 0L)
+        List<MenuTreeVO> tree = TreeUtils.build(flatList, 0L);
         return Result.success(tree);
     }
 
@@ -171,19 +184,5 @@ public class SysRoleController {
         List<SysRole> list = roleService.list(wrapper);
         return Result.success(list);
     }
-
-    /**
-     * 构建菜单树
-     */
-    private List<MenuTreeVO> buildMenuTree(List<SysMenu> menuList, Long parentId) {
-        List<MenuTreeVO> treeList = new ArrayList<>();
-        for (SysMenu menu : menuList) {
-            if (menu.getParentId().equals(parentId)) {
-                MenuTreeVO node = new MenuTreeVO(menu);
-                node.setChildren(buildMenuTree(menuList, menu.getMenuId()));
-                treeList.add(node);
-            }
-        }
-        return treeList;
-    }
+    
 }

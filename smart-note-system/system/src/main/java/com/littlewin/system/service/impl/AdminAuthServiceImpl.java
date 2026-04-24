@@ -5,10 +5,7 @@ import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
-import com.littlewin.common.utils.JwtUtils;
-import com.littlewin.common.utils.PasswordUtils;
-import com.littlewin.common.utils.SecurityUtils;
-import com.littlewin.common.utils.ServletUtils;
+import com.littlewin.common.utils.*;
 import com.littlewin.common.core.LoginDTO;
 import com.littlewin.system.domain.dto.SecurityUpdateDTO;
 import com.littlewin.system.domain.entity.SysMenu;
@@ -191,7 +188,36 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
         // 只查询类型为 M(目录) 和 C(菜单) 的数据
         List<SysMenu> menus = userAuthMapper.selectMenuListByUserId(user.getUserId());
-        return buildMenuTree(menus, 0L);
+
+        // 将 SysMenu 扁平列表映射为 MenuVO 扁平列表
+        List<MenuVO> menuVOList = menus.stream().map(m -> {
+            MenuVO vo = new MenuVO();
+            // 必须设置 id 和 parentId 给 TreeUtils 使用
+            vo.setId(m.getMenuId());
+            vo.setParentId(m.getParentId());
+
+            vo.setPath(m.getPath());
+            vo.setName(m.getName());
+            vo.setComponent(m.getComponent());
+            vo.setRedirect(m.getRedirect());
+
+            // 填充前端 Meta 信息
+            MenuVO.MetaVO meta = new MenuVO.MetaVO();
+            meta.setTitle(m.getTitle());
+            meta.setIcon(m.getIcon());
+            meta.setIsLink(m.getIsLink() == null ? "" : m.getIsLink());
+            meta.setIsHide(m.getIsHide() != null && m.getIsHide() == 1);
+            meta.setIsFull(m.getIsFull() != null && m.getIsFull() == 1);
+            meta.setIsAffix(m.getIsAffix() != null && m.getIsAffix() == 1);
+            meta.setIsKeepAlive(m.getIsKeepAlive() != null && m.getIsKeepAlive() == 1);
+            meta.setActiveMenu(m.getActiveMenu());
+
+            vo.setMeta(meta);
+            return vo;
+        }).collect(Collectors.toList());
+
+        // 调用工具类直接构建树形结构 (假设根节点的 parentId 是 0L)
+        return TreeUtils.build(menuVOList, 0L);
     }
 
     /**
@@ -231,40 +257,4 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return result;
     }
 
-    /**
-     * 递归构建菜单树
-     */
-    private List<MenuVO> buildMenuTree(List<SysMenu> menus, Long parentId) {
-        List<MenuVO> list = new ArrayList<>();
-        for (SysMenu m : menus) {
-            if (m.getParentId().equals(parentId)) {
-                MenuVO vo = new MenuVO();
-                vo.setPath(m.getPath());
-                vo.setName(m.getName());
-                vo.setComponent(m.getComponent());
-                vo.setRedirect(m.getRedirect());
-
-                // 填充前端 Meta 信息
-                MenuVO.MetaVO meta = new MenuVO.MetaVO();
-                meta.setTitle(m.getTitle());
-                meta.setIcon(m.getIcon());
-                meta.setIsLink(m.getIsLink() == null ? "" : m.getIsLink());
-                meta.setIsHide(m.getIsHide() != null && m.getIsHide() == 1);
-                meta.setIsFull(m.getIsFull() != null && m.getIsFull() == 1);
-                meta.setIsAffix(m.getIsAffix() != null && m.getIsAffix() == 1);
-                meta.setIsKeepAlive(m.getIsKeepAlive() != null && m.getIsKeepAlive() == 1);
-                meta.setActiveMenu(m.getActiveMenu());
-
-                vo.setMeta(meta);
-
-                // 递归查找子菜单
-                List<MenuVO> children = buildMenuTree(menus, m.getMenuId());
-                if (!children.isEmpty()) {
-                    vo.setChildren(children);
-                }
-                list.add(vo);
-            }
-        }
-        return list;
-    }
 }
