@@ -184,5 +184,5 @@ public class SysRoleController {
         List<SysRole> list = roleService.list(wrapper);
         return Result.success(list);
     }
-    
+
 }

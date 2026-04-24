@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/wx/note")
 @RequiredArgsConstructor
-public class NoteStatsController {
+public class WxNoteStatsController {
 
     private final NoteStatsService noteStatsService;
 

@@ -77,7 +77,7 @@
 		<!-- 分类选择器 -->
 		<u-picker
 			:show="showCategoryPicker"
-			:columns="[categoryList]"
+			:columns="categories"
 			keyName="name"
 			@confirm="onCategoryConfirm"
 			@cancel="showCategoryPicker = false"
@@ -121,10 +121,10 @@ const queryParams = ref({
 	orderDirection: 'DESC'
 })
 
-// 分类相关
-const categoryList = ref([])
-const showCategoryPicker = ref(false)
-const selectedCategoryName = ref('')
+// 定义分类数据源
+const categories = ref([]); 
+const showCategoryPicker = ref(false);
+const selectedCategoryName = ref('');
 
 // 排序选项
 const sortOptions = [
@@ -150,13 +150,60 @@ const iconColor = computed(() => {
 
 // 获取分类列表
 const fetchCategories = async () => {
+	console.log('=== fetchCategories 开始执行 ===')
 	try {
+		console.log('准备调用 categoryApi.getList()')
 		const res = await categoryApi.getList()
-		if (res) {
-			categoryList.value = [{ categoryId: null, name: '全部分类' }, ...res]
+		console.log('categoryApi.getList() 返回结果:', res)
+		
+		// 判断返回的数据格式
+		let categoryData = res
+		// 如果返回的是包含 code 和 data 的对象，则提取 data
+		if (res && res.code === 200 && res.data) {
+			categoryData = res.data
+			console.log('从响应中提取 data:', categoryData)
+		} else if (Array.isArray(res)) {
+			console.log('返回的是数组格式')
+			categoryData = res
+		}
+		
+		if (categoryData && Array.isArray(categoryData) && categoryData.length > 0) {
+			console.log('分类数据长度:', categoryData.length)
+			
+			// 处理树形数据为平铺列表，方便 u-picker 显示
+			const flatList = []
+			const flatten = (nodes, level = 0) => {
+				nodes.forEach(node => {
+					flatList.push({
+						categoryId: node.categoryId,
+						name: (level > 0 ? '　'.repeat(level) + '-' : '') + node.name
+					})
+					if (node.children && node.children.length > 0) {
+						flatten(node.children, level + 1)
+					}
+				})
+			}
+			flatten(categoryData)
+			console.log('平铺后的分类:', flatList)
+			
+			// 添加"全部分类"选项
+			const allCategories = [{ categoryId: '', name: '全部分类' }, ...flatList]
+			console.log('完整分类列表:', allCategories)
+			
+			// u-picker 的 columns 需要是二维数组
+			categories.value = [allCategories]
+			console.log('最终 categories.value (二维数组):', categories.value)
+			console.log('categories.value[0] 长度:', categories.value[0]?.length)
+		} else {
+			console.error('分类数据为空或格式异常:', categoryData)
+			// 设置默认数据，至少让 picker 能显示
+			categories.value = [[{ categoryId: '', name: '全部分类' }]]
 		}
 	} catch (error) {
 		console.error('获取分类失败:', error)
+		uni.showToast({ title: '获取分类失败', icon: 'none' })
+		// 出错时也设置默认数据
+		categories.value = [[{ categoryId: '', name: '全部分类' }]]
 	}
 }
 
@@ -245,19 +292,27 @@ const onSearch = () => {
 
 // 分类筛选确认
 const onCategoryConfirm = (e) => {
+	
 	const category = e.value[0]
 	showCategoryPicker.value = false
-	queryParams.value.categoryId = category.categoryId
-	selectedCategoryName.value = category.name
-	loadData(false)
+	
+	if (category) {
+		queryParams.value.categoryId = category.categoryId || null
+		selectedCategoryName.value = category.name
+		loadData(false)
+	} else {
+		console.warn('未获取到选中的分类数据')
+	}
 }
 
 // 排序确认
 const onSortConfirm = (e) => {
+	console.log('=== 排序选择确认 ===')
 	const sort = e.value[0]
 	showSortPicker.value = false
 	queryParams.value.orderBy = sort.value
 	queryParams.value.orderDirection = sort.direction
+	console.log('排序方式:', sort.label)
 	loadData(false)
 }
 
@@ -268,16 +323,24 @@ const goToNoteDetail = (noteId) => {
 
 // 页面加载
 onLoad((options) => {
+	console.log('=== 页面加载 onLoad ===')
+	console.log('接收到的参数:', options)
+	
 	if (options.type) {
 		type.value = options.type
+		console.log('type设置为:', type.value)
 	}
 	if (options.title) {
 		title.value = options.title
 		uni.setNavigationBarTitle({ title: options.title })
+		console.log('标题设置为:', options.title)
 	}
 	
 	// 加载初始数据
+	console.log('开始加载分类数据...')
 	fetchCategories()
+	
+	console.log('开始加载列表数据...')
 	loadData(false)
 })
 </script>

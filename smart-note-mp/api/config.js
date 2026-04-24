@@ -48,7 +48,7 @@ export const APIS = {
   
   // 分类模块
   CATEGORY: {
-    LIST: '/api/wx/categories'
+    LIST: '/api/wx/categories/list'
   },
   
   // 标签模块

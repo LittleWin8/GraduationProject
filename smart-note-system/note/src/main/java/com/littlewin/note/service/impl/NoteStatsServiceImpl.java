@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.littlewin.common.utils.TreeUtils;
 import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.entity.Note;
 import com.littlewin.note.domain.entity.NoteReaction;
@@ -97,25 +98,11 @@ public class NoteStatsServiceImpl implements NoteStatsService {
     // ==================== 私有辅助方法 ====================
 
     private List<Long> getAllCategoryIds(Long categoryId) {
-        List<Long> allIds = new ArrayList<>();
-        allIds.add(categoryId);
-        fetchChildIdsRecursive(categoryId, allIds);
-        return allIds;
-    }
+        // 1. 一次性查出所有分类（或按需过滤），避免循环查库
+        List<SysCategory> allCategories = sysCategoryMapper.selectList(null);
 
-    private void fetchChildIdsRecursive(Long parentId, List<Long> allIds) {
-        List<Long> childIds = sysCategoryMapper.selectList(new LambdaQueryWrapper<SysCategory>()
-                        .eq(SysCategory::getParentId, parentId)
-                        .select(SysCategory::getCategoryId))
-                .stream()
-                .map(SysCategory::getCategoryId)
-                .collect(Collectors.toList());
-
-        if (!childIds.isEmpty()) {
-            allIds.addAll(childIds);
-            for (Long childId : childIds) {
-                fetchChildIdsRecursive(childId, allIds);
-            }
-        }
+        // 2. 调用工具类直接获取所有子 ID
+        // 参数：全量列表, 目标起始ID, 是否包含自身
+        return TreeUtils.findAllChildIds(allCategories, categoryId, true);
     }
 }
