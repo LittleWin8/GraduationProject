@@ -1,11 +1,14 @@
 package com.littlewin.note.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.dao.DuplicateKeyException;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.note.domain.entity.NoteTag;
 import com.littlewin.note.domain.entity.NoteTagRel;
+import com.littlewin.note.domain.vo.TagNoteVO;
 import com.littlewin.note.mapper.NoteTagMapper;
 import com.littlewin.note.mapper.NoteTagRelMapper;
 import com.littlewin.note.service.NoteTagService;
@@ -76,5 +79,18 @@ public class NoteTagServiceImpl implements NoteTagService {
         if (rows <= 0) {
             throw new ServiceException("删除失败，请重试");
         }
+    }
+
+    @Override
+    public IPage<TagNoteVO> listNotesByTag(Long tagId, Long userId, long pageNum, long pageSize) {
+        NoteTag tag = noteTagMapper.selectOne(new LambdaQueryWrapper<NoteTag>()
+                .eq(NoteTag::getTagId, tagId)
+                .eq(NoteTag::getUserId, userId));
+        if (tag == null) {
+            throw new ServiceException("标签不存在或无权限访问");
+        }
+
+        Page<TagNoteVO> page = new Page<>(pageNum, pageSize);
+        return noteTagMapper.selectNotesByTag(page, tagId, userId);
     }
 }

@@ -32,7 +32,7 @@ export const tagApi = {
     return request({
       url: `${APIS.TAG.NOTES_BY_TAG}/${tagId}/notes`,
       method: 'GET',
-      data: { page, size }
+      params: { page, size }
     })
   }
 }

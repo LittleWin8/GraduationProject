@@ -1,7 +1,11 @@
 package com.littlewin.note.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.note.domain.entity.NoteTag;
+import com.littlewin.note.domain.vo.TagNoteVO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
@@ -11,4 +15,11 @@ public interface NoteTagMapper extends BaseMapper<NoteTag> {
      * 查询用户的所有标签，并统计每个标签关联的笔记数量
      */
     List<NoteTag> selectTagListWithCount(Long userId);
+
+    /**
+     * 分页查询标签下的笔记列表
+     */
+    IPage<TagNoteVO> selectNotesByTag(Page<TagNoteVO> page,
+                                      @Param("tagId") Long tagId,
+                                      @Param("userId") Long userId);
 }

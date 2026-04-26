@@ -1,11 +1,13 @@
 <template>
 	<view class="note-card" @tap="$emit('click', note.id)">
-		<view class="u-flex u-row-between u-margin-bottom-20">
-			<view class="u-flex">
+		<view class="note-header u-margin-bottom-20">
+			<view class="note-header-left">
 				<u-avatar :src="note.avatar" size="24"></u-avatar>
-				<text class="u-margin-left-15 u-font-24 u-tips-color">{{ note.author }}</text>
+				<text class="note-author u-tips-color">{{ note.author }}</text>
 			</view>
-			<u-tag :text="note.type" size="mini" type="primary" plain></u-tag>
+			<view class="note-type-wrap">
+				<u-tag :text="note.type" size="mini" type="primary" plain></u-tag>
+			</view>
 		</view>
 		
 		<view class="title u-line-1 u-margin-bottom-10">{{ note.title }}</view>
@@ -34,6 +36,24 @@ const handleLike = () => emit('like', props.note.id);
 .note-card {
 	background: #fff; margin: 20rpx; padding: 30rpx; border-radius: 16rpx;
 	box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.03);
+	.note-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.note-header-left {
+		display: flex;
+		align-items: center;
+	}
+	.note-author {
+		margin-left: 15rpx;
+		font-size: 24rpx;
+		line-height: 1;
+	}
+	.note-type-wrap {
+		display: flex;
+		align-items: center;
+	}
 	.title { font-size: 32rpx; font-weight: bold; color: #303133; }
 	.summary { font-size: 26rpx; color: #606266; line-height: 1.6; }
 	.action-item { display: flex; align-items: center; font-size: 24rpx; color: #909399; }
