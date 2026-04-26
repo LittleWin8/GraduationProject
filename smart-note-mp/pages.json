@@ -56,6 +56,12 @@
 			"style": {
 				"navigationBarTitleText": ""
 			}
+		},
+		{
+			"path": "pages/note-detail/note-detail",
+			"style": {
+				"navigationBarTitleText": "笔记详情"
+			}
 		}
 	],
 	"globalStyle": {

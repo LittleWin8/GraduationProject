@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.entity.Note;
+import com.littlewin.note.domain.vo.NoteDetailVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -15,4 +16,7 @@ public interface NoteMapper extends BaseMapper<Note> {
                                        @Param("userId") Long userId,
                                        @Param("query") NoteQueryDTO query,
                                        @Param("categoryIds") List<Long> categoryIds);
+
+    NoteDetailVO selectNoteDetailById(@Param("noteId") Long noteId,
+                                      @Param("userId") Long userId);
 }

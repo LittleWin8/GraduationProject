@@ -36,4 +36,36 @@
             <otherwise>DESC</otherwise>
         </choose>
     </select>
+
+    <select id="selectNoteDetailById" resultType="com.littlewin.note.domain.vo.NoteDetailVO">
+        SELECT
+            n.note_id AS noteId,
+            n.title AS title,
+            n.content AS content,
+            u.nickname AS author,
+            u.avatar AS avatar,
+            n.is_public AS isPublic,
+            CASE WHEN IFNULL(cur.attitude, 0) = 1 THEN 1 ELSE 0 END AS isLiked,
+            (
+                SELECT COUNT(1)
+                FROM note_reaction nr
+                WHERE nr.note_id = n.note_id
+                  AND nr.attitude = 1
+            ) AS likes,
+            (
+                SELECT COUNT(1)
+                FROM note_comment nc
+                WHERE nc.note_id = n.note_id
+                  AND nc.del_flag = 0
+            ) AS comments,
+            n.update_time AS updateTime
+        FROM note n
+        INNER JOIN sys_user u ON u.user_id = n.user_id
+        LEFT JOIN note_reaction cur ON cur.note_id = n.note_id AND cur.user_id = #{userId}
+        WHERE n.note_id = #{noteId}
+          AND n.del_flag = 0
+          AND n.status = 1
+          AND (n.is_public = 1 OR n.user_id = #{userId})
+        LIMIT 1
+    </select>
 </mapper>
