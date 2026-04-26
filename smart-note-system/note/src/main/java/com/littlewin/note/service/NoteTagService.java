@@ -13,10 +13,10 @@ public interface NoteTagService {
     /**
      * 创建标签（检查重名）
      */
-    boolean saveTag(String name, Long userId);
+    NoteTag saveTag(String name, Long userId);
 
     /**
      * 删除标签（MyBatis Plus 会自动处理）
      */
-    void removeTag(Long tagId);
+    void removeTag(Long tagId, Long userId);
 }

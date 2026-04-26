@@ -1,6 +1,7 @@
 package com.littlewin.note.controller;
 
 import com.littlewin.common.core.Result;
+import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.note.domain.entity.NoteTag;
 import com.littlewin.note.service.NoteTagService;
@@ -27,17 +28,21 @@ public class WxTagController {
 
     // 创建标签
     @PostMapping
-    public Result<String> createTag(@RequestBody Map<String, String> params) {
+    public Result<NoteTag> createTag(@RequestBody Map<String, String> params) {
         String name = params.get("name");
-        Long currentUserId = 1L;
-        boolean success = tagService.saveTag(name, currentUserId);
-        return success ? Result.success() : Result.error("标签已存在");
+        if (name == null || name.trim().isEmpty()) {
+            throw new ServiceException("标签名称不能为空");
+        }
+        Long currentUserId = SecurityUtils.getLoginUser().getUserId();
+        NoteTag newTag = tagService.saveTag(name.trim(), currentUserId);
+        return Result.success(newTag);
     }
 
     // 删除标签
     @DeleteMapping("/{id}")
-    public Result deleteTag(@PathVariable Long id) {
-        tagService.removeTag(id);
+    public Result<?> deleteTag(@PathVariable("id") Long id) {
+        Long currentUserId = SecurityUtils.getLoginUser().getUserId();
+        tagService.removeTag(id, currentUserId);
         return Result.success();
     }
 }

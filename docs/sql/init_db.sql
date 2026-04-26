@@ -129,21 +129,24 @@ CREATE TABLE note (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记主表';
 
-/* 3. 用户标签定义表 (用户自由创建) */
+/* 3. 用户标签定义表 (用户自由创建) - 完善态 */
 CREATE TABLE note_tag (
     tag_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '标签ID',
     name VARCHAR(50) NOT NULL COMMENT '标签名称',
     user_id BIGINT NOT NULL COMMENT '所属用户ID',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
-    INDEX idx_user_id (user_id)
+    UNIQUE KEY uk_note_tag_user_name (user_id, name),
+    INDEX idx_user_id (user_id),
+    INDEX idx_create_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户笔记标签表';
 
-/* 4. 笔记标签关联表 */
+/* 4. 笔记标签关联表 - 建议补查询索引 */
 CREATE TABLE note_tag_rel (
     note_id BIGINT NOT NULL COMMENT '笔记ID',
     tag_id BIGINT NOT NULL COMMENT '标签ID',
-    PRIMARY KEY (note_id, tag_id)
+    PRIMARY KEY (note_id, tag_id),
+    INDEX idx_tag_id (tag_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记与标签关联表';
 
 /* 5. 附件表 (增加用户关联与文件元数据) */

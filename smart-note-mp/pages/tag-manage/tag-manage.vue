@@ -3,18 +3,18 @@
 		<!-- 添加标签 -->
 		<view class="add-tag-section">
 			<u-input 
+				class="tag-input"
 				placeholder="输入新标签名称" 
 				v-model="newTagName"
-				border="bottom"
+				border="surround"
 				customStyle="flex: 1;"
 			/>
 			<u-button 
-				type="primary" 
-				size="large" 
-				text="添加" 
-				@click="addTag"
-				style="margin-left: 20rpx;"
-				customStyle="font-size: 30rpx;"
+				class="tag-add-btn"
+    			type="primary"
+    			text="添加"
+    			@click="addTag"
+    			customStyle="font-size: 30rpx; width: 160rpx;"
 			/>
 		</view>
 
@@ -22,13 +22,15 @@
 		<view class="tag-list">
 			<view 
 				v-for="tag in myTags" 
-				:key="tag.id"
+				:key="tag.tagId || tag.id"
 				class="tag-item"
 				@click="goToTagNotes(tag)"
 			>
 				<text class="tag-name">{{ tag.name }}</text>
 				<text class="tag-count">{{ tag.noteCount || 0 }}篇</text>
-				<u-icon name="close-circle-fill" color="#ff6b6b" size="32" @click.stop="deleteTag(tag.id)"></u-icon>
+				<view @tap.stop="deleteTag(tag.tagId || tag.id)">
+					<u-icon name="close-circle-fill" color="#ff6b6b" size="32"></u-icon>
+				</view>
 			</view>
 			
 			<view v-if="myTags.length === 0" class="empty-tip">
@@ -103,7 +105,7 @@ const addTag = async () => {
 		
 		// 添加到列表
 		myTags.value.push({
-			id: newTag.id,
+			tagId: newTag.tagId || newTag.id,
 			name: newTag.name,
 			noteCount: 0
 		})
@@ -135,7 +137,7 @@ const deleteTag = async (id) => {
 					await tagApi.deleteTag(id)
 					
 					// 从列表中移除
-					myTags.value = myTags.value.filter(t => t.id !== id)
+					myTags.value = myTags.value.filter(t => (t.tagId || t.id) !== id)
 					uni.showToast({ title: '删除成功', icon: 'success' })
 				} catch (error) {
 					console.error('删除标签失败:', error)
@@ -149,7 +151,7 @@ const deleteTag = async (id) => {
 // 跳转到标签笔记页
 const goToTagNotes = (tag) => {
 	uni.navigateTo({
-		url: `/pages/tag-notes/tag-notes?tagId=${tag.id}&tagName=${encodeURIComponent(tag.name)}`
+		url: `/pages/tag-notes/tag-notes?tagId=${tag.tagId || tag.id}&tagName=${encodeURIComponent(tag.name)}`
 	})
 }
 
@@ -199,12 +201,23 @@ onShow(() => {
 }
 
 .add-tag-section {
-	display: flex;
-	align-items: center;
-	background: #fff;
-	padding: 30rpx;
-	border-radius: 20rpx;
-	margin-bottom: 30rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: #fff;
+  padding: 30rpx;
+  border-radius: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.tag-input {
+  height: 80rpx;
+}
+
+.tag-add-btn {
+  height: 80rpx;
+  line-height: 80rpx;
+  flex-shrink: 0;
 }
 
 .tag-list {
