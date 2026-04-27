@@ -1,7 +1,7 @@
 // 环境配置
 const ENV = {
   dev: {
-    baseURL: 'http://192.168.1.5:8080'
+    baseURL: 'http://192.168.1.10:8080'
   },
   prod: {
     baseURL: ''
@@ -25,8 +25,9 @@ export const APIS = {
   
   // 用户模块（合并了统计和收藏列表）
   USER: {
-	DETAIL: '/api/wx/auth/getUserInfo',
-    INFO: '/api/wx/user',           // PUT
+    INFO: '/api/wx/user',
+    DETAIL: '/api/wx/user',
+    AVATAR: '/api/wx/user/avatar',
     STATS: '/api/wx/note/stats'     // 返回：笔记数、点赞数、收藏数、收藏列表
   },
   

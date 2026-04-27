@@ -3,12 +3,10 @@
 		<!-- 头像 -->
 		<view class="avatar-section">
 			<Avatar 
-				:src="userInfo.avatar"
-				:size="120"
+				:src="fullAvatarUrl"
+				:size="100"
 				shape="circle"
 				default-type="user"
-				:show-fallback-icon="true"
-				fallback-icon="account"
 			></Avatar>
 			<view class="avatar-edit" @click="changeAvatar">
 				<u-icon name="camera" color="#fff" size="28"></u-icon>
@@ -35,18 +33,55 @@
 		<custom-tab-bar />
 		
 		<!-- 编辑弹窗（普通文本） -->
-		<u-popup :show="showEditPopup && editFieldType !== 'birthday'" @close="showEditPopup = false" mode="center" round="16">
+		<u-popup :show="showEditPopup && editFieldType !== 'birthday' && editFieldType !== 'gender'" @close="showEditPopup = false" mode="center" round="16">
 			<view class="edit-popup">
 				<view class="edit-title">编辑{{ editFieldName }}</view>
 				<input 
 					class="edit-input" 
 					v-model="editValue" 
 					:placeholder="'请输入' + editFieldName"
-					:type="editFieldType === 'gender' ? 'text' : 'text'"
+					type="text"
 				/>
 				<view class="edit-buttons">
 					<u-button text="取消" @click="showEditPopup = false"></u-button>
 					<u-button type="primary" text="保存" @click="saveEdit"></u-button>
+				</view>
+			</view>
+		</u-popup>
+
+		<!-- 性别选择器弹窗 -->
+		<u-popup :show="showGenderPicker" @close="showGenderPicker = false" mode="center" round="16">
+			<view class="edit-popup">
+				<view class="edit-title">选择性别</view>
+				<view class="gender-options">
+					<view 
+						class="gender-option" 
+						:class="{ active: tempGender === 1 }"
+						@click="tempGender = 1"
+					>
+						<text>男</text>
+						<u-icon v-if="tempGender === 1" name="checkmark-circle" color="#2979ff" size="32"></u-icon>
+					</view>
+					<view 
+						class="gender-option" 
+						:class="{ active: tempGender === 2 }"
+						@click="tempGender = 2"
+					>
+						<text>女</text>
+						<u-icon v-if="tempGender === 2" name="checkmark-circle" color="#2979ff" size="32"></u-icon>
+					</view>
+					<view 
+						class="gender-option" 
+						:class="{ active: tempGender === 0 }"
+						@click="tempGender = 0"
+					>
+						<text>未知</text>
+						<u-icon v-if="tempGender === 0" name="checkmark-circle" color="#2979ff" size="32"></u-icon>
+					</view>
+				</view>
+				<view class="edit-buttons">
+					<u-button text="取消" @click="showGenderPicker = false"></u-button>
+					<u-button type="primary" text="保存" @click="saveGender"></u-button>
 				</view>
 			</view>
 		</u-popup>
@@ -68,7 +103,17 @@
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
-import { userApi, authApi } from '@/api'
+import { userApi, authApi, config } from '@/api'
+
+// 统一的头像路径处理
+const getFullAvatarUrl = (avatar) => {
+  if (!avatar) return ''
+  if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:')) return avatar
+  if (avatar.startsWith('/api/wx/user/files/')) return config.baseURL + avatar
+  return config.baseURL + '/api/wx/user/files' + avatar
+}
+
+const fullAvatarUrl = computed(() => getFullAvatarUrl(userInfo.value.avatar))
 
 const userInfo = ref({
 	userId: '',
@@ -105,6 +150,10 @@ const editFieldType = ref('')
 const editFieldName = ref('')
 const editValue = ref('')
 const currentEditField = ref('')
+
+// 性别选择器相关
+const showGenderPicker = ref(false)
+const tempGender = ref(0)
 
 // 生日选择器相关
 const showDatePicker = ref(false)
@@ -150,7 +199,10 @@ const loadFromCache = () => {
 	try {
 		const cached = uni.getStorageSync('userInfo')
 		if (cached && cached.userId) {
-			userInfo.value = cached
+			userInfo.value = {
+				...cached,
+				avatar: cached.avatar || ''
+			}
 			console.log('从缓存加载用户信息成功:', cached)
 			return true
 		}
@@ -246,6 +298,70 @@ const refreshUserInfo = async () => {
 	await fetchLatestUserInfo()
 }
 
+// 编辑字段
+const editField = (field) => {
+	currentEditField.value = field
+	
+	// 设置编辑字段的显示名称
+	const fieldNames = {
+		name: '昵称',
+		signature: '个性签名',
+		email: '邮箱',
+		phone: '手机号',
+		gender: '性别',
+		city: '地区',
+		birthday: '生日'
+	}
+	editFieldName.value = fieldNames[field] || field
+	
+	// 处理生日字段
+	if (field === 'birthday') {
+		showDatePicker.value = true
+		// 设置生日选择器的初始值
+		if (userInfo.value.birthday && userInfo.value.birthday !== '未设置') {
+			pickerValue.value = dateToTimestamp(userInfo.value.birthday)
+		}
+		return
+	}
+	
+	// 处理性别字段
+	if (field === 'gender') {
+		tempGender.value = userInfo.value.gender
+		showGenderPicker.value = true
+		return
+	}
+	
+	// 处理普通文本字段
+	editFieldType.value = field
+	let currentValue = userInfo.value[field]
+	
+	editValue.value = currentValue && currentValue !== '未设置' ? currentValue : ''
+	showEditPopup.value = true
+}
+
+// 保存性别
+const saveGender = async () => {
+	uni.showLoading({ title: '保存中...', mask: true })
+	
+	try {
+		// 调用真实后端接口
+		await userApi.updateUserInfo({ gender: tempGender.value })
+		
+		// 更新本地数据
+		userInfo.value.gender = tempGender.value
+		uni.setStorageSync('userInfo', userInfo.value)
+		
+		showGenderPicker.value = false
+		uni.showToast({ title: '保存成功', icon: 'success' })
+		
+	} catch (error) {
+		console.error('保存性别失败:', error)
+		uni.showToast({ title: '保存失败', icon: 'none' })
+	} finally {
+		uni.hideLoading()
+	}
+}
+
 // 确认生日选择
 const confirmBirthday = async (e) => {
 	const selectedTimestamp = e.value
@@ -283,12 +399,7 @@ const saveEdit = async () => {
 	try {
 		let updateData = {}
 		
-		if (currentEditField.value === 'gender') {
-			let genderValue = 0
-			if (editValue.value === '男') genderValue = 1
-			else if (editValue.value === '女') genderValue = 2
-			updateData.gender = genderValue
-		} else if (currentEditField.value === 'name') {
+		if (currentEditField.value === 'name') {
 			updateData.name = editValue.value.trim()
 		} else {
 			updateData[currentEditField.value] = editValue.value.trim()
@@ -298,9 +409,7 @@ const saveEdit = async () => {
 		await userApi.updateUserInfo(updateData)
 		
 		// 更新本地数据
-		if (currentEditField.value === 'gender') {
-			userInfo.value.gender = updateData.gender
-		} else if (currentEditField.value === 'name') {
+		if (currentEditField.value === 'name') {
 			userInfo.value.name = updateData.name
 			userInfo.value.nickname = updateData.name
 		} else {
@@ -321,33 +430,7 @@ const saveEdit = async () => {
 
 // 上传头像
 const uploadAvatar = async (filePath) => {
-	return new Promise((resolve, reject) => {
-		const token = uni.getStorageSync('token')
-		
-		uni.uploadFile({
-			url: 'http://192.168.1.5:8080/api/wx/notes/attachment',
-			filePath: filePath,
-			name: 'file',
-			header: {
-				'Authorization': token ? 'Bearer ' + token : ''
-			},
-			success: (res) => {
-				try {
-					const data = JSON.parse(res.data)
-					if (data.code === 200) {
-						resolve(data.data)
-					} else {
-						reject(new Error(data.msg || '上传失败'))
-					}
-				} catch (e) {
-					reject(new Error('解析响应失败'))
-				}
-			},
-			fail: (err) => {
-				reject(err)
-			}
-		})
-	})
+	return userApi.uploadAvatar(filePath)
 }
 
 // 更换头像
@@ -357,20 +440,33 @@ const changeAvatar = () => {
 		sizeType: ['compressed'],
 		sourceType: ['album', 'camera'],
 		success: async (res) => {
-			const tempFilePath = res.tempFilePaths[0]
-			uni.showLoading({ title: '上传中...', mask: true })
+			const filePath = res.tempFilePaths[0]
+			
+			// 校验文件大小
+			const fileSize = res.tempFiles[0].size;
+			if (fileSize > 5 * 1024 * 1024) {
+			  return uni.showToast({ title: '图片不能超过5MB', icon: 'none' });
+			}
+			
+			uni.showLoading({ title: '上传中...' });
 			
 			try {
-				// 上传图片
-				const uploadRes = await uploadAvatar(tempFilePath)
-				const avatarUrl = uploadRes.url || uploadRes
+				// 1. 上传物理文件到服务器
+				const uploadData = await userApi.uploadAvatar(filePath);
 				
-				// 更新用户头像
-				await userApi.updateUserInfo({ avatar: avatarUrl })
+				// 2. 【关键】调用更新接口，将后端返回的 URL 保存到数据库
+				// 注意：后端 updateUserInfo 接收 WxUserUpdateDTO，里面有 avatar 字段
+				await userApi.updateUserInfo({
+				  avatar: uploadData.url // 这里的 url 是后端拼装的 /api/wx/user/files/...
+				});
 				
-				// 更新本地数据
-				userInfo.value.avatar = avatarUrl
-				uni.setStorageSync('userInfo', userInfo.value)
+				// 3. 更新本地页面显示
+				userInfo.value.avatar = uploadData.url;
+				
+				// 4. 同步更新本地缓存中的用户信息（防止刷新页面变回去）
+				const localUser = uni.getStorageSync('userInfo');
+				localUser.avatar = uploadData.url;
+				uni.setStorageSync('userInfo', localUser);
 				
 				uni.showToast({ title: '头像更新成功', icon: 'success' })
 			} catch (error) {
@@ -487,5 +583,34 @@ defineExpose({
 
 .edit-buttons button {
 	flex: 1;
+}
+
+/* 性别选择器样式 */
+.gender-options {
+	margin-bottom: 32rpx;
+}
+
+.gender-option {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24rpx 20rpx;
+	border-bottom: 1rpx solid #f0f0f0;
+	font-size: 28rpx;
+	color: #333;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.gender-option:active {
+	background-color: #f5f5f5;
+}
+
+.gender-option.active {
+	color: #2979ff;
+}
+
+.gender-option:last-child {
+	border-bottom: none;
 }
 </style>

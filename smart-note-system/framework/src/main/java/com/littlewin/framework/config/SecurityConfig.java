@@ -60,6 +60,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 登录和退出都设置为 permitAll()
                         .requestMatchers("/api/admin/auth/login","/api/admin/auth/logout", "/api/wx/auth/login").permitAll()
+
+                        // 放行静态资源访问接口，允许匿名（不带Token）查看图片
+                        .requestMatchers("/api/wx/user/files/**").permitAll()
+
+                        .requestMatchers("/api/wx/user/avatar").permitAll()
+
                         // 其他所有请求需要认证
                         .anyRequest().authenticated()
                 );

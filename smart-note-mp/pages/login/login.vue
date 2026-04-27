@@ -95,7 +95,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { authApi, userApi, noteApi } from '@/api'
+import { authApi, userApi, noteApi, config } from '@/api'
 
 const loading = ref(false)
 const isAgree = ref(false)
@@ -218,30 +218,56 @@ const handleLoginSuccess = async (token) => {
 
 const closeAuthPopup = () => {
 	showAuthPopup.value = false
+	tempAvatar.value = ''
+	tempNickname.value = ''
 }
 
 const onChooseAvatar = (e) => {
-	tempAvatar.value = e.detail.avatarUrl
-	uni.showToast({ 
-		title: '头像选择成功', 
-		icon: 'success',
-		duration: 1000
-	})
+	const avatarUrl = e.detail.avatarUrl;
+	if (!avatarUrl) return;
+
+	uni.showLoading({ title: '上传头像中...' });
+	
+	// 将微信临时路径上传到后端
+	uni.uploadFile({
+		url: config.baseURL + '/api/wx/user/avatar',
+		filePath: avatarUrl,
+		name: 'file',
+		// 注意：如果后端拦截了未登录请求，此处可能需要特殊处理或在拦截器放行
+		success: (uploadRes) => {
+			const res = JSON.parse(uploadRes.data);
+			if (res.code === 200) {
+				// 获取后端保存后的永久访问路径（例如 /api/wx/user/files/user/avatar/xxx.jpg）
+				tempAvatar.value = config.baseURL + res.data.url;
+				uni.showToast({ title: '头像上传成功', icon: 'success' });
+			} else {
+				uni.showToast({ title: res.message || '上传失败', icon: 'none' });
+			}
+		},
+		fail: (err) => {
+			console.error('文件上传失败', err);
+			uni.showToast({ title: '网络错误', icon: 'none' });
+		},
+		complete: () => {
+			uni.hideLoading();
+		}
+	});
 }
 
 const onNicknameInput = (e) => {
-	tempNickname.value = e.detail.value
+	tempNickname.value = (e.detail.value || '').trim()
 }
 
 const onNicknameConfirm = (e) => {
-	tempNickname.value = e.detail.value
-	// 如果头像和昵称都已填写，自动触发登录
+	tempNickname.value = (e.detail.value || '').trim()
 	if (tempAvatar.value && tempNickname.value) {
 		confirmAuth()
 	}
 }
 
 const confirmAuth = async () => {
+	const nickname = tempNickname.value.trim()
+
 	// 验证头像
 	if (!tempAvatar.value) {
 		uni.showToast({ title: '请先点击选择头像', icon: 'none' })
@@ -249,13 +275,14 @@ const confirmAuth = async () => {
 	}
 	
 	// 验证昵称
-	if (!tempNickname.value || !tempNickname.value.trim()) {
+	if (!nickname) {
 		uni.showToast({ title: '请填写昵称', icon: 'none' })
 		return
 	}
 	
 	// 关闭弹窗
-	closeAuthPopup()
+	showAuthPopup.value = false
+	loading.value = true
 	uni.showLoading({ title: '正在创建账号...', mask: true });
 	
 	try {
@@ -263,17 +290,21 @@ const confirmAuth = async () => {
 		
 		// 再次调用后端，此时带上头像和昵称
 		const res = await authApi.login(loginRes.code, {
-			nickName: tempNickname.value.trim(),
+			nickName: nickname,
 			avatarUrl: tempAvatar.value
 		});
 
 		if (res.token) {
 			await handleLoginSuccess(res.token);
+		} else if (res.isNewUser) {
+			showAuthPopup.value = true
+			uni.showToast({ title: '请完善头像和昵称', icon: 'none' })
 		}
 	} catch (error) {
 		console.error('授权登录失败:', error)
 		uni.hideLoading();
-		uni.showToast({ title: '授权登录失败', icon: 'none' });
+		showAuthPopup.value = true
+		uni.showToast({ title: error.message || '授权登录失败', icon: 'none' });
 	} finally {
 		loading.value = false;
 	}
