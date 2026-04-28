@@ -7,7 +7,7 @@ export const commentApi = {
     return request({
       url: APIS.COMMENT.LIST,
       method: 'GET',
-      data: { noteId, page, size }
+      params: { noteId, page, size }
     })
   },
   

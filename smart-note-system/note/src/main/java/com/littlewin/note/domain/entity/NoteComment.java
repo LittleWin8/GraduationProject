@@ -6,6 +6,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * 笔记评论实体
+ */
 @Data
 @TableName("note_comment")
 public class NoteComment implements Serializable {
@@ -23,6 +26,5 @@ public class NoteComment implements Serializable {
 
     private LocalDateTime createTime;
 
-    @TableLogic
     private Integer delFlag;
 }

@@ -32,8 +32,42 @@
 			<view class="note-body">
 				<rich-text :nodes="renderedContent"></rich-text>
 			</view>
+
+			<!-- 评论区 -->
+			<view class="comment-section">
+				<view class="comment-header">
+					<text class="comment-title">评论 ({{ noteData.comments || 0 }})</text>
+				</view>
+
+				<u-empty v-if="commentList.length === 0 && !commentLoading" mode="list" text="暂无评论，快来抢沙发" marginTop="40" iconSize="120"></u-empty>
+
+				<view v-else class="comment-list">
+					<view class="comment-item" v-for="(item, i) in commentList" :key="item.commentId">
+						<image class="comment-avatar" :src="resolveAvatar(item.avatar)" mode="aspectFill"></image>
+						<view class="comment-main">
+							<view class="comment-top">
+								<text class="comment-author">{{ item.author || '匿名' }}</text>
+								<text v-if="item.isOwner" class="comment-delete" @click="onDeleteComment(item.commentId, i)">删除</text>
+							</view>
+							<text class="comment-time">{{ formatTime(item.createTime) }}</text>
+							<view class="comment-content-wrap">
+								<text v-if="item.parentAuthor" class="comment-reply-prefix">回复 @{{ item.parentAuthor }}：</text>
+								<text class="comment-content">{{ item.content }}</text>
+							</view>
+							<text class="comment-reply-btn" @click="openReply(item)">回复</text>
+						</view>
+					</view>
+
+					<view class="comment-load-more" v-if="commentList.length > 0">
+						<text v-if="commentLoading" class="load-more-text">加载中...</text>
+						<text v-else-if="!commentHasMore" class="load-more-text">没有更多评论了</text>
+						<text v-else class="load-more-text load-more-action" @click="loadMoreComments">加载更多</text>
+					</view>
+				</view>
+			</view>
 		</view>
 
+		<!-- 底部互动栏 -->
 		<view v-if="noteData" class="bottom-bar">
 			<view class="bar-item" @click="onLike">
 				<u-icon :name="isLiked ? 'heart-fill' : 'heart'" :color="isLiked ? '#fa3534' : '#909399'" size="24"></u-icon>
@@ -43,11 +77,35 @@
 				<u-icon :name="isCollected ? 'star-fill' : 'star'" :color="isCollected ? '#ff9900' : '#909399'" size="24"></u-icon>
 				<text class="bar-text" :style="{color: isCollected ? '#ff9900' : '#909399'}">{{ isCollected ? '已收藏' : '收藏' }}</text>
 			</view>
-			<view class="bar-item" @click="onComment">
+			<view class="bar-item" @click="openCommentInput">
 				<u-icon name="chat" color="#909399" size="24"></u-icon>
 				<text class="bar-text">{{ noteData.comments || 0 }}</text>
 			</view>
 		</view>
+
+		<!-- 评论输入弹窗 -->
+		<u-popup :show="showCommentPopup" mode="bottom" round="16" @close="closeCommentPopup">
+			<view class="comment-popup">
+				<view class="popup-header">
+					<text class="popup-title">{{ replyTarget ? '回复 @' + replyTarget.author : '发表评论' }}</text>
+					<view class="popup-send" :class="{ disabled: !commentInput.trim() || sending }" @click="onSendComment">
+						{{ sending ? '发送中' : '发送' }}
+					</view>
+				</view>
+				<textarea
+					class="popup-textarea"
+					v-model="commentInput"
+					:placeholder="replyTarget ? '回复 @' + replyTarget.author + '...' : '写下你的评论...'"
+					maxlength="500"
+					:auto-height="true"
+					:adjust-position="true"
+					:focus="showCommentPopup"
+				></textarea>
+				<view class="popup-count">
+					<text>{{ commentInput.length }}/500</text>
+				</view>
+			</view>
+		</u-popup>
 	</view>
 </template>
 
@@ -57,6 +115,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import MarkdownIt from 'markdown-it'
 import { noteApi } from '@/api/index.js'
 import { interactionApi } from '@/api/modules/interaction.js'
+import { commentApi } from '@/api/modules/comment.js'
 
 const md = new MarkdownIt({
 	html: false,
@@ -76,6 +135,24 @@ const isCollected = ref(false)
 
 const liking = ref(false)
 const collecting = ref(false)
+
+const commentList = ref([])
+const commentPage = ref(1)
+const commentHasMore = ref(true)
+const commentLoading = ref(false)
+
+const showCommentPopup = ref(false)
+const commentInput = ref('')
+const replyTarget = ref(null)
+const sending = ref(false)
+
+/** 拼接头像URL */
+const resolveAvatar = (avatar) => {
+	if (!avatar) return '/static/default-avatar.png'
+	if (avatar.startsWith('http')) return avatar
+	const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+	return baseUrl + avatar
+}
 
 const formatTime = (time) => {
 	if (!time) return ''
@@ -109,6 +186,65 @@ const loadInteractionStatus = async () => {
 	}
 }
 
+/** 加载评论列表 */
+const loadComments = async (reset = true) => {
+	if (!noteId.value) return
+	if (commentLoading.value) return
+
+	if (reset) {
+		commentPage.value = 1
+		commentHasMore.value = true
+	}
+
+	commentLoading.value = true
+	try {
+		const res = await commentApi.getComments(Number(noteId.value), commentPage.value, 10)
+		const records = res?.records || []
+
+		const parentIdSet = new Set()
+		records.forEach(r => { if (r.parentId) parentIdSet.add(r.parentId) })
+
+		let parentAuthorMap = {}
+		if (parentIdSet.size > 0) {
+			commentList.value.forEach(c => {
+				if (parentIdSet.has(c.commentId)) {
+					parentAuthorMap[c.commentId] = c.author || '匿名'
+				}
+			})
+			if (Object.keys(parentAuthorMap).length < parentIdSet.size) {
+				const allLoaded = [...commentList.value, ...records]
+				allLoaded.forEach(c => {
+					if (parentIdSet.has(c.commentId)) {
+						parentAuthorMap[c.commentId] = c.author || '匿名'
+					}
+				})
+			}
+		}
+
+		const mapped = records.map(r => ({
+			...r,
+			parentAuthor: r.parentId ? (parentAuthorMap[r.parentId] || '') : ''
+		}))
+
+		if (reset) {
+			commentList.value = mapped
+		} else {
+			commentList.value.push(...mapped)
+		}
+		commentHasMore.value = records.length >= 10
+	} catch (e) {
+		console.error('加载评论失败:', e)
+	} finally {
+		commentLoading.value = false
+	}
+}
+
+const loadMoreComments = () => {
+	if (!commentHasMore.value || commentLoading.value) return
+	commentPage.value++
+	loadComments(false)
+}
+
 const loadDetail = async (id) => {
 	loading.value = true
 	try {
@@ -124,6 +260,7 @@ const loadDetail = async (id) => {
 
 		checkOwnership()
 		loadInteractionStatus()
+		loadComments(true)
 	} catch (error) {
 		console.error('加载笔记详情失败:', error)
 		noteData.value = null
@@ -205,8 +342,77 @@ const onCollect = async () => {
 	}
 }
 
-const onComment = () => {
-	uni.showToast({ title: '评论功能即将上线', icon: 'none' })
+/** 打开评论输入弹窗（新评论） */
+const openCommentInput = () => {
+	replyTarget.value = null
+	commentInput.value = ''
+	showCommentPopup.value = true
+}
+
+/** 打开评论输入弹窗（回复某条评论） */
+const openReply = (item) => {
+	replyTarget.value = item
+	commentInput.value = ''
+	showCommentPopup.value = true
+}
+
+const closeCommentPopup = () => {
+	showCommentPopup.value = false
+	replyTarget.value = null
+	commentInput.value = ''
+}
+
+/** 发送评论 */
+const onSendComment = async () => {
+	const content = commentInput.value.trim()
+	if (!content || sending.value) return
+
+	sending.value = true
+	try {
+		const params = {
+			noteId: Number(noteId.value),
+			content
+		}
+		if (replyTarget.value) {
+			params.parentId = replyTarget.value.commentId
+		}
+		await commentApi.addComment(params.noteId, params.content, params.parentId || null)
+		uni.showToast({ title: '评论成功', icon: 'success' })
+		closeCommentPopup()
+		loadComments(true)
+		if (noteData.value) {
+			noteData.value.comments = (noteData.value.comments || 0) + 1
+		}
+	} catch (e) {
+		console.error('发表评论失败:', e)
+		uni.showToast({ title: '评论失败', icon: 'none' })
+	} finally {
+		sending.value = false
+	}
+}
+
+/** 删除评论 */
+const onDeleteComment = (commentId, index) => {
+	uni.showModal({
+		title: '确认删除',
+		content: '确定删除这条评论？',
+		confirmColor: '#fa3534',
+		success: async (res) => {
+			if (res.confirm) {
+				try {
+					await commentApi.deleteComment(commentId)
+					commentList.value.splice(index, 1)
+					if (noteData.value && noteData.value.comments > 0) {
+						noteData.value.comments--
+					}
+					uni.showToast({ title: '已删除', icon: 'success' })
+				} catch (e) {
+					console.error('删除评论失败:', e)
+					uni.showToast({ title: '删除失败', icon: 'none' })
+				}
+			}
+		}
+	})
 }
 
 onLoad((options) => {
@@ -287,8 +493,109 @@ onLoad((options) => {
 	color: #303133;
 	line-height: 1.8;
 	word-break: break-word;
+	padding-bottom: 24rpx;
+	border-bottom: 1px solid #f0f0f0;
 }
 
+/* 评论区 */
+.comment-section {
+	margin-top: 24rpx;
+}
+
+.comment-header {
+	margin-bottom: 20rpx;
+}
+
+.comment-title {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #303133;
+}
+
+.comment-list {
+	display: flex;
+	flex-direction: column;
+	gap: 20rpx;
+}
+
+.comment-item {
+	display: flex;
+	gap: 16rpx;
+}
+
+.comment-avatar {
+	width: 60rpx;
+	height: 60rpx;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: #f5f7f9;
+}
+
+.comment-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.comment-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.comment-author {
+	font-size: 26rpx;
+	color: #303133;
+	font-weight: 500;
+}
+
+.comment-delete {
+	font-size: 22rpx;
+	color: #fa3534;
+}
+
+.comment-time {
+	font-size: 22rpx;
+	color: #c0c4cc;
+	margin-top: 4rpx;
+}
+
+.comment-content-wrap {
+	margin-top: 8rpx;
+}
+
+.comment-reply-prefix {
+	font-size: 28rpx;
+	color: #409eff;
+}
+
+.comment-content {
+	font-size: 28rpx;
+	color: #606266;
+	line-height: 1.6;
+	word-break: break-word;
+}
+
+.comment-reply-btn {
+	font-size: 22rpx;
+	color: #909399;
+	margin-top: 8rpx;
+}
+
+.comment-load-more {
+	padding: 20rpx 0;
+	text-align: center;
+}
+
+.load-more-text {
+	font-size: 24rpx;
+	color: #c0c4cc;
+}
+
+.load-more-action {
+	color: #409eff;
+}
+
+/* 底部互动栏 */
 .bottom-bar {
 	position: fixed;
 	bottom: 0;
@@ -317,6 +624,56 @@ onLoad((options) => {
 	font-size: 22rpx;
 	color: #909399;
 	line-height: 1;
+}
+
+/* 评论输入弹窗 */
+.comment-popup {
+	padding: 24rpx 32rpx;
+	padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+
+.popup-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20rpx;
+}
+
+.popup-title {
+	font-size: 30rpx;
+	font-weight: 600;
+	color: #303133;
+}
+
+.popup-send {
+	font-size: 28rpx;
+	color: #fff;
+	background: #409eff;
+	padding: 10rpx 32rpx;
+	border-radius: 8rpx;
+}
+
+.popup-send.disabled {
+	background: #c0c4cc;
+}
+
+.popup-textarea {
+	width: 100%;
+	min-height: 160rpx;
+	font-size: 28rpx;
+	color: #303133;
+	line-height: 1.6;
+	padding: 16rpx;
+	background: #f5f7f9;
+	border-radius: 12rpx;
+	box-sizing: border-box;
+}
+
+.popup-count {
+	text-align: right;
+	font-size: 22rpx;
+	color: #c0c4cc;
+	margin-top: 8rpx;
 }
 
 .loading-box,
