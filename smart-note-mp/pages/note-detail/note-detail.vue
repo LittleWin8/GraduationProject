@@ -10,7 +10,6 @@
 		</view>
 
 		<view v-else class="note-container">
-			<!-- 作者操作栏（仅作者可见） -->
 			<view v-if="isOwner" class="owner-actions">
 				<view class="action-btn" @click="goToEdit">
 					<u-icon name="edit-pen" size="16" color="#1890ff"></u-icon>
@@ -34,6 +33,21 @@
 				<rich-text :nodes="renderedContent"></rich-text>
 			</view>
 		</view>
+
+		<view v-if="noteData" class="bottom-bar">
+			<view class="bar-item" @click="onLike">
+				<u-icon :name="isLiked ? 'heart-fill' : 'heart'" :color="isLiked ? '#fa3534' : '#909399'" size="24"></u-icon>
+				<text class="bar-text" :style="{color: isLiked ? '#fa3534' : '#909399'}">{{ likeCount }}</text>
+			</view>
+			<view class="bar-item" @click="onCollect">
+				<u-icon :name="isCollected ? 'star-fill' : 'star'" :color="isCollected ? '#ff9900' : '#909399'" size="24"></u-icon>
+				<text class="bar-text" :style="{color: isCollected ? '#ff9900' : '#909399'}">{{ isCollected ? '已收藏' : '收藏' }}</text>
+			</view>
+			<view class="bar-item" @click="onComment">
+				<u-icon name="chat" color="#909399" size="24"></u-icon>
+				<text class="bar-text">{{ noteData.comments || 0 }}</text>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -42,6 +56,7 @@ import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import MarkdownIt from 'markdown-it'
 import { noteApi } from '@/api/index.js'
+import { interactionApi } from '@/api/modules/interaction.js'
 
 const md = new MarkdownIt({
 	html: false,
@@ -55,14 +70,18 @@ const renderedContent = ref('')
 const noteId = ref(null)
 const isOwner = ref(false)
 
+const isLiked = ref(false)
+const likeCount = ref(0)
+const isCollected = ref(false)
+
+const liking = ref(false)
+const collecting = ref(false)
+
 const formatTime = (time) => {
 	if (!time) return ''
 	return String(time).replace('T', ' ')
 }
 
-/**
- * 判断当前用户是否为笔记作者
- */
 const checkOwnership = () => {
 	try {
 		const userInfo = uni.getStorageSync('userInfo')
@@ -71,6 +90,22 @@ const checkOwnership = () => {
 		}
 	} catch (e) {
 		console.error('判断作者身份失败:', e)
+	}
+}
+
+const loadInteractionStatus = async () => {
+	if (!noteId.value) return
+	try {
+		const status = await interactionApi.getStatus(Number(noteId.value))
+		if (status) {
+			isLiked.value = !!status.isLiked
+			isCollected.value = !!status.isCollected
+			if (status.likeCount !== undefined && status.likeCount !== null) {
+				likeCount.value = status.likeCount
+			}
+		}
+	} catch (e) {
+		console.warn('获取互动状态失败:', e)
 	}
 }
 
@@ -83,7 +118,12 @@ const loadDetail = async (id) => {
 		uni.setNavigationBarTitle({
 			title: res?.title || '笔记详情'
 		})
+
+		isLiked.value = !!res?.isLiked
+		likeCount.value = res?.likes || 0
+
 		checkOwnership()
+		loadInteractionStatus()
 	} catch (error) {
 		console.error('加载笔记详情失败:', error)
 		noteData.value = null
@@ -94,16 +134,10 @@ const loadDetail = async (id) => {
 	}
 }
 
-/**
- * 跳转编辑页
- */
 const goToEdit = () => {
 	uni.navigateTo({ url: `/pages/create/create?id=${noteId.value}` })
 }
 
-/**
- * 确认删除（移入回收站）
- */
 const confirmDelete = () => {
 	uni.showModal({
 		title: '确认删除',
@@ -125,6 +159,56 @@ const confirmDelete = () => {
 	})
 }
 
+const onLike = async () => {
+	if (liking.value) return
+	liking.value = true
+
+	const prevLiked = isLiked.value
+	const prevCount = likeCount.value
+
+	isLiked.value = !isLiked.value
+	likeCount.value += isLiked.value ? 1 : -1
+
+	try {
+		const result = await interactionApi.interact(Number(noteId.value), 'like')
+		isLiked.value = !!result.isLiked
+		likeCount.value = result.likeCount ?? likeCount.value
+		uni.showToast({ title: isLiked.value ? '已点赞' : '已取消点赞', icon: 'none' })
+	} catch (e) {
+		console.error('点赞操作失败:', e)
+		isLiked.value = prevLiked
+		likeCount.value = prevCount
+		uni.showToast({ title: '操作失败', icon: 'none' })
+	} finally {
+		setTimeout(() => { liking.value = false }, 500)
+	}
+}
+
+const onCollect = async () => {
+	if (collecting.value) return
+	collecting.value = true
+
+	const prevCollected = isCollected.value
+
+	isCollected.value = !isCollected.value
+
+	try {
+		const result = await interactionApi.interact(Number(noteId.value), 'collect')
+		isCollected.value = !!result.isCollected
+		uni.showToast({ title: isCollected.value ? '已收藏' : '已取消收藏', icon: 'none' })
+	} catch (e) {
+		console.error('收藏操作失败:', e)
+		isCollected.value = prevCollected
+		uni.showToast({ title: '操作失败', icon: 'none' })
+	} finally {
+		setTimeout(() => { collecting.value = false }, 500)
+	}
+}
+
+const onComment = () => {
+	uni.showToast({ title: '评论功能即将上线', icon: 'none' })
+}
+
 onLoad((options) => {
 	const id = options?.id
 	if (!id) {
@@ -141,6 +225,7 @@ onLoad((options) => {
 	min-height: 100vh;
 	background: #f5f7f9;
 	padding: 24rpx;
+	padding-bottom: 120rpx;
 }
 
 .note-container {
@@ -202,6 +287,36 @@ onLoad((options) => {
 	color: #303133;
 	line-height: 1.8;
 	word-break: break-word;
+}
+
+.bottom-bar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 100rpx;
+	background: #fff;
+	border-top: 1rpx solid #eee;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	z-index: 100;
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bar-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	gap: 4rpx;
+}
+
+.bar-text {
+	font-size: 22rpx;
+	color: #909399;
+	line-height: 1;
 }
 
 .loading-box,

@@ -23,6 +23,9 @@
 				<u-icon :name="note.isLiked ? 'heart-fill' : 'heart'" :color="note.isLiked ? '#fa3534' : '#909399'" size="18"></u-icon>
 				<text class="u-margin-left-5">{{ note.likes }}</text>
 			</view>
+			<view class="action-item u-margin-left-30" @tap.stop="handleCollect">
+				<u-icon :name="note.isCollected ? 'star-fill' : 'star'" :color="note.isCollected ? '#ff9900' : '#909399'" size="18"></u-icon>
+			</view>
 			<view class="action-item u-margin-left-30">
 				<u-icon name="chat" color="#909399" size="18"></u-icon>
 				<text class="u-margin-left-5">{{ note.comments }}</text>
@@ -35,8 +38,9 @@
 import Avatar from '@/components/Avatar/avatar.vue'
 
 const props = defineProps(['note']);
-const emit = defineEmits(['like', 'click']);
+const emit = defineEmits(['like', 'collect', 'click']);
 const handleLike = () => emit('like', props.note.id);
+const handleCollect = () => emit('collect', props.note.id);
 </script>
 
 <style lang="scss" scoped>

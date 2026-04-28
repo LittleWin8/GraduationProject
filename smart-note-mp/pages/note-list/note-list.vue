@@ -37,21 +37,18 @@
 			:refresher-triggered="refreshing"
 			@refresherrefresh="onRefresh"
 		>
-			<!-- 加载中 -->
 			<view v-if="loading && list.length === 0" class="loading-wrap">
 				<u-loading-icon></u-loading-icon>
 			</view>
 
-			<!-- 空状态 -->
 			<u-empty v-else-if="list.length === 0" mode="list" text="暂无数据" marginTop="100"></u-empty>
 
-			<!-- 列表（左滑删除） -->
 			<view v-else class="list-wrapper">
 				<u-swipe-action
 					v-for="(item, i) in list"
 					:key="i"
 					:options="swipeOptions"
-					@click="onSwipeClick($event, item)"
+					@click="onSwipeClick($event, item, i)"
 					bg-color="transparent"
 				>
 					<view class="note-item" @click="goToNoteDetail(item.noteId)">
@@ -67,11 +64,17 @@
 							<text class="note-item-title">{{ item.title }}</text>
 							<text class="note-item-time">{{ item.updateTime }}</text>
 						</view>
-						<u-icon name="arrow-right" size="14" color="#ccc"></u-icon>
+						<!-- 收藏/赞过列表右侧取消图标 -->
+						<view v-if="type === 'favorites'" class="action-icon" @click.stop="removeItem(item.noteId, i, 'collect')">
+							<u-icon name="star-fill" size="20" color="#f5a623"></u-icon>
+						</view>
+						<view v-else-if="type === 'liked'" class="action-icon" @click.stop="removeItem(item.noteId, i, 'like')">
+							<u-icon name="heart-fill" size="20" color="#fa3534"></u-icon>
+						</view>
+						<u-icon v-else name="arrow-right" size="14" color="#ccc"></u-icon>
 					</view>
 				</u-swipe-action>
 
-				<!-- 加载更多状态 -->
 				<view class="load-more">
 					<text v-if="loadingMore">加载中...</text>
 					<text v-else-if="!hasMore">没有更多了</text>
@@ -104,6 +107,7 @@
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { noteApi, categoryApi } from '@/api'
+import { interactionApi } from '@/api/modules/interaction.js'
 
 const type = ref('notes')
 const title = ref('')
@@ -136,21 +140,22 @@ const sortOptions = [
 ]
 const showSortPicker = ref(false)
 
+const removingIds = ref(new Set())
+
+/** 列表项左侧图标 */
 const iconName = computed(() => {
 	if (type.value === 'favorites') return 'star'
-	if (type.value === 'liked') return 'thumb-up'
+	if (type.value === 'liked') return 'heart'
 	return 'file-text'
 })
 
 const iconColor = computed(() => {
 	if (type.value === 'favorites') return '#f5a623'
-	if (type.value === 'liked') return '#1890ff'
+	if (type.value === 'liked') return '#fa3534'
 	return '#999'
 })
 
-/**
- * 左滑操作按钮（仅"我的笔记"类型显示删除）
- */
+/** 左滑操作按钮（仅"我的笔记"显示删除） */
 const swipeOptions = computed(() => {
 	if (type.value === 'notes') {
 		return [{ text: '删除', style: { backgroundColor: '#fa3534' } }]
@@ -158,10 +163,8 @@ const swipeOptions = computed(() => {
 	return []
 })
 
-/**
- * 左滑点击事件
- */
-const onSwipeClick = async (e, item) => {
+/** 左滑点击事件 */
+const onSwipeClick = async (e, item, index) => {
 	if (e.index === 0) {
 		uni.showModal({
 			title: '确认删除',
@@ -178,6 +181,22 @@ const onSwipeClick = async (e, item) => {
 				}
 			}
 		})
+	}
+}
+
+/** 取消收藏/取消点赞 */
+const removeItem = async (noteId, index, actionType) => {
+	if (removingIds.value.has(noteId)) return
+	removingIds.value.add(noteId)
+	try {
+		await interactionApi.interact(noteId, actionType)
+		list.value.splice(index, 1)
+		uni.showToast({ title: actionType === 'collect' ? '已取消收藏' : '已取消点赞', icon: 'none' })
+	} catch (e) {
+		console.error('取消操作失败:', e)
+		uni.showToast({ title: '操作失败', icon: 'none' })
+	} finally {
+		removingIds.value.delete(noteId)
 	}
 }
 
@@ -224,6 +243,7 @@ const buildParams = () => {
 	}
 }
 
+/** 根据 type 调用对应 API 加载数据 */
 const loadData = async (isLoadMore = false) => {
 	if (!isLoadMore) {
 		loading.value = true
@@ -396,6 +416,11 @@ onLoad((options) => {
 			color: #909399;
 			margin-top: 8rpx;
 		}
+	}
+
+	.action-icon {
+		flex-shrink: 0;
+		padding: 10rpx;
 	}
 }
 

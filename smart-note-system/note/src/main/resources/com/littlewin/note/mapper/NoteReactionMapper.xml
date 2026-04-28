@@ -48,4 +48,20 @@
         ORDER BY nr.update_time DESC
     </select>
 
+    <!-- 统计指定笔记的点赞数 -->
+    <select id="countLikesByNoteId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM note_reaction
+        WHERE note_id = #{noteId}
+          AND attitude = 1
+    </select>
+
+    <!-- 统计指定笔记的收藏数 -->
+    <select id="countCollectsByNoteId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM note_reaction
+        WHERE note_id = #{noteId}
+          AND is_favorite = 1
+    </select>
+
 </mapper>

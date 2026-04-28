@@ -13,6 +13,7 @@
 				:key="item.id"
 				:note="item"
 				@like="onLike"
+				@collect="onCollect"
 				@click="goDetail"
 			/>
 			<u-loadmore :status="loadStatus" line />
@@ -25,6 +26,7 @@
 import { ref } from 'vue';
 import { onShow, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app';
 import { noteApi } from '@/api/modules/note.js';
+import { interactionApi } from '@/api/modules/interaction.js';
 import NoteCard from '@/components/notecard/index.vue';
 import CustomTabBar from '@/components/custom-tab-bar/index.vue';
 
@@ -39,9 +41,9 @@ const tabList = [{ name: '最新' }, { name: '最热' }];
 
 const loadStatus = ref('loadmore');
 
-/**
- * 将后端 NoteListVO 映射为 NoteCard 组件所需格式
- */
+const likingIds = ref(new Set());
+const collectingIds = ref(new Set());
+
 const mapNoteItem = (item) => ({
 	id: item.noteId,
 	avatar: item.avatar || '',
@@ -50,14 +52,29 @@ const mapNoteItem = (item) => ({
 	title: item.title || '',
 	summary: item.summary || '',
 	isLiked: false,
+	isCollected: false,
 	likes: item.likeCount || 0,
 	comments: item.commentCount || 0
 });
 
-/**
- * 加载笔记列表
- * @param {boolean} reset 是否重置列表（下拉刷新时为 true）
- */
+const fillInteractionStatus = async (notes) => {
+	if (!notes || notes.length === 0) return;
+	const noteIds = notes.map(n => n.id);
+	try {
+		const statusMap = await interactionApi.getStatus(noteIds);
+		for (const note of notes) {
+			const status = statusMap[String(note.id)];
+			if (status) {
+				note.isLiked = !!status.isLiked;
+				note.isCollected = !!status.isCollected;
+				note.likes = status.likeCount ?? note.likes;
+			}
+		}
+	} catch (e) {
+		console.warn('批量查询互动状态失败:', e);
+	}
+};
+
 const loadNotes = async (reset = false) => {
 	if (loading.value) return;
 	if (!reset && !hasMore.value) return;
@@ -88,6 +105,8 @@ const loadNotes = async (reset = false) => {
 		const total = (res && res.total) || 0;
 		const mapped = records.map(mapNoteItem);
 
+		await fillInteractionStatus(mapped);
+
 		if (reset) {
 			noteList.value = mapped;
 		} else {
@@ -106,60 +125,91 @@ const loadNotes = async (reset = false) => {
 	}
 };
 
-/**
- * 下拉刷新
- */
 onPullDownRefresh(async () => {
 	await loadNotes(true);
 	uni.stopPullDownRefresh();
 });
 
-/**
- * 上拉加载更多
- */
 onReachBottom(() => {
 	loadNotes(false);
 });
 
-/**
- * 搜索触发
- */
 const onSearch = () => {
 	loadNotes(true);
 };
 
-/**
- * 清空搜索
- */
 const onClearSearch = () => {
 	keyword.value = '';
 	loadNotes(true);
 };
 
-/**
- * Tab 切换：最新 / 最热
- */
 const handleTabClick = (item) => {
 	currentTab.value = item.index;
 	loadNotes(true);
 };
 
-/**
- * 点赞
- */
-const onLike = (id) => {
+const onLike = async (id) => {
+	if (likingIds.value.has(id)) return;
+	likingIds.value.add(id);
+
 	const item = noteList.value.find(n => n.id === id);
-	if (item) {
-		item.isLiked = !item.isLiked;
-		item.likes += item.isLiked ? 1 : -1;
+	if (!item) {
+		likingIds.value.delete(id);
+		return;
+	}
+
+	const prevLiked = item.isLiked;
+	const prevLikes = item.likes;
+
+	item.isLiked = !item.isLiked;
+	item.likes += item.isLiked ? 1 : -1;
+
+	try {
+		const result = await interactionApi.interact(id, 'like');
+		item.isLiked = !!result.isLiked;
+		item.likes = result.likeCount ?? item.likes;
+	} catch (e) {
+		console.error('点赞操作失败:', e);
+		item.isLiked = prevLiked;
+		item.likes = prevLikes;
+		uni.showToast({ title: '操作失败', icon: 'none' });
+	} finally {
+		setTimeout(() => {
+			likingIds.value.delete(id);
+		}, 500);
 	}
 };
 
-/**
- * 跳转笔记详情
- */
 const goDetail = (id) => {
 	uni.navigateTo({ url: `/pages/note-detail/note-detail?id=${id}` });
+};
+
+const onCollect = async (id) => {
+	if (collectingIds.value.has(id)) return;
+	collectingIds.value.add(id);
+
+	const item = noteList.value.find(n => n.id === id);
+	if (!item) {
+		collectingIds.value.delete(id);
+		return;
+	}
+
+	const prevCollected = item.isCollected;
+
+	item.isCollected = !item.isCollected;
+
+	try {
+		const result = await interactionApi.interact(id, 'collect');
+		item.isCollected = !!result.isCollected;
+	} catch (e) {
+		console.error('收藏操作失败:', e);
+		item.isCollected = prevCollected;
+		uni.showToast({ title: '操作失败', icon: 'none' });
+	} finally {
+		setTimeout(() => {
+			collectingIds.value.delete(id);
+		}, 500);
+	}
 };
 
 onShow(() => {

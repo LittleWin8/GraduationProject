@@ -1,6 +1,5 @@
 <template>
 	<view class="profile-container">
-		<!-- 头像区域 -->
 		<view class="header-box u-flex u-col-center" @click="goToUserInfo">
 			<Avatar 
 				:src="userInfo.avatar"
@@ -17,7 +16,6 @@
 			</view>
 		</view>
 
-		<!-- 统计数据 -->
 		<u-grid :border="false" col="3" customStyle="background:#fff; padding:30rpx 0;">
 			<u-grid-item>
 				<text class="num">{{ userInfo.stats?.notes || 0 }}</text>
@@ -33,7 +31,6 @@
 			</u-grid-item>
 		</u-grid>
 
-		<!-- Tab 列表 -->
 		<view class="u-margin-top-20">
 			<u-tabs :list="tabs" @click="handleTabChange" :current="current"></u-tabs>
 			<view class="list-content">
@@ -53,7 +50,6 @@
 								<u-icon name="file-text" size="18" customStyle="margin-right:10rpx"></u-icon>
 							</template>
 						</u-cell>
-						<!-- 查看全部按钮 -->
 						<u-cell title="查看全部笔记" isLink @click="goToFullList('notes')">
 							<template #icon>
 								<u-icon name="arrow-right" size="16" customStyle="margin-right:10rpx" color="#999"></u-icon>
@@ -77,6 +73,11 @@
 							<template #icon>
 								<u-icon name="star" size="18" customStyle="margin-right:10rpx" color="#f5a623"></u-icon>
 							</template>
+							<template #value>
+								<view @click.stop="removeFavorite(item.noteId, i)">
+									<u-icon name="star-fill" size="20" color="#f5a623"></u-icon>
+								</view>
+							</template>
 						</u-cell>
 						<u-cell title="查看全部收藏" isLink @click="goToFullList('favorites')">
 							<template #icon>
@@ -99,7 +100,12 @@
 							@click="goToNoteDetail(item.noteId)"
 						>
 							<template #icon>
-								<u-icon name="thumb-up" size="18" customStyle="margin-right:10rpx" color="#1890ff"></u-icon>
+								<u-icon name="heart" size="18" customStyle="margin-right:10rpx" color="#fa3534"></u-icon>
+							</template>
+							<template #value>
+								<view @click.stop="removeLike(item.noteId, i)">
+									<u-icon name="heart-fill" size="20" color="#fa3534"></u-icon>
+								</view>
 							</template>
 						</u-cell>
 						<u-cell title="查看全部赞过" isLink @click="goToFullList('liked')">
@@ -112,7 +118,6 @@
 			</view>
 		</view>
 
-		<!-- 其他菜单 -->
 		<view class="u-margin-top-20">
 			<u-cell-group>
 				<u-cell icon="tags" title="我的标签" isLink @click="goToTagManage"></u-cell>
@@ -127,50 +132,41 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
+import Avatar from '@/components/Avatar/avatar.vue'
 import { noteApi } from '@/api'
+import { interactionApi } from '@/api/modules/interaction.js'
 
 const current = ref(0)
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
 
-// 用户信息
 const userInfo = ref({
 	avatar: '',
 	nickname: '',
 	name: '',
 	signature: '',
 	bio: '',
-	stats: {
-		notes: 0,
-		likes: 0,
-		favorites: 0
-	}
+	stats: { notes: 0, likes: 0, favorites: 0 }
 })
 
-// 各列表数据（只存最近3条）
 const myNotesList = ref([])
 const favoritesList = ref([])
 const likedList = ref([])
 
-// Tab 切换时懒加载
+const removingIds = ref(new Set())
+
+/** Tab 切换懒加载 */
 const handleTabChange = (e) => {
 	const newIndex = e.index
 	if (current.value === newIndex) return
 	current.value = newIndex
-	
-	// 根据切换的 Tab 加载对应数据
-	if (newIndex === 0 && myNotesList.value.length === 0) {
-		fetchMyNotes()
-	} else if (newIndex === 1 && favoritesList.value.length === 0) {
-		fetchFavorites()
-	} else if (newIndex === 2 && likedList.value.length === 0) {
-		fetchLiked()
-	}
+	if (newIndex === 0 && myNotesList.value.length === 0) fetchMyNotes()
+	else if (newIndex === 1 && favoritesList.value.length === 0) fetchFavorites()
+	else if (newIndex === 2 && likedList.value.length === 0) fetchLiked()
 }
 
-// 加载我的笔记（最近3条）
 const fetchMyNotes = async () => {
 	try {
 		const res = await noteApi.getMyNotes({ pageNum: 1, pageSize: 3 })
@@ -186,7 +182,6 @@ const fetchMyNotes = async () => {
 	}
 }
 
-// 加载收藏列表（最近3条）
 const fetchFavorites = async () => {
 	try {
 		const res = await noteApi.getFavorites({ pageNum: 1, pageSize: 3 })
@@ -202,7 +197,6 @@ const fetchFavorites = async () => {
 	}
 }
 
-// 加载赞过列表（最近3条）
 const fetchLiked = async () => {
 	try {
 		const res = await noteApi.getLiked({ pageNum: 1, pageSize: 3 })
@@ -218,7 +212,7 @@ const fetchLiked = async () => {
 	}
 }
 
-// 获取统计数据
+/** 获取统计数据 */
 const fetchStats = async () => {
 	try {
 		const stats = await noteApi.getStats()
@@ -228,7 +222,6 @@ const fetchStats = async () => {
 				likes: stats.likes || 0,
 				favorites: stats.favorites || 0
 			}
-			// 更新缓存
 			const cached = uni.getStorageSync('userInfo')
 			if (cached) {
 				cached.stats = userInfo.value.stats
@@ -240,7 +233,45 @@ const fetchStats = async () => {
 	}
 }
 
-// 从缓存加载用户信息
+/** 取消收藏 */
+const removeFavorite = async (noteId, index) => {
+	if (removingIds.value.has(noteId)) return
+	removingIds.value.add(noteId)
+	try {
+		await interactionApi.interact(noteId, 'collect')
+		favoritesList.value.splice(index, 1)
+		if (userInfo.value.stats.favorites > 0) {
+			userInfo.value.stats.favorites--
+		}
+		uni.showToast({ title: '已取消收藏', icon: 'none' })
+	} catch (e) {
+		console.error('取消收藏失败:', e)
+		uni.showToast({ title: '操作失败', icon: 'none' })
+	} finally {
+		removingIds.value.delete(noteId)
+	}
+}
+
+/** 取消点赞 */
+const removeLike = async (noteId, index) => {
+	if (removingIds.value.has(noteId)) return
+	removingIds.value.add(noteId)
+	try {
+		await interactionApi.interact(noteId, 'like')
+		likedList.value.splice(index, 1)
+		if (userInfo.value.stats.likes > 0) {
+			userInfo.value.stats.likes--
+		}
+		uni.showToast({ title: '已取消点赞', icon: 'none' })
+	} catch (e) {
+		console.error('取消点赞失败:', e)
+		uni.showToast({ title: '操作失败', icon: 'none' })
+	} finally {
+		removingIds.value.delete(noteId)
+	}
+}
+
+/** 从缓存加载用户信息 */
 const loadUserInfoFromCache = () => {
 	try {
 		const cached = uni.getStorageSync('userInfo')
@@ -263,24 +294,14 @@ const loadUserInfoFromCache = () => {
 	}
 }
 
-// 页面显示
 onShow(() => {
-	const hasCache = loadUserInfoFromCache()
-	
-	// 统计数据总是更新
+	loadUserInfoFromCache()
 	fetchStats()
-	
-	// 懒加载：只加载当前 Tab 的数据
-	if (current.value === 0) {
-		fetchMyNotes()
-	} else if (current.value === 1) {
-		fetchFavorites()
-	} else if (current.value === 2) {
-		fetchLiked()
-	}
+	if (current.value === 0) fetchMyNotes()
+	else if (current.value === 1) fetchFavorites()
+	else if (current.value === 2) fetchLiked()
 })
 
-// 下拉刷新
 onPullDownRefresh(() => {
 	Promise.all([
 		fetchStats(),
@@ -293,24 +314,18 @@ onPullDownRefresh(() => {
 	})
 })
 
-// 跳转到完整列表页
+/** 跳转完整列表页 */
 const goToFullList = (type) => {
-	let title = ''
-	if (type === 'notes') title = '我的笔记'
-	else if (type === 'favorites') title = '我的收藏'
-	else title = '我的赞过'
-	
+	const titleMap = { notes: '我的笔记', favorites: '我的收藏', liked: '我的赞过' }
 	uni.navigateTo({
-		url: `/pages/note-list/note-list?type=${type}&title=${title}`
+		url: `/pages/note-list/note-list?type=${type}&title=${titleMap[type]}`
 	})
 }
 
-// 跳转到个人信息页
 const goToUserInfo = () => {
 	uni.navigateTo({ url: '/pages/user-info/user-info' })
 }
 
-// 跳转到笔记详情
 const goToNoteDetail = (noteId) => {
 	uni.navigateTo({ url: `/pages/note-detail/note-detail?id=${noteId}` })
 }

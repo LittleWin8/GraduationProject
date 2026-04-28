@@ -23,4 +23,10 @@ public interface NoteReactionMapper extends BaseMapper<NoteReaction> {
                                            @Param("userId") Long userId,
                                            @Param("query") NoteQueryDTO query,
                                            @Param("categoryIds") List<Long> categoryIds);
+
+    /** 统计指定笔记的点赞数 */
+    Long countLikesByNoteId(@Param("noteId") Long noteId);
+
+    /** 统计指定笔记的收藏数 */
+    Long countCollectsByNoteId(@Param("noteId") Long noteId);
 }
