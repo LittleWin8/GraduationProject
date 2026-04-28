@@ -149,7 +149,10 @@ public class InteractionServiceImpl implements InteractionService {
                 .build();
     }
 
-    /** 批量查询：一次IN查出所有reaction记录，再逐条聚合计数 */
+    /**
+     * 批量查询：一次IN查出所有reaction记录 + 一条GROUP BY统计点赞/收藏数
+     * SQL次数：2次（原来2N+1次），10条笔记从21次降为2次
+     */
     @Override
     public Map<String, InteractionStatusVO> batchGetStatus(Long userId, List<Long> noteIds) {
         Map<String, InteractionStatusVO> result = new HashMap<>();
@@ -158,6 +161,7 @@ public class InteractionServiceImpl implements InteractionService {
             return result;
         }
 
+        // 1. 一次IN查出当前用户对所有目标笔记的reaction记录
         List<NoteReaction> reactions = noteReactionMapper.selectList(
                 new LambdaQueryWrapper<NoteReaction>()
                         .eq(NoteReaction::getUserId, userId)
@@ -169,19 +173,31 @@ public class InteractionServiceImpl implements InteractionService {
             reactionMap.put(r.getNoteId(), r);
         }
 
+        // 2. 一条GROUP BY SQL批量统计所有笔记的点赞数和收藏数
+        List<Map<String, Object>> countRows = noteReactionMapper.batchCountByNoteIds(noteIds);
+        Map<Long, int[]> countMap = new HashMap<>();
+        for (Map<String, Object> row : countRows) {
+            Long nid = ((Number) row.get("note_id")).longValue();
+            int likeCnt = ((Number) row.get("like_count")).intValue();
+            int collectCnt = ((Number) row.get("collect_count")).intValue();
+            countMap.put(nid, new int[]{likeCnt, collectCnt});
+        }
+
+        // 3. 组装结果
         for (Long noteId : noteIds) {
             NoteReaction existing = reactionMap.get(noteId);
             boolean isLiked = existing != null && existing.getAttitude() != null && existing.getAttitude() == 1;
             boolean isCollected = existing != null && existing.getIsFavorite() != null && existing.getIsFavorite() == 1;
 
-            Long likeCount = noteReactionMapper.countLikesByNoteId(noteId);
-            Long collectCount = noteReactionMapper.countCollectsByNoteId(noteId);
+            int[] counts = countMap.get(noteId);
+            int likeCount = (counts != null) ? counts[0] : 0;
+            int collectCount = (counts != null) ? counts[1] : 0;
 
             result.put(String.valueOf(noteId), InteractionStatusVO.builder()
                     .isLiked(isLiked)
                     .isCollected(isCollected)
-                    .likeCount(likeCount.intValue())
-                    .collectCount(collectCount.intValue())
+                    .likeCount(likeCount)
+                    .collectCount(collectCount)
                     .build());
         }
 

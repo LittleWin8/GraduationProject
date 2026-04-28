@@ -9,6 +9,7 @@ import com.littlewin.note.domain.vo.FavoriteNoteVO;
 import com.littlewin.note.domain.vo.LikedNoteVO;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
 
 public interface NoteReactionMapper extends BaseMapper<NoteReaction> {
 
@@ -29,4 +30,7 @@ public interface NoteReactionMapper extends BaseMapper<NoteReaction> {
 
     /** 统计指定笔记的收藏数 */
     Long countCollectsByNoteId(@Param("noteId") Long noteId);
+
+    /** 批量统计多个笔记的点赞数和收藏数（一条SQL，GROUP BY note_id） */
+    List<Map<String, Object>> batchCountByNoteIds(@Param("noteIds") List<Long> noteIds);
 }

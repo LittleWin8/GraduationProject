@@ -64,4 +64,15 @@
           AND is_favorite = 1
     </select>
 
+    <!-- 批量统计多个笔记的点赞数和收藏数，一条SQL替代2N次查询 -->
+    <select id="batchCountByNoteIds" resultType="java.util.HashMap">
+        SELECT note_id,
+               SUM(CASE WHEN attitude = 1 THEN 1 ELSE 0 END) AS like_count,
+               SUM(CASE WHEN is_favorite = 1 THEN 1 ELSE 0 END) AS collect_count
+        FROM note_reaction
+        WHERE note_id IN
+        <foreach collection="noteIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        GROUP BY note_id
+    </select>
+
 </mapper>
