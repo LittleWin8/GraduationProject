@@ -13,4 +13,12 @@
         HAVING COUNT(DISTINCT tag_id) = #{tagCount}
     </select>
 
+    <insert id="batchInsert">
+        INSERT INTO note_tag_rel (note_id, tag_id)
+        VALUES
+        <foreach collection="tagIds" item="tagId" separator=",">
+            (#{noteId}, #{tagId})
+        </foreach>
+    </insert>
+
 </mapper>

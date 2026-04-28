@@ -3,7 +3,7 @@
 		<!-- 头像 -->
 		<view class="avatar-section">
 			<Avatar 
-				:src="fullAvatarUrl"
+				:src="userInfo.avatar"
 				:size="100"
 				shape="circle"
 				default-type="user"
@@ -103,17 +103,7 @@
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
-import { userApi, authApi, config } from '@/api'
-
-// 统一的头像路径处理
-const getFullAvatarUrl = (avatar) => {
-  if (!avatar) return ''
-  if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:')) return avatar
-  if (avatar.startsWith('/api/wx/user/files/')) return config.baseURL + avatar
-  return config.baseURL + '/api/wx/user/files' + avatar
-}
-
-const fullAvatarUrl = computed(() => getFullAvatarUrl(userInfo.value.avatar))
+import { userApi, authApi } from '@/api'
 
 const userInfo = ref({
 	userId: '',

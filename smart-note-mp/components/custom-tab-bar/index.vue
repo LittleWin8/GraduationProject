@@ -7,7 +7,6 @@
 			:class="{ active: currentPage === item.pagePath }"
 			@click="switchTab(item, index)"
 		>
-			<!-- 只用一套图标，选中时只变颜色 -->
 			<text class="iconfont" :class="item.icon"></text>
 			<text class="tab-bar-text">{{ item.text }}</text>
 		</view>
@@ -23,17 +22,20 @@ export default {
 				{ 
 					pagePath: '/pages/community/community', 
 					text: '社区',
-					icon: 'icon-shequ'
+					icon: 'icon-shequ',
+					isTab: true
 				},
 				{ 
 					pagePath: '/pages/create/create', 
 					text: '创作',
-					icon: 'icon-chuangzuo'
+					icon: 'icon-chuangzuo',
+					isTab: false
 				},
 				{ 
 					pagePath: '/pages/profile/profile', 
 					text: '我的',
-					icon: 'icon-wode'
+					icon: 'icon-wode',
+					isTab: true
 				}
 			]
 		}
@@ -42,27 +44,24 @@ export default {
 		switchTab(item, index) {
 			if (this.currentPage === item.pagePath) return
 			
-			// 跳转页面
-			uni.switchTab({
-				url: item.pagePath
-			})
+			if (item.isTab) {
+				uni.switchTab({ url: item.pagePath })
+			} else {
+				uni.navigateTo({ url: item.pagePath })
+			}
 		},
-		// 更新当前选中的页面
 		updateCurrentPage() {
 			const pages = getCurrentPages()
 			if (pages.length > 0) {
 				const currentPage = pages[pages.length - 1]
-				// 获取页面路径，加上开头的斜杠
 				let route = '/' + currentPage.route
 				this.currentPage = route
 			}
 		}
 	},
 	mounted() {
-		// 初始化时更新选中状态
 		this.updateCurrentPage()
 	},
-	// 页面显示时重新获取当前页面
 	activated() {
 		this.updateCurrentPage()
 	}
@@ -94,15 +93,14 @@ export default {
 
 .iconfont {
 	font-size: 48rpx;
-	color: #909399;  /* 未选中：灰色 */
+	color: #909399;
 }
 
 .tab-bar-text {
 	font-size: 24rpx;
-	color: #909399;  /* 未选中：灰色 */
+	color: #909399;
 }
 
-/* 选中时：图标和文字都变成蓝色 */
 .active .iconfont {
 	color: #1890ff;
 }

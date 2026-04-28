@@ -59,7 +59,7 @@
 						@chooseavatar="onChooseAvatar"
 					>
 						<image 
-							:src="tempAvatar || '/static/default-avatar.png'" 
+							:src="tempAvatarDisplay || '/static/default-avatar.png'" 
 							class="avatar-image"
 							mode="aspectFill"
 						></image>
@@ -94,16 +94,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { authApi, userApi, noteApi, config } from '@/api'
 
 const loading = ref(false)
 const isAgree = ref(false)
 const showAuthPopup = ref(false)
 
-// 临时存储用户授权信息
 const tempAvatar = ref('')
 const tempNickname = ref('')
+
+const tempAvatarDisplay = computed(() => {
+	if (!tempAvatar.value) return ''
+	if (tempAvatar.value.startsWith('http://') || tempAvatar.value.startsWith('https://') || tempAvatar.value.startsWith('data:') || tempAvatar.value.startsWith('/static/')) return tempAvatar.value
+	if (tempAvatar.value.startsWith('/api/')) return config.baseURL + tempAvatar.value
+	return config.baseURL + tempAvatar.value
+})
 
 const toggleAgree = () => {
 	isAgree.value = !isAgree.value
@@ -237,8 +243,7 @@ const onChooseAvatar = (e) => {
 		success: (uploadRes) => {
 			const res = JSON.parse(uploadRes.data);
 			if (res.code === 200) {
-				// 获取后端保存后的永久访问路径（例如 /api/wx/user/files/user/avatar/xxx.jpg）
-				tempAvatar.value = config.baseURL + res.data.url;
+				tempAvatar.value = res.data.url;
 				uni.showToast({ title: '头像上传成功', icon: 'success' });
 			} else {
 				uni.showToast({ title: res.message || '上传失败', icon: 'none' });

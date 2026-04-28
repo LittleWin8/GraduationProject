@@ -10,6 +10,18 @@
 		</view>
 
 		<view v-else class="note-container">
+			<!-- 作者操作栏（仅作者可见） -->
+			<view v-if="isOwner" class="owner-actions">
+				<view class="action-btn" @click="goToEdit">
+					<u-icon name="edit-pen" size="16" color="#1890ff"></u-icon>
+					<text>编辑</text>
+				</view>
+				<view class="action-btn delete-action" @click="confirmDelete">
+					<u-icon name="trash" size="16" color="#fa3534"></u-icon>
+					<text>删除</text>
+				</view>
+			</view>
+
 			<view class="note-head">
 				<text class="note-title">{{ noteData.title }}</text>
 				<view class="note-meta">
@@ -40,10 +52,26 @@ const md = new MarkdownIt({
 const loading = ref(false)
 const noteData = ref(null)
 const renderedContent = ref('')
+const noteId = ref(null)
+const isOwner = ref(false)
 
 const formatTime = (time) => {
 	if (!time) return ''
 	return String(time).replace('T', ' ')
+}
+
+/**
+ * 判断当前用户是否为笔记作者
+ */
+const checkOwnership = () => {
+	try {
+		const userInfo = uni.getStorageSync('userInfo')
+		if (userInfo && userInfo.userId && noteData.value) {
+			isOwner.value = noteData.value.userId === userInfo.userId
+		}
+	} catch (e) {
+		console.error('判断作者身份失败:', e)
+	}
 }
 
 const loadDetail = async (id) => {
@@ -55,6 +83,7 @@ const loadDetail = async (id) => {
 		uni.setNavigationBarTitle({
 			title: res?.title || '笔记详情'
 		})
+		checkOwnership()
 	} catch (error) {
 		console.error('加载笔记详情失败:', error)
 		noteData.value = null
@@ -65,13 +94,45 @@ const loadDetail = async (id) => {
 	}
 }
 
+/**
+ * 跳转编辑页
+ */
+const goToEdit = () => {
+	uni.navigateTo({ url: `/pages/create/create?id=${noteId.value}` })
+}
+
+/**
+ * 确认删除（移入回收站）
+ */
+const confirmDelete = () => {
+	uni.showModal({
+		title: '确认删除',
+		content: '确定将此笔记移入回收站？',
+		confirmColor: '#fa3534',
+		success: async (res) => {
+			if (res.confirm) {
+				try {
+					await noteApi.deleteNote(noteId.value, false)
+					uni.showToast({ title: '已移入回收站', icon: 'success' })
+					setTimeout(() => {
+						uni.navigateBack()
+					}, 1500)
+				} catch (error) {
+					console.error('删除笔记失败:', error)
+				}
+			}
+		}
+	})
+}
+
 onLoad((options) => {
-	const noteId = options?.id
-	if (!noteId) {
+	const id = options?.id
+	if (!id) {
 		uni.showToast({ title: '参数缺失', icon: 'none' })
 		return
 	}
-	loadDetail(noteId)
+	noteId.value = id
+	loadDetail(id)
 })
 </script>
 
@@ -86,6 +147,31 @@ onLoad((options) => {
 	background: #fff;
 	border-radius: 16rpx;
 	padding: 32rpx;
+}
+
+.owner-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 30rpx;
+	margin-bottom: 20rpx;
+	padding-bottom: 20rpx;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.owner-actions .action-btn {
+	display: flex;
+	align-items: center;
+	gap: 6rpx;
+	font-size: 26rpx;
+	padding: 10rpx 24rpx;
+	border-radius: 8rpx;
+	background: #f5f7f9;
+	color: #606266;
+}
+
+.owner-actions .action-btn.delete-action {
+	color: #fa3534;
+	background: rgba(250, 53, 52, 0.06);
 }
 
 .note-head {

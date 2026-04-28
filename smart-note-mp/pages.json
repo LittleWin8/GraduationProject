@@ -18,7 +18,8 @@
 		{
 			"path": "pages/community/community",
 			"style": { 
-				"navigationBarTitleText": "笔记社区" 
+				"navigationBarTitleText": "笔记社区",
+				"enablePullDownRefresh": true
 			}
 		},
 		{
@@ -62,6 +63,13 @@
 			"style": {
 				"navigationBarTitleText": "笔记详情"
 			}
+		},
+		{
+			"path": "pages/recycle-bin/recycle-bin",
+			"style": {
+				"navigationBarTitleText": "回收站",
+				"enablePullDownRefresh": true
+			}
 		}
 	],
 	"globalStyle": {
@@ -79,7 +87,6 @@
 			"borderStyle": "white",
 			"list": [
 				{ "pagePath": "pages/community/community", "text": "社区" },
-				{ "pagePath": "pages/create/create", "text": "创作" },
 				{ "pagePath": "pages/profile/profile", "text": "我的" }
 			]
 	}

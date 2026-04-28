@@ -2,8 +2,8 @@
 	<view class="note-list-container">
 		<!-- 搜索栏 -->
 		<view class="search-bar">
-			<u-search 
-				v-model="searchKeyword" 
+			<u-search
+				v-model="searchKeyword"
 				placeholder="搜索标题或内容"
 				@search="onSearch"
 				@clear="onSearch"
@@ -12,7 +12,7 @@
 				bg-color="#f5f5f5"
 			></u-search>
 		</view>
-		
+
 		<!-- 筛选栏 -->
 		<view class="filter-bar">
 			<view class="filter-item" @click="showCategoryPicker = true">
@@ -21,17 +21,17 @@
 				</text>
 				<u-icon name="arrow-down" size="14" color="#999"></u-icon>
 			</view>
-			
+
 			<view class="filter-item" @click="showSortPicker = true">
 				<text>{{ sortOptions.find(s => s.value === queryParams.orderBy)?.label || '时间' }}</text>
 				<u-icon name="arrow-down" size="14" color="#999"></u-icon>
 			</view>
 		</view>
-		
+
 		<!-- 列表内容 -->
-		<scroll-view 
-			class="list-scroll" 
-			scroll-y 
+		<scroll-view
+			class="list-scroll"
+			scroll-y
 			@scrolltolower="loadMore"
 			:refresher-enabled="true"
 			:refresher-triggered="refreshing"
@@ -41,39 +41,45 @@
 			<view v-if="loading && list.length === 0" class="loading-wrap">
 				<u-loading-icon></u-loading-icon>
 			</view>
-			
+
 			<!-- 空状态 -->
 			<u-empty v-else-if="list.length === 0" mode="list" text="暂无数据" marginTop="100"></u-empty>
-			
-			<!-- 列表 -->
-			<u-cell-group v-else>
-				<u-cell 
-					v-for="(item, i) in list" 
-					:key="i" 
-					:title="item.title" 
-					:label="item.updateTime" 
-					isLink 
-					@click="goToNoteDetail(item.noteId)"
+
+			<!-- 列表（左滑删除） -->
+			<view v-else class="list-wrapper">
+				<u-swipe-action
+					v-for="(item, i) in list"
+					:key="i"
+					:options="swipeOptions"
+					@click="onSwipeClick($event, item)"
+					bg-color="transparent"
 				>
-					<template #icon>
-						<u-icon 
-							:name="iconName" 
-							size="18" 
-							customStyle="margin-right:10rpx" 
-							:color="iconColor"
-						></u-icon>
-					</template>
-				</u-cell>
-				
+					<view class="note-item" @click="goToNoteDetail(item.noteId)">
+						<view class="note-item-left">
+							<u-icon
+								:name="iconName"
+								size="18"
+								customStyle="margin-right:10rpx"
+								:color="iconColor"
+							></u-icon>
+						</view>
+						<view class="note-item-content">
+							<text class="note-item-title">{{ item.title }}</text>
+							<text class="note-item-time">{{ item.updateTime }}</text>
+						</view>
+						<u-icon name="arrow-right" size="14" color="#ccc"></u-icon>
+					</view>
+				</u-swipe-action>
+
 				<!-- 加载更多状态 -->
 				<view class="load-more">
 					<text v-if="loadingMore">加载中...</text>
 					<text v-else-if="!hasMore">没有更多了</text>
 					<text v-else class="load-trigger" @click="loadMore">上拉加载更多</text>
 				</view>
-			</u-cell-group>
+			</view>
 		</scroll-view>
-		
+
 		<!-- 分类选择器 -->
 		<u-picker
 			:show="showCategoryPicker"
@@ -82,7 +88,7 @@
 			@confirm="onCategoryConfirm"
 			@cancel="showCategoryPicker = false"
 		></u-picker>
-		
+
 		<!-- 排序选择器 -->
 		<u-picker
 			:show="showSortPicker"
@@ -99,11 +105,9 @@ import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { noteApi, categoryApi } from '@/api'
 
-// 路由参数
-const type = ref('notes')  // notes, favorites, liked
+const type = ref('notes')
 const title = ref('')
 
-// 列表数据
 const list = ref([])
 const pageNum = ref(1)
 const pageSize = 15
@@ -112,7 +116,6 @@ const loading = ref(false)
 const loadingMore = ref(false)
 const refreshing = ref(false)
 
-// 搜索筛选参数
 const searchKeyword = ref('')
 const queryParams = ref({
 	keyword: '',
@@ -121,12 +124,10 @@ const queryParams = ref({
 	orderDirection: 'DESC'
 })
 
-// 定义分类数据源
-const categories = ref([]); 
-const showCategoryPicker = ref(false);
-const selectedCategoryName = ref('');
+const categories = ref([])
+const showCategoryPicker = ref(false)
+const selectedCategoryName = ref('')
 
-// 排序选项
 const sortOptions = [
 	{ label: '按时间降序', value: 'updateTime', direction: 'DESC' },
 	{ label: '按时间升序', value: 'updateTime', direction: 'ASC' },
@@ -135,7 +136,6 @@ const sortOptions = [
 ]
 const showSortPicker = ref(false)
 
-// 图标配置（根据类型）
 const iconName = computed(() => {
 	if (type.value === 'favorites') return 'star'
 	if (type.value === 'liked') return 'thumb-up'
@@ -148,29 +148,47 @@ const iconColor = computed(() => {
 	return '#999'
 })
 
-// 获取分类列表
+/**
+ * 左滑操作按钮（仅"我的笔记"类型显示删除）
+ */
+const swipeOptions = computed(() => {
+	if (type.value === 'notes') {
+		return [{ text: '删除', style: { backgroundColor: '#fa3534' } }]
+	}
+	return []
+})
+
+/**
+ * 左滑点击事件
+ */
+const onSwipeClick = async (e, item) => {
+	if (e.index === 0) {
+		uni.showModal({
+			title: '确认删除',
+			content: '确定将此笔记移入回收站？',
+			success: async (res) => {
+				if (res.confirm) {
+					try {
+						await noteApi.deleteNote(item.noteId, false)
+						uni.showToast({ title: '已移入回收站', icon: 'success' })
+						loadData(false)
+					} catch (error) {
+						console.error('删除笔记失败:', error)
+					}
+				}
+			}
+		})
+	}
+}
+
 const fetchCategories = async () => {
-	console.log('=== fetchCategories 开始执行 ===')
 	try {
-		console.log('准备调用 categoryApi.getList()')
 		const res = await categoryApi.getList()
-		console.log('categoryApi.getList() 返回结果:', res)
-		
-		// 判断返回的数据格式
 		let categoryData = res
-		// 如果返回的是包含 code 和 data 的对象，则提取 data
 		if (res && res.code === 200 && res.data) {
 			categoryData = res.data
-			console.log('从响应中提取 data:', categoryData)
-		} else if (Array.isArray(res)) {
-			console.log('返回的是数组格式')
-			categoryData = res
 		}
-		
 		if (categoryData && Array.isArray(categoryData) && categoryData.length > 0) {
-			console.log('分类数据长度:', categoryData.length)
-			
-			// 处理树形数据为平铺列表，方便 u-picker 显示
 			const flatList = []
 			const flatten = (nodes, level = 0) => {
 				nodes.forEach(node => {
@@ -184,30 +202,17 @@ const fetchCategories = async () => {
 				})
 			}
 			flatten(categoryData)
-			console.log('平铺后的分类:', flatList)
-			
-			// 添加"全部分类"选项
 			const allCategories = [{ categoryId: '', name: '全部分类' }, ...flatList]
-			console.log('完整分类列表:', allCategories)
-			
-			// u-picker 的 columns 需要是二维数组
 			categories.value = [allCategories]
-			console.log('最终 categories.value (二维数组):', categories.value)
-			console.log('categories.value[0] 长度:', categories.value[0]?.length)
 		} else {
-			console.error('分类数据为空或格式异常:', categoryData)
-			// 设置默认数据，至少让 picker 能显示
 			categories.value = [[{ categoryId: '', name: '全部分类' }]]
 		}
 	} catch (error) {
 		console.error('获取分类失败:', error)
-		uni.showToast({ title: '获取分类失败', icon: 'none' })
-		// 出错时也设置默认数据
 		categories.value = [[{ categoryId: '', name: '全部分类' }]]
 	}
 }
 
-// 构建请求参数
 const buildParams = () => {
 	return {
 		pageNum: pageNum.value,
@@ -219,7 +224,6 @@ const buildParams = () => {
 	}
 }
 
-// 加载数据
 const loadData = async (isLoadMore = false) => {
 	if (!isLoadMore) {
 		loading.value = true
@@ -229,11 +233,11 @@ const loadData = async (isLoadMore = false) => {
 		if (!hasMore.value) return
 		loadingMore.value = true
 	}
-	
+
 	try {
 		let res
 		const params = buildParams()
-		
+
 		if (type.value === 'notes') {
 			res = await noteApi.getMyNotes(params)
 		} else if (type.value === 'favorites') {
@@ -241,21 +245,19 @@ const loadData = async (isLoadMore = false) => {
 		} else {
 			res = await noteApi.getLiked(params)
 		}
-		
+
 		if (res && res.records) {
 			const newList = res.records.map(item => ({
 				noteId: item.noteId,
 				title: item.title,
 				updateTime: item.updateTime ? item.updateTime.split('T')[0] : ''
 			}))
-			
+
 			if (isLoadMore) {
 				list.value.push(...newList)
 			} else {
 				list.value = newList
 			}
-			
-			// 判断是否还有更多
 			hasMore.value = res.records.length >= pageSize
 		} else {
 			if (!isLoadMore) list.value = []
@@ -271,76 +273,53 @@ const loadData = async (isLoadMore = false) => {
 	}
 }
 
-// 加载更多
 const loadMore = () => {
 	if (loadingMore.value || !hasMore.value) return
 	pageNum.value++
 	loadData(true)
 }
 
-// 刷新
 const onRefresh = () => {
 	refreshing.value = true
 	loadData(false)
 }
 
-// 搜索
 const onSearch = () => {
 	queryParams.value.keyword = searchKeyword.value
 	loadData(false)
 }
 
-// 分类筛选确认
 const onCategoryConfirm = (e) => {
-	
 	const category = e.value[0]
 	showCategoryPicker.value = false
-	
 	if (category) {
 		queryParams.value.categoryId = category.categoryId || null
 		selectedCategoryName.value = category.name
 		loadData(false)
-	} else {
-		console.warn('未获取到选中的分类数据')
 	}
 }
 
-// 排序确认
 const onSortConfirm = (e) => {
-	console.log('=== 排序选择确认 ===')
 	const sort = e.value[0]
 	showSortPicker.value = false
 	queryParams.value.orderBy = sort.value
 	queryParams.value.orderDirection = sort.direction
-	console.log('排序方式:', sort.label)
 	loadData(false)
 }
 
-// 跳转笔记详情
 const goToNoteDetail = (noteId) => {
 	uni.navigateTo({ url: `/pages/note-detail/note-detail?id=${noteId}` })
 }
 
-// 页面加载
 onLoad((options) => {
-	console.log('=== 页面加载 onLoad ===')
-	console.log('接收到的参数:', options)
-	
 	if (options.type) {
 		type.value = options.type
-		console.log('type设置为:', type.value)
 	}
 	if (options.title) {
 		title.value = options.title
 		uni.setNavigationBarTitle({ title: options.title })
-		console.log('标题设置为:', options.title)
 	}
-	
-	// 加载初始数据
-	console.log('开始加载分类数据...')
 	fetchCategories()
-	
-	console.log('开始加载列表数据...')
 	loadData(false)
 })
 </script>
@@ -364,14 +343,14 @@ onLoad((options) => {
 	background: #fff;
 	border-top: 1px solid #f0f0f0;
 	gap: 40rpx;
-	
+
 	.filter-item {
 		display: flex;
 		align-items: center;
 		gap: 8rpx;
 		font-size: 28rpx;
 		color: #666;
-		
+
 		.active {
 			color: #1890ff;
 		}
@@ -381,6 +360,43 @@ onLoad((options) => {
 .list-scroll {
 	flex: 1;
 	height: calc(100vh - 200rpx);
+}
+
+.list-wrapper {
+	background: #fff;
+}
+
+.note-item {
+	display: flex;
+	align-items: center;
+	padding: 24rpx 30rpx;
+	border-bottom: 1px solid #f5f5f5;
+
+	.note-item-left {
+		flex-shrink: 0;
+	}
+
+	.note-item-content {
+		flex: 1;
+		margin-left: 10rpx;
+		overflow: hidden;
+
+		.note-item-title {
+			display: block;
+			font-size: 30rpx;
+			color: #303133;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.note-item-time {
+			display: block;
+			font-size: 24rpx;
+			color: #909399;
+			margin-top: 8rpx;
+		}
+	}
 }
 
 .loading-wrap {
@@ -394,7 +410,7 @@ onLoad((options) => {
 	text-align: center;
 	font-size: 24rpx;
 	color: #999;
-	
+
 	.load-trigger {
 		color: #1890ff;
 	}

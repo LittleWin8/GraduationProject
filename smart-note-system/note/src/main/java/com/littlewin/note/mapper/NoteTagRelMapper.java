@@ -14,4 +14,9 @@ public interface NoteTagRelMapper extends BaseMapper<NoteTagRel> {
      */
     List<Long> selectNoteIdsByTagIds(@Param("tagIds") List<Long> tagIds,
                                      @Param("tagCount") int tagCount);
+
+    /**
+     * 批量插入笔记-标签关联记录
+     */
+    void batchInsert(@Param("noteId") Long noteId, @Param("tagIds") List<Long> tagIds);
 }

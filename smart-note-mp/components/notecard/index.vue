@@ -2,7 +2,12 @@
 	<view class="note-card" @tap="$emit('click', note.id)">
 		<view class="note-header u-margin-bottom-20">
 			<view class="note-header-left">
-				<u-avatar :src="note.avatar" size="24"></u-avatar>
+				<Avatar
+					:src="note.avatar"
+					:size="48"
+					shape="circle"
+					default-type="user"
+				></Avatar>
 				<text class="note-author u-tips-color">{{ note.author }}</text>
 			</view>
 			<view class="note-type-wrap">
@@ -27,6 +32,8 @@
 </template>
 
 <script setup>
+import Avatar from '@/components/Avatar/avatar.vue'
+
 const props = defineProps(['note']);
 const emit = defineEmits(['like', 'click']);
 const handleLike = () => emit('like', props.note.id);

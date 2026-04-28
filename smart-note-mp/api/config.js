@@ -1,7 +1,7 @@
 // 环境配置
 const ENV = {
   dev: {
-    baseURL: 'http://192.168.1.10:8080'
+    baseURL: 'http://10.152.38.241:8080'
   },
   prod: {
     baseURL: ''

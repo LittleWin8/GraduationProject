@@ -3,7 +3,7 @@
 		<!-- 头像区域 -->
 		<view class="header-box u-flex u-col-center" @click="goToUserInfo">
 			<Avatar 
-				:src="fullAvatarUrl"
+				:src="userInfo.avatar"
 				:size="100"
 				shape="circle"
 				default-type="user"
@@ -116,6 +116,7 @@
 		<view class="u-margin-top-20">
 			<u-cell-group>
 				<u-cell icon="tags" title="我的标签" isLink @click="goToTagManage"></u-cell>
+				<u-cell icon="trash" title="回收站" isLink @click="goToRecycleBin"></u-cell>
 				<u-cell icon="setting" title="设置" isLink @click="msg"></u-cell>
 				<u-cell icon="info-circle" title="关于我们" isLink @click="msg"></u-cell>
 			</u-cell-group>
@@ -129,18 +130,7 @@
 import { ref, computed } from 'vue'
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
-import { noteApi, config } from '@/api'
-
-// 统一的头像路径处理
-const getFullAvatarUrl = (avatar) => {
-  if (!avatar) return ''
-  if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:')) return avatar
-  if (avatar.startsWith('/api/wx/user/files/')) return config.baseURL + avatar
-  return config.baseURL + '/api/wx/user/files' + avatar
-}
-
-const fullAvatarUrl = computed(() => getFullAvatarUrl(userInfo.value.avatar))
-
+import { noteApi } from '@/api'
 
 const current = ref(0)
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
@@ -327,6 +317,10 @@ const goToNoteDetail = (noteId) => {
 
 const goToTagManage = () => {
 	uni.navigateTo({ url: '/pages/tag-manage/tag-manage' })
+}
+
+const goToRecycleBin = () => {
+	uni.navigateTo({ url: '/pages/recycle-bin/recycle-bin' })
 }
 
 const msg = () => {
