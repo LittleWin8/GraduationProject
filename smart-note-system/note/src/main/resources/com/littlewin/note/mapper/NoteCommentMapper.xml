@@ -19,4 +19,20 @@
         ORDER BY nc.create_time DESC
     </select>
 
+    <!-- 按commentId查询单条评论，关联sys_user -->
+    <select id="selectCommentById" resultType="com.littlewin.note.domain.vo.CommentVO">
+        SELECT nc.comment_id,
+               nc.note_id,
+               nc.content,
+               nc.parent_id,
+               nc.create_time,
+               su.nickname  AS author,
+               su.avatar,
+               (nc.user_id = #{userId}) AS is_owner
+        FROM note_comment nc
+                 LEFT JOIN sys_user su ON nc.user_id = su.user_id
+        WHERE nc.comment_id = #{commentId}
+          AND nc.del_flag = 0
+    </select>
+
 </mapper>

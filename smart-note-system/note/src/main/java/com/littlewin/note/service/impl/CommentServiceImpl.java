@@ -1,6 +1,5 @@
 package com.littlewin.note.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.common.exception.ServiceException;
@@ -52,16 +51,11 @@ public class CommentServiceImpl implements CommentService {
         comment.setDelFlag(0);
         noteCommentMapper.insert(comment);
 
-        // 插入后再查一次，拿到关联用户信息的完整VO
-        IPage<CommentVO> result = noteCommentMapper.selectCommentPage(
-                new Page<>(1, 1), dto.getNoteId(), userId);
-        for (CommentVO vo : result.getRecords()) {
-            if (vo.getCommentId().equals(comment.getCommentId())) {
-                return vo;
-            }
+        CommentVO vo = noteCommentMapper.selectCommentById(comment.getCommentId(), userId);
+        if (vo != null) {
+            return vo;
         }
 
-        // 兜底：手动构建VO
         return CommentVO.builder()
                 .commentId(comment.getCommentId())
                 .noteId(comment.getNoteId())
