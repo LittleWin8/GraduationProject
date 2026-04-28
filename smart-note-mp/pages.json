@@ -70,6 +70,12 @@
 				"navigationBarTitleText": "回收站",
 				"enablePullDownRefresh": true
 			}
+		},
+		{
+			"path": "pages/message/message",
+			"style": {
+				"navigationBarTitleText": "消息"
+			}
 		}
 	],
 	"globalStyle": {

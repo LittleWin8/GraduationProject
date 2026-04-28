@@ -1,41 +1,52 @@
 <template>
 	<view class="custom-tab-bar">
-		<view 
-			v-for="(item, index) in list" 
+		<view
+			v-for="(item, index) in list"
 			:key="index"
 			class="tab-bar-item"
 			:class="{ active: currentPage === item.pagePath }"
 			@click="switchTab(item, index)"
 		>
-			<text class="iconfont" :class="item.icon"></text>
+			<view class="icon-wrapper">
+				<text class="iconfont" :class="item.icon"></text>
+				<view v-if="item.showBadge && unreadCount > 0" class="badge">
+					<text class="badge-text">{{ unreadCount > 99 ? '99+' : unreadCount }}</text>
+				</view>
+			</view>
 			<text class="tab-bar-text">{{ item.text }}</text>
 		</view>
 	</view>
 </template>
 
 <script>
+import { messageApi } from '@/api/modules/message.js'
+
 export default {
 	data() {
 		return {
 			currentPage: '',
+			unreadCount: 0,
 			list: [
-				{ 
-					pagePath: '/pages/community/community', 
+				{
+					pagePath: '/pages/community/community',
 					text: '社区',
 					icon: 'icon-shequ',
-					isTab: true
+					isTab: true,
+					showBadge: false
 				},
-				{ 
-					pagePath: '/pages/create/create', 
+				{
+					pagePath: '/pages/create/create',
 					text: '创作',
 					icon: 'icon-chuangzuo',
-					isTab: false
+					isTab: false,
+					showBadge: false
 				},
-				{ 
-					pagePath: '/pages/profile/profile', 
+				{
+					pagePath: '/pages/profile/profile',
 					text: '我的',
 					icon: 'icon-wode',
-					isTab: true
+					isTab: true,
+					showBadge: true
 				}
 			]
 		}
@@ -43,7 +54,7 @@ export default {
 	methods: {
 		switchTab(item, index) {
 			if (this.currentPage === item.pagePath) return
-			
+
 			if (item.isTab) {
 				uni.switchTab({ url: item.pagePath })
 			} else {
@@ -57,13 +68,42 @@ export default {
 				let route = '/' + currentPage.route
 				this.currentPage = route
 			}
+		},
+		/** 获取未读消息数 */
+		async fetchUnreadCount() {
+			try {
+				const res = await messageApi.getUnreadCount()
+				this.unreadCount = res?.count || 0
+				uni.setStorageSync('unreadCount', this.unreadCount)
+			} catch (e) {
+				console.warn('获取未读消息数失败:', e)
+			}
+		},
+		/** 从缓存同步未读数 */
+		syncFromCache() {
+			try {
+				const cached = uni.getStorageSync('unreadCount')
+				if (typeof cached === 'number') {
+					this.unreadCount = cached
+				}
+			} catch (e) {}
 		}
 	},
 	mounted() {
 		this.updateCurrentPage()
+		this.syncFromCache()
+		this.fetchUnreadCount()
+		uni.$on('refreshUnread', () => {
+			this.fetchUnreadCount()
+		})
 	},
 	activated() {
 		this.updateCurrentPage()
+		this.syncFromCache()
+		this.fetchUnreadCount()
+	},
+	beforeUnmount() {
+		uni.$off('refreshUnread')
 	}
 }
 </script>
@@ -91,6 +131,13 @@ export default {
 	gap: 8rpx;
 }
 
+.icon-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 .iconfont {
 	font-size: 48rpx;
 	color: #909399;
@@ -107,5 +154,25 @@ export default {
 
 .active .tab-bar-text {
 	color: #1890ff;
+}
+
+.badge {
+	position: absolute;
+	top: -10rpx;
+	right: -20rpx;
+	min-width: 32rpx;
+	height: 32rpx;
+	background: #fa3534;
+	border-radius: 16rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 8rpx;
+}
+
+.badge-text {
+	font-size: 20rpx;
+	color: #fff;
+	line-height: 1;
 }
 </style>

@@ -260,3 +260,21 @@ CREATE TABLE sys_dict_data (
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_dict_type (dict_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='字典数据表';
+
+/* ============================= */
+/* 五、用户消息提示                */
+/* ============================= */
+
+CREATE TABLE IF NOT EXISTS user_message (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '消息ID',
+    receiver_id BIGINT NOT NULL COMMENT '接收者用户ID（笔记作者）',
+    sender_id BIGINT NOT NULL COMMENT '触发者用户ID（评论者）',
+    note_id BIGINT NOT NULL COMMENT '关联笔记ID',
+    comment_id BIGINT COMMENT '关联评论ID',
+    type TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型：1评论, 2回复(预留)',
+    content VARCHAR(500) COMMENT '消息内容摘要（评论内容前50字）',
+    is_read TINYINT NOT NULL DEFAULT 0 COMMENT '是否已读：0未读, 1已读',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_receiver_read (receiver_id, is_read),
+    INDEX idx_receiver_time (receiver_id, create_time DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内消息表';

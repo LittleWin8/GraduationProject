@@ -120,6 +120,11 @@
 
 		<view class="u-margin-top-20">
 			<u-cell-group>
+				<u-cell icon="bell" title="消息通知" isLink @click="goToMessage">
+					<template #value>
+						<view v-if="unreadCount > 0" class="unread-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
+					</template>
+				</u-cell>
 				<u-cell icon="tags" title="我的标签" isLink @click="goToTagManage"></u-cell>
 				<u-cell icon="trash" title="回收站" isLink @click="goToRecycleBin"></u-cell>
 				<u-cell icon="setting" title="设置" isLink @click="msg"></u-cell>
@@ -138,6 +143,7 @@ import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 import Avatar from '@/components/Avatar/avatar.vue'
 import { noteApi } from '@/api'
 import { interactionApi } from '@/api/modules/interaction.js'
+import { messageApi } from '@/api/modules/message.js'
 
 const current = ref(0)
 const tabs = [{name: '我的笔记'}, {name: '我的收藏'}, {name: '赞过'}]
@@ -156,6 +162,7 @@ const favoritesList = ref([])
 const likedList = ref([])
 
 const removingIds = ref(new Set())
+const unreadCount = ref(0)
 
 /** Tab 切换懒加载 */
 const handleTabChange = (e) => {
@@ -294,9 +301,27 @@ const loadUserInfoFromCache = () => {
 	}
 }
 
+/** 获取未读消息数 */
+const fetchUnreadCount = async () => {
+	try {
+		const res = await messageApi.getUnreadCount()
+		unreadCount.value = res?.count || 0
+		uni.setStorageSync('unreadCount', unreadCount.value)
+		uni.$emit('refreshUnread')
+	} catch (e) {
+		console.warn('获取未读消息数失败:', e)
+	}
+}
+
+/** 跳转消息页 */
+const goToMessage = () => {
+	uni.navigateTo({ url: '/pages/message/message' })
+}
+
 onShow(() => {
 	loadUserInfoFromCache()
 	fetchStats()
+	fetchUnreadCount()
 	if (current.value === 0) fetchMyNotes()
 	else if (current.value === 1) fetchFavorites()
 	else if (current.value === 2) fetchLiked()
@@ -379,5 +404,19 @@ const msg = () => {
 .list-content { 
 	background: #fff; 
 	min-height: 300rpx; 
+}
+
+.unread-badge {
+	min-width: 36rpx;
+	height: 36rpx;
+	background: #fa3534;
+	border-radius: 18rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 10rpx;
+	font-size: 22rpx;
+	color: #fff;
+	line-height: 1;
 }
 </style>

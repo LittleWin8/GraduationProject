@@ -73,6 +73,14 @@ export const APIS = {
     DELETE: '/api/wx/comments'       // /{id}
   },
   
+  // 消息模块
+  MESSAGE: {
+    LIST: '/api/wx/messages',              // GET?page=&size=
+    UNREAD_COUNT: '/api/wx/messages/unread-count',  // GET
+    READ_ALL: '/api/wx/messages/read-all',          // POST
+    DELETE: '/api/wx/messages'                      // DELETE /{id}
+  },
+  
   // 日志模块
   LOG: {
     BEHAVIOR: '/api/wx/log/behavior' // POST?type=view/search

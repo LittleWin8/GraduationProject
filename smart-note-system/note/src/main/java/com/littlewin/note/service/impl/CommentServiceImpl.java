@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.note.domain.dto.CommentCreateDTO;
+import com.littlewin.note.domain.entity.Note;
 import com.littlewin.note.domain.entity.NoteComment;
 import com.littlewin.note.domain.vo.CommentVO;
 import com.littlewin.note.mapper.NoteCommentMapper;
+import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.service.CommentService;
+import com.littlewin.note.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,8 @@ import java.time.LocalDateTime;
 public class CommentServiceImpl implements CommentService {
 
     private final NoteCommentMapper noteCommentMapper;
+    private final NoteMapper noteMapper;
+    private final MessageService messageService;
 
     /** 分页查询评论列表（关联sys_user查作者信息） */
     @Override
@@ -50,6 +55,16 @@ public class CommentServiceImpl implements CommentService {
         comment.setCreateTime(LocalDateTime.now());
         comment.setDelFlag(0);
         noteCommentMapper.insert(comment);
+
+        // 评论时给笔记作者发站内消息（自己评论自己的笔记不发）
+        Note note = noteMapper.selectById(dto.getNoteId());
+        if (note != null && !note.getUserId().equals(userId)) {
+            int type = dto.getParentId() != null ? 2 : 1;
+            String summary = dto.getContent().length() > 50
+                    ? dto.getContent().substring(0, 50) : dto.getContent();
+            messageService.sendMessage(note.getUserId(), userId, dto.getNoteId(),
+                    comment.getCommentId(), type, summary);
+        }
 
         CommentVO vo = noteCommentMapper.selectCommentById(comment.getCommentId(), userId);
         if (vo != null) {
