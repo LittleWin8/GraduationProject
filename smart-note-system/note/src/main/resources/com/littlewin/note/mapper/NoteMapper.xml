@@ -259,4 +259,8 @@
         SET del_flag = 1
         WHERE note_id = #{noteId}
     </update>
+
+    <update id="incrementViewCount">
+        UPDATE note SET view_count = view_count + 1 WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
 </mapper>

@@ -91,4 +91,6 @@ public interface NoteMapper extends BaseMapper<Note> {
                   @Param("status") Integer status);
 
     int adminForceDelete(@Param("noteId") Long noteId);
+
+    void incrementViewCount(@Param("noteId") Long noteId);
 }

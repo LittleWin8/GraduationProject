@@ -42,6 +42,7 @@ public class NoteDetailServiceImpl implements NoteDetailService {
         if (detail == null) {
             throw new ServiceException("笔记不存在或无权限访问");
         }
+        noteMapper.incrementViewCount(noteId);
         // 查询笔记关联的标签ID列表
         List<NoteTagRel> relList = noteTagRelMapper.selectList(
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<NoteTagRel>()
