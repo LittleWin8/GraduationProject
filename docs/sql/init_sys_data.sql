@@ -106,9 +106,6 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (3010, 3000, 'noteList', '/note/list', '/note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1);
 
--- 内容审核（审核功能已集成到笔记列表页，隐藏此菜单）
-INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide, sort_order) VALUES
-(3020, 3000, 'audit', '/note/audit', '/note/audit/index', 'C', '内容审核', 'Checked', 'note:audit:view', 1, 2);
 -- 笔记列表按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
 (3011, 3010, 'F', '审核笔记', 'note:audit', 1),

@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
+    "@types/markdown-it": "^14.1.2",
     "@vueuse/core": "^10.11.0",
     "@wangeditor/editor": "^5.1.23",
     "@wangeditor/editor-for-vue": "^5.1.12",
@@ -46,6 +47,8 @@
     "echarts": "^5.5.1",
     "echarts-liquidfill": "^3.1.0",
     "element-plus": "^2.7.6",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.1",
     "md5": "^2.3.0",
     "mitt": "^3.0.1",
     "nprogress": "^0.2.0",
