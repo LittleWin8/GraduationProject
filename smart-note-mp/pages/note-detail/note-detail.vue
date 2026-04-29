@@ -116,6 +116,7 @@ import MarkdownIt from 'markdown-it'
 import { noteApi } from '@/api/index.js'
 import { interactionApi } from '@/api/modules/interaction.js'
 import { commentApi } from '@/api/modules/comment.js'
+import { logApi } from '@/api/modules/log.js'
 import { config } from '@/api/config.js'
 
 const md = new MarkdownIt({
@@ -263,6 +264,7 @@ const loadDetail = async (id) => {
 		checkOwnership()
 		loadInteractionStatus()
 		loadComments(true)
+		logApi.report('view', String(id)).catch(() => {})
 	} catch (error) {
 		console.error('加载笔记详情失败:', error)
 		noteData.value = null

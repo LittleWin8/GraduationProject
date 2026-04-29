@@ -106,11 +106,13 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (3010, 3000, 'noteList', '/note/list', '/note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1);
 
+-- 内容审核（审核功能已集成到笔记列表页，隐藏此菜单）
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide, sort_order) VALUES
+(3020, 3000, 'audit', '/note/audit', '/note/audit/index', 'C', '内容审核', 'Checked', 'note:audit:view', 1, 2);
 -- 笔记列表按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
 (3011, 3010, 'F', '审核笔记', 'note:audit', 1),
 (3012, 3010, 'F', '删除笔记', 'note:delete', 2);
-
 
 -- ---------------------------------------------
 -- [4000系列] 分类维护 (Category)
@@ -125,12 +127,12 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 -- 分类管理（TreeFilter + ProTable 组合布局）
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (4020, 4000, 'tree', '/note/category', '/note/category/index', 'C', '分类管理', 'Operation', 'note:cat:list', 2);
+
 -- 分类管理按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
 (4021, 4020, 'F', '新增分类', 'category:add', 1),
 (4022, 4020, 'F', '编辑分类', 'category:edit', 2),
 (4023, 4020, 'F', '删除分类', 'category:delete', 3);
-
 
 -- ---------------------------------------------
 -- [5000系列] 系统监控 (Monitor)
@@ -142,9 +144,13 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (5010, 5000, 'log', '/monitor/log', '/monitor/log/index', 'C', '操作审计', 'Memo', 'sys:log:view', 1);
 
+-- 行为日志菜单
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
+(5015, 5000, 'behavior', '/monitor/behavior', '/monitor/behavior/index', 'C', '行为日志', 'View', 'sys:log:behavior', 2);
+
 -- AI 任务监控
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
-(5020, 5000, 'aiLog', '/monitor/aiLog', '/monitor/aiLog/index', 'C', 'AI 监控', 'Cpu', 'sys:ai:log', 2);
+(5020, 5000, 'aiLog', '/monitor/aiLog', '/monitor/aiLog/index', 'C', 'AI 监控', 'Cpu', 'sys:ai:log', 3);
 
 
 -- =============================================
@@ -185,7 +191,9 @@ INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark) VALUES
 (5, '笔记公开性', 'note_public', 1, 'note.is_public'),
 (6, '互动态度', 'reaction_attitude', 1, 'note_reaction.attitude'),
 (7, '操作类型', 'operation_type', 1, '审计日志操作行为'),
-(8, '角色名称', 'role_name', 1, 'sys_role.role_id');
+(8, '角色名称', 'role_name', 1, 'sys_role.role_id'),
+(9, '行为类型', 'behavior_type', 1, 'sys_log_behavior.action_type');
+
 
 -- 6.2 字典数据
 INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_order) VALUES
@@ -228,4 +236,8 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 
 -- 角色名称
 ('role_name', '超级管理员', '1', 'danger', 1),
-('role_name', '内容运营', '2', 'success', 2);
+('role_name', '内容运营', '2', 'success', 2),
+
+-- 用户行为
+('behavior_type', '浏览', '1', 'primary', 1),
+('behavior_type', '搜索', '2', 'warning', 2);
