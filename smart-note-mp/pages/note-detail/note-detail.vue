@@ -1,8 +1,13 @@
 <template>
 	<view class="note-detail-page">
-		<view v-if="loading" class="loading-box">
-			<view class="loading-spinner"></view>
-			<text class="loading-text">加载中...</text>
+		<view v-if="loading" class="skeleton-wrapper">
+			<view class="skeleton-title"></view>
+			<view class="skeleton-meta"></view>
+			<view class="skeleton-line"></view>
+			<view class="skeleton-line"></view>
+			<view class="skeleton-line short"></view>
+			<view class="skeleton-line"></view>
+			<view class="skeleton-line short"></view>
 		</view>
 
 		<view v-else-if="!noteData" class="empty-box">
@@ -288,6 +293,7 @@ const confirmDelete = () => {
 			if (res.confirm) {
 				try {
 					await noteApi.deleteNote(noteId.value, false)
+					uni.$emit('noteUpdated')
 					uni.showToast({ title: '已移入回收站', icon: 'success' })
 					setTimeout(() => {
 						uni.navigateBack()
@@ -387,6 +393,9 @@ const onSendComment = async () => {
 		if (noteData.value) {
 			noteData.value.comments = (noteData.value.comments || 0) + 1
 		}
+		setTimeout(() => {
+			uni.pageScrollTo({ selector: '.comment-section', duration: 300 })
+		}, 300)
 	} catch (e) {
 		console.error('发表评论失败:', e)
 		uni.showToast({ title: '评论失败', icon: 'none' })
@@ -680,7 +689,6 @@ onLoad((options) => {
 	margin-top: 8rpx;
 }
 
-.loading-box,
 .empty-box {
 	min-height: 60vh;
 	display: flex;
@@ -690,23 +698,53 @@ onLoad((options) => {
 	gap: 20rpx;
 }
 
-.loading-spinner {
-	width: 56rpx;
-	height: 56rpx;
-	border: 4rpx solid #f3f3f3;
-	border-top: 4rpx solid #3498db;
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-
-.loading-text,
 .empty-text {
 	font-size: 28rpx;
 	color: #909399;
 }
 
-@keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+.skeleton-wrapper {
+	padding: 40rpx;
+	background: #fff;
+	border-radius: 16rpx;
+}
+
+.skeleton-title {
+	height: 44rpx;
+	width: 70%;
+	border-radius: 8rpx;
+	margin-bottom: 24rpx;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeleton-pulse 1.5s infinite;
+}
+
+.skeleton-meta {
+	height: 24rpx;
+	width: 40%;
+	border-radius: 6rpx;
+	margin-bottom: 40rpx;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeleton-pulse 1.5s infinite;
+}
+
+.skeleton-line {
+	height: 28rpx;
+	width: 100%;
+	border-radius: 6rpx;
+	margin-bottom: 20rpx;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeleton-pulse 1.5s infinite;
+}
+
+.skeleton-line.short {
+	width: 60%;
+}
+
+@keyframes skeleton-pulse {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
 }
 </style>

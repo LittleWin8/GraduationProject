@@ -32,23 +32,36 @@
 			<u-tabs :list="tabList" @click="handleTabClick" lineColor="#1890ff" :activeStyle="{color: '#1890ff', fontWeight: 'bold'}" :current="currentTab"></u-tabs>
 		</u-sticky>
 
-		<view class="list-body">
-			<note-card
-				v-for="item in noteList"
-				:key="item.id"
-				:note="item"
-				@like="onLike"
-				@collect="onCollect"
-				@click="goDetail"
-			/>
-			<u-loadmore :status="loadStatus" line />
+		<view v-if="firstLoading" class="skeleton-wrapper">
+			<view v-for="i in 4" :key="i" class="skeleton-card">
+				<view class="skeleton-avatar"></view>
+				<view class="skeleton-content">
+					<view class="skeleton-title"></view>
+					<view class="skeleton-text"></view>
+					<view class="skeleton-text short"></view>
+				</view>
+			</view>
+		</view>
+		<view v-else class="list-body">
+			<u-empty v-if="noteList.length === 0" mode="search" text="没有找到相关笔记" marginTop="100"></u-empty>
+			<template v-else>
+				<note-card
+					v-for="item in noteList"
+					:key="item.id"
+					:note="item"
+					@like="onLike"
+					@collect="onCollect"
+					@click="goDetail"
+				/>
+				<u-loadmore :status="loadStatus" line />
+			</template>
 		</view>
 		<custom-tab-bar />
 	</view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { noteApi } from '@/api/modules/note.js'
 import { interactionApi } from '@/api/modules/interaction.js'
@@ -63,6 +76,7 @@ const page = ref(1)
 const pageSize = 10
 const hasMore = ref(true)
 const loading = ref(false)
+const firstLoading = ref(true)
 const currentTab = ref(0)
 const tabList = [{ name: '最新' }, { name: '最热' }]
 
@@ -220,6 +234,7 @@ const loadNotes = async (reset = false) => {
 	} finally {
 		if (requestId === noteRequestId) {
 			loading.value = false
+			firstLoading.value = false
 		}
 	}
 }
@@ -327,11 +342,23 @@ const onCollect = async (id) => {
 	}
 }
 
+onMounted(() => {
+	uni.$on('noteCreated', () => loadNotes(true))
+	uni.$on('noteUpdated', () => loadNotes(true))
+})
+
+onUnmounted(() => {
+	uni.$off('noteCreated')
+	uni.$off('noteUpdated')
+})
+
 onShow(() => {
 	if (categoryTree.value.length === 0) {
 		loadCategories()
 	}
-	loadNotes(true)
+	if (firstLoading.value) {
+		loadNotes(true)
+	}
 })
 </script>
 
@@ -368,5 +395,35 @@ onShow(() => {
 .sub-tag.active {
 	color: #fff;
 	background: #1890ff;
+}
+
+.skeleton-wrapper { padding: 20rpx; }
+.skeleton-card {
+	display: flex; padding: 24rpx; background: #fff;
+	margin-bottom: 16rpx; border-radius: 12rpx;
+}
+.skeleton-avatar {
+	width: 72rpx; height: 72rpx; border-radius: 50%;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%; animation: skeleton-pulse 1.5s infinite;
+	flex-shrink: 0;
+}
+.skeleton-content { flex: 1; margin-left: 20rpx; }
+.skeleton-title {
+	height: 32rpx; width: 60%; border-radius: 8rpx;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%; animation: skeleton-pulse 1.5s infinite;
+	margin-bottom: 16rpx;
+}
+.skeleton-text {
+	height: 24rpx; width: 90%; border-radius: 6rpx;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%; animation: skeleton-pulse 1.5s infinite;
+	margin-bottom: 12rpx;
+}
+.skeleton-text.short { width: 50%; }
+@keyframes skeleton-pulse {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
 }
 </style>

@@ -36,7 +36,7 @@
 			<view class="list-content">
 				<!-- 我的笔记 -->
 				<block v-if="current === 0">
-					<u-empty v-if="myNotesList.length === 0" mode="list" text="暂无笔记" marginTop="100"></u-empty>
+					<u-empty v-if="myNotesList.length === 0" mode="list" text="暂无笔记，去社区看看吧" marginTop="100"></u-empty>
 					<u-cell-group v-else>
 						<u-cell 
 							v-for="(item, i) in myNotesList" 

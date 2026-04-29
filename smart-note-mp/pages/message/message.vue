@@ -49,7 +49,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { onShow, onReachBottom } from '@dcloudio/uni-app'
+import { onShow, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
 import { messageApi } from '@/api/modules/message.js'
 import { config } from '@/api/config.js'
 
@@ -153,6 +153,11 @@ const goToDetail = (item) => {
 		uni.showToast({ title: '笔记已删除', icon: 'none' })
 	}
 }
+
+onPullDownRefresh(async () => {
+	await loadMessages(true)
+	uni.stopPullDownRefresh()
+})
 
 onReachBottom(() => {
 	loadMore()

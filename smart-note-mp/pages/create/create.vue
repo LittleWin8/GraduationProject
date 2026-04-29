@@ -310,6 +310,7 @@ const submit = async () => {
 		if (isEdit.value) {
 			await noteApi.updateNote(editNoteId.value, data);
 			submitted.value = true;
+			uni.$emit('noteUpdated')
 			uni.showToast({ title: '更新成功', icon: 'success' });
 			setTimeout(() => {
 				uni.navigateBack();
@@ -317,6 +318,7 @@ const submit = async () => {
 		} else {
 			await noteApi.createNote(data);
 			submitted.value = true;
+			uni.$emit('noteCreated')
 			uni.showToast({ title: '保存成功', icon: 'success' });
 			setTimeout(() => {
 				resetForm();
