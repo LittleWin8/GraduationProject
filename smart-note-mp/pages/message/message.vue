@@ -51,6 +51,7 @@
 import { ref } from 'vue'
 import { onShow, onReachBottom } from '@dcloudio/uni-app'
 import { messageApi } from '@/api/modules/message.js'
+import { config } from '@/api/config.js'
 
 const messageList = ref([])
 const page = ref(1)
@@ -59,9 +60,10 @@ const loading = ref(false)
 
 const resolveAvatar = (avatar) => {
 	if (!avatar) return '/static/default-avatar.png'
-	if (avatar.startsWith('http')) return avatar
-	const baseUrl = 'http://192.168.1.8:8080'
-	return baseUrl + avatar
+	if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:')) return avatar
+	if (avatar.startsWith('/static/')) return avatar
+	if (avatar.startsWith('/api/')) return config.baseURL + avatar
+	return config.baseURL + '/api/wx/user/files' + avatar
 }
 
 const formatTime = (time) => {

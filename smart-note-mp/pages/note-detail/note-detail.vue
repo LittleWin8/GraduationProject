@@ -116,6 +116,7 @@ import MarkdownIt from 'markdown-it'
 import { noteApi } from '@/api/index.js'
 import { interactionApi } from '@/api/modules/interaction.js'
 import { commentApi } from '@/api/modules/comment.js'
+import { config } from '@/api/config.js'
 
 const md = new MarkdownIt({
 	html: false,
@@ -149,9 +150,10 @@ const sending = ref(false)
 /** 拼接头像URL */
 const resolveAvatar = (avatar) => {
 	if (!avatar) return '/static/default-avatar.png'
-	if (avatar.startsWith('http')) return avatar
-	const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-	return baseUrl + avatar
+	if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:')) return avatar
+	if (avatar.startsWith('/static/')) return avatar
+	if (avatar.startsWith('/api/')) return config.baseURL + avatar
+	return config.baseURL + '/api/wx/user/files' + avatar
 }
 
 const formatTime = (time) => {

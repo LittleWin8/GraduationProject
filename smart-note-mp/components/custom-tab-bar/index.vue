@@ -26,6 +26,7 @@ export default {
 		return {
 			currentPage: '',
 			unreadCount: 0,
+			pollTimer: null,
 			list: [
 				{
 					pagePath: '/pages/community/community',
@@ -87,12 +88,27 @@ export default {
 					this.unreadCount = cached
 				}
 			} catch (e) {}
+		},
+		/** 启动轮询（每30秒刷新未读数） */
+		startPolling() {
+			this.stopPolling()
+			this.pollTimer = setInterval(() => {
+				this.fetchUnreadCount()
+			}, 30000)
+		},
+		/** 停止轮询 */
+		stopPolling() {
+			if (this.pollTimer) {
+				clearInterval(this.pollTimer)
+				this.pollTimer = null
+			}
 		}
 	},
 	mounted() {
 		this.updateCurrentPage()
 		this.syncFromCache()
 		this.fetchUnreadCount()
+		this.startPolling()
 		uni.$on('refreshUnread', () => {
 			this.fetchUnreadCount()
 		})
@@ -103,6 +119,7 @@ export default {
 		this.fetchUnreadCount()
 	},
 	beforeUnmount() {
+		this.stopPolling()
 		uni.$off('refreshUnread')
 	}
 }
