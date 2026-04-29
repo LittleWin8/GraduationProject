@@ -218,7 +218,9 @@ const handleLoginSuccess = async (token) => {
 	
 	uni.showToast({ title: '登录成功', icon: 'success' });
 	setTimeout(() => {
-		uni.reLaunch({ url: '/pages/community/community' });
+		const redirectUrl = uni.getStorageSync('redirectUrl') || '/pages/community/community'
+		uni.removeStorageSync('redirectUrl')
+		uni.reLaunch({ url: redirectUrl });
 	}, 1500);
 };
 

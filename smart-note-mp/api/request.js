@@ -49,6 +49,24 @@ export const request = (options) => {
                         // 清除本地存储
                         uni.removeStorageSync('token')
                         uni.removeStorageSync('userInfo')
+                        // 记录来源页，登录后自动跳回
+                        const pages = getCurrentPages()
+                        if (pages.length > 0) {
+                            const currentPage = pages[pages.length - 1]
+                            const path = '/' + currentPage.route
+                            const params = currentPage.options || {}
+                            const query = Object.keys(params).map(k => `${k}=${params[k]}`).join('&')
+                            const fullPath = query ? path + '?' + query : path
+                            if (!currentPage.route || !currentPage.route.includes('login/login')) {
+                                uni.setStorageSync('redirectUrl', fullPath)
+                            }
+                        }
+                        // 防抖：已在登录页则不再跳转
+                        const curPages = getCurrentPages()
+                        if (curPages.length > 0 && curPages[curPages.length - 1].route && curPages[curPages.length - 1].route.includes('login/login')) {
+                            reject(new Error(result.msg || '登录已过期'))
+                            return
+                        }
                         // 跳转到登录页
                         uni.reLaunch({ url: '/pages/login/login' })
                         reject(new Error(result.msg || '登录已过期'))
@@ -59,6 +77,24 @@ export const request = (options) => {
                 } else if (res.statusCode === 401) {
                     uni.removeStorageSync('token')
                     uni.removeStorageSync('userInfo')
+                    // 记录来源页，登录后自动跳回
+                    const pages = getCurrentPages()
+                    if (pages.length > 0) {
+                        const currentPage = pages[pages.length - 1]
+                        const path = '/' + currentPage.route
+                        const params = currentPage.options || {}
+                        const query = Object.keys(params).map(k => `${k}=${params[k]}`).join('&')
+                        const fullPath = query ? path + '?' + query : path
+                        if (!currentPage.route || !currentPage.route.includes('login/login')) {
+                            uni.setStorageSync('redirectUrl', fullPath)
+                        }
+                    }
+                    // 防抖：已在登录页则不再跳转
+                    const curPages = getCurrentPages()
+                    if (curPages.length > 0 && curPages[curPages.length - 1].route && curPages[curPages.length - 1].route.includes('login/login')) {
+                        reject(new Error('登录已过期'))
+                        return
+                    }
                     uni.reLaunch({ url: '/pages/login/login' })
                     reject(new Error('登录已过期'))
                 } else {

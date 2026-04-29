@@ -38,5 +38,5 @@ export const logoutApi = () => {
 
 // 用户修改密码/手机号
 export const updateSecurityApi = (params: { type: number; oldField: string; newField: string }) => {
-  return http.post(`/admin/auth//update`, params);
+  return http.post(`/admin/auth/update`, params);
 };
