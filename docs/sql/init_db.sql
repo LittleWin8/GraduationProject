@@ -106,7 +106,7 @@ CREATE TABLE sys_category (
     name VARCHAR(50) NOT NULL COMMENT '分类名称',
     parent_id BIGINT DEFAULT 0 COMMENT '父分类ID',
     sort_order INT DEFAULT 0 COMMENT '排序',
-    status TINYINT DEFAULT 1 COMMENT '状态：1 启用, 0 禁用',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0 草稿, 1 正常, 2 回收站,3 下架',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统预设分类表';
 

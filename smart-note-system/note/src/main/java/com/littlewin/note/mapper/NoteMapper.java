@@ -3,9 +3,11 @@ package com.littlewin.note.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.littlewin.note.domain.dto.AdminNoteQueryDTO;
 import com.littlewin.note.domain.dto.NoteCreateDTO;
 import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.entity.Note;
+import com.littlewin.note.domain.vo.AdminNoteVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
 import com.littlewin.note.domain.vo.NoteDetailVO;
 import com.littlewin.note.domain.vo.NoteListVO;
@@ -79,4 +81,14 @@ public interface NoteMapper extends BaseMapper<Note> {
      */
     int permanentDeleteById(@Param("noteId") Long noteId,
                             @Param("userId") Long userId);
+
+    IPage<AdminNoteVO> selectAdminNotePage(Page<AdminNoteVO> page,
+                                           @Param("query") AdminNoteQueryDTO query);
+
+    NoteDetailVO selectAdminNoteDetailById(@Param("noteId") Long noteId);
+
+    int auditNote(@Param("noteId") Long noteId,
+                  @Param("status") Integer status);
+
+    int adminForceDelete(@Param("noteId") Long noteId);
 }

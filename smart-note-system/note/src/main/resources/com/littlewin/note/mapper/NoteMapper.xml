@@ -163,4 +163,100 @@
         SET del_flag = 1
         WHERE note_id = #{noteId} AND user_id = #{userId}
     </update>
+
+    <!-- ==================== 管理端 SQL ==================== -->
+
+    <!-- 管理端笔记分页列表 -->
+    <select id="selectAdminNotePage" resultType="com.littlewin.note.domain.vo.AdminNoteVO">
+        SELECT
+            n.note_id     AS noteId,
+            n.title       AS title,
+            LEFT(n.content, 200) AS summary,
+            n.status      AS status,
+            n.is_public   AS isPublic,
+            n.view_count  AS viewCount,
+            (
+                SELECT COUNT(1)
+                FROM note_reaction nr
+                WHERE nr.note_id = n.note_id AND nr.attitude = 1
+            ) AS likeCount,
+            (
+                SELECT COUNT(1)
+                FROM note_comment nc
+                WHERE nc.note_id = n.note_id AND nc.del_flag = 0
+            ) AS commentCount,
+            n.user_id     AS userId,
+            u.nickname    AS author,
+            u.avatar      AS avatar,
+            n.category_id AS categoryId,
+            c.name        AS categoryName,
+            n.create_time AS createTime,
+            n.update_time AS updateTime
+        FROM note n
+        INNER JOIN sys_user u ON u.user_id = n.user_id
+        LEFT JOIN sys_category c ON c.category_id = n.category_id
+        WHERE n.del_flag = 0
+        <if test="query.status != null">
+            AND n.status = #{query.status}
+        </if>
+        <if test="query.categoryId != null">
+            AND n.category_id = #{query.categoryId}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (n.title LIKE CONCAT('%', #{query.keyword}, '%') OR n.content LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        <if test="query.userId != null">
+            AND n.user_id = #{query.userId}
+        </if>
+        <if test="query.startTime != null">
+            AND n.create_time &gt;= #{query.startTime}
+        </if>
+        <if test="query.endTime != null">
+            AND n.create_time &lt;= #{query.endTime}
+        </if>
+        ORDER BY n.create_time DESC
+    </select>
+
+    <!-- 管理端笔记详情（无 is_public 和 userId 限制） -->
+    <select id="selectAdminNoteDetailById" resultType="com.littlewin.note.domain.vo.NoteDetailVO">
+        SELECT
+            n.note_id AS noteId,
+            n.user_id AS userId,
+            n.title   AS title,
+            n.content AS content,
+            u.nickname AS author,
+            u.avatar  AS avatar,
+            n.is_public AS isPublic,
+            n.category_id AS categoryId,
+            (
+                SELECT COUNT(1)
+                FROM note_reaction nr
+                WHERE nr.note_id = n.note_id AND nr.attitude = 1
+            ) AS likes,
+            (
+                SELECT COUNT(1)
+                FROM note_comment nc
+                WHERE nc.note_id = n.note_id AND nc.del_flag = 0
+            ) AS comments,
+            n.update_time AS updateTime
+        FROM note n
+        INNER JOIN sys_user u ON u.user_id = n.user_id
+        WHERE n.note_id = #{noteId}
+          AND n.del_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 审核笔记：修改 status（1上架/3下架） -->
+    <update id="auditNote">
+        UPDATE note
+        SET status = #{status}, update_time = NOW()
+        WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
+
+    <!-- 管理员强制删除：del_flag → 1 -->
+    <update id="adminForceDelete">
+        UPDATE note
+        SET del_flag = 1
+        WHERE note_id = #{noteId}
+    </update>
 </mapper>
