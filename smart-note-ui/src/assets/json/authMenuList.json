@@ -379,34 +379,18 @@
       ]
     },
     {
-      "path": "/dashboard",
+      "path": "/dashboard/index",
       "name": "dashboard",
-      "redirect": "/dashboard/dataVisualize",
+      "component": "/dashboard/index",
       "meta": {
         "icon": "Odometer",
-        "title": "Dashboard",
+        "title": "工作台",
         "isLink": "",
         "isHide": false,
         "isFull": false,
         "isAffix": false,
         "isKeepAlive": true
-      },
-      "children": [
-        {
-          "path": "/dashboard/dataVisualize",
-          "name": "dataVisualize",
-          "component": "/dashboard/dataVisualize/index",
-          "meta": {
-            "icon": "Menu",
-            "title": "数据可视化",
-            "isLink": "",
-            "isHide": false,
-            "isFull": false,
-            "isAffix": false,
-            "isKeepAlive": true
-          }
-        }
-      ]
+      }
     },
     {
       "path": "/form",
