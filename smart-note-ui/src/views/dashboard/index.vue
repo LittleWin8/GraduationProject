@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-box">
+  <div class="dashboard-box" v-loading="loading">
     <el-row :gutter="20" class="mb20">
       <el-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6" v-for="item in statCards" :key="item.key">
         <div class="stat-card" :style="{ borderTop: `3px solid ${item.color}` }">
@@ -17,12 +17,12 @@
     <el-row :gutter="20" class="mb20">
       <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
         <el-card shadow="hover">
-          <ECharts :option="lineOption" height="350px" />
+          <ECharts :option="lineOption" height="350" />
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card shadow="hover">
-          <ECharts :option="pieOption" height="350px" />
+          <ECharts :option="pieOption" height="350" />
         </el-card>
       </el-col>
     </el-row>
@@ -30,7 +30,7 @@
     <el-row :gutter="20">
       <el-col :span="24">
         <el-card shadow="hover">
-          <ECharts :option="barOption" height="300px" />
+          <ECharts :option="barOption" height="300" />
         </el-card>
       </el-col>
     </el-row>
@@ -38,11 +38,12 @@
 </template>
 
 <script setup lang="ts" name="dashboard">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onActivated, onBeforeUnmount, onMounted } from "vue";
 import { UserFilled, Document, User, EditPen } from "@element-plus/icons-vue";
 import ECharts from "@/components/ECharts/index.vue";
 import { ECOption } from "@/components/ECharts/config";
 import { getDashboardStats, type DashboardStats } from "@/api/modules/dashboard";
+import mittBus from "@/utils/mittBus";
 
 const loading = ref(false);
 const stats = ref<DashboardStats>({
@@ -57,7 +58,6 @@ const stats = ref<DashboardStats>({
   hotNotes: []
 });
 
-/** 统计卡片配置 */
 const statCards = computed(() => [
   { key: "totalUsers", label: "总用户数", value: stats.value.totalUsers, icon: UserFilled, color: "#409eff" },
   { key: "totalNotes", label: "总笔记数", value: stats.value.totalNotes, icon: Document, color: "#67c23a" },
@@ -65,9 +65,8 @@ const statCards = computed(() => [
   { key: "todayNewNotes", label: "今日新增笔记", value: stats.value.todayNewNotes, icon: EditPen, color: "#f56c6c" }
 ]);
 
-/** 增长趋势折线图 */
 const lineOption = computed<ECOption>(() => ({
-  title: { text: "增长趋势（近7天）", left: "center", textStyle: { fontSize: 15 } },
+  title: { text: "增长趋势（近 7 天）", left: "center", textStyle: { fontSize: 15 } },
   tooltip: { trigger: "axis" },
   legend: { data: ["新增用户", "新增笔记"], bottom: 0 },
   grid: { top: 50, right: 20, bottom: 40, left: 50 },
@@ -93,7 +92,6 @@ const lineOption = computed<ECOption>(() => ({
   ]
 }));
 
-/** 笔记状态饼图 */
 const pieOption = computed<ECOption>(() => {
   const colorMap: Record<string, string> = { 草稿: "#909399", 正常: "#67c23a", 回收站: "#e6a23c", 下架: "#f56c6c" };
   return {
@@ -114,7 +112,6 @@ const pieOption = computed<ECOption>(() => {
   };
 });
 
-/** 热门笔记 TOP5 横向柱状图 */
 const barOption = computed<ECOption>(() => ({
   title: { text: "热门笔记 TOP5", left: "center", textStyle: { fontSize: 15 } },
   tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
@@ -136,21 +133,36 @@ const barOption = computed<ECOption>(() => ({
   ]
 }));
 
-/** 加载统计数据 */
 const fetchStats = async () => {
   loading.value = true;
   try {
     const { data } = await getDashboardStats();
     if (data) stats.value = data;
   } catch (e) {
-    console.warn("加载仪表盘数据失败:", e);
+    console.warn("加载仪表盘数据失败", e);
   } finally {
     loading.value = false;
   }
 };
 
+let firstActivated = true;
+
 onMounted(() => {
   fetchStats();
+});
+
+onActivated(() => {
+  if (firstActivated) {
+    firstActivated = false;
+    return;
+  }
+  fetchStats();
+});
+
+mittBus.on("dashboard-refresh", fetchStats);
+
+onBeforeUnmount(() => {
+  mittBus.off("dashboard-refresh", fetchStats);
 });
 </script>
 
@@ -180,6 +192,7 @@ onMounted(() => {
       color: #303133;
       line-height: 1.2;
     }
+
     .stat-card__label {
       font-size: 13px;
       color: #909399;

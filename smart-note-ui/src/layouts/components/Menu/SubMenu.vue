@@ -21,13 +21,18 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import mittBus from "@/utils/mittBus";
 
 defineProps<{ menuList: Menu.MenuOptions[] }>();
 
 const router = useRouter();
+const route = useRoute();
 const handleClickMenu = (subItem: Menu.MenuOptions) => {
   if (subItem.meta.isLink) return window.open(subItem.meta.isLink, "_blank");
+  if ((subItem.name === "dashboard" || subItem.path === "/dashboard/index") && route.path === subItem.path) {
+    mittBus.emit("dashboard-refresh");
+  }
   router.push(subItem.path);
 };
 </script>
