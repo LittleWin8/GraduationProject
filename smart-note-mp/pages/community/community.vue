@@ -74,6 +74,7 @@ const collectingIds = ref(new Set())
 const categoryTree = ref([])
 const topCategoryIndex = ref(0)
 const subCategorySelected = ref(null)
+let noteRequestId = 0
 
 /** 一级分类 Tab 列表（前面加"全部"） */
 const topCategoryTabs = computed(() => {
@@ -89,11 +90,12 @@ const currentTopCategory = computed(() => {
 
 /** 二级分类列表（前面加"全部"） */
 const subCategories = computed(() => {
-	if (!currentTopCategory.value || !currentTopCategory.value.children || currentTopCategory.value.children.length === 0) {
+	const children = currentTopCategory.value?.children || []
+	if (children.length === 0) {
 		return []
 	}
 	const all = [{ name: '全部', categoryId: null }]
-	return all.concat(currentTopCategory.value.children.map(c => ({ name: c.name, categoryId: c.categoryId })))
+	return all.concat(children.map(c => ({ name: c.name, categoryId: c.categoryId })))
 })
 
 /** 当前实际筛选的 categoryId */
@@ -134,6 +136,19 @@ const fillInteractionStatus = async (notes) => {
 	}
 }
 
+const normalizeCategoryTree = (nodes = []) => {
+	if (!Array.isArray(nodes)) return []
+	return nodes.map(node => {
+		const children = node.children || node.childList || node.subCategories || node.subCategoryList || node.childs || []
+		return {
+			...node,
+			categoryId: node.categoryId ?? node.id,
+			name: node.name || node.categoryName || '',
+			children: normalizeCategoryTree(children)
+		}
+	})
+}
+
 /** 加载分类树 */
 const loadCategories = async () => {
 	try {
@@ -143,7 +158,7 @@ const loadCategories = async () => {
 			data = res.data
 		}
 		if (Array.isArray(data)) {
-			categoryTree.value = data
+			categoryTree.value = normalizeCategoryTree(data)
 		}
 	} catch (e) {
 		console.error('加载分类失败:', e)
@@ -151,9 +166,10 @@ const loadCategories = async () => {
 }
 
 const loadNotes = async (reset = false) => {
-	if (loading.value) return
+	if (loading.value && !reset) return
 	if (!reset && !hasMore.value) return
 
+	const requestId = ++noteRequestId
 	loading.value = true
 	if (reset) {
 		page.value = 1
@@ -184,6 +200,7 @@ const loadNotes = async (reset = false) => {
 		const mapped = records.map(mapNoteItem)
 
 		await fillInteractionStatus(mapped)
+		if (requestId !== noteRequestId) return
 
 		if (reset) {
 			noteList.value = mapped
@@ -196,10 +213,13 @@ const loadNotes = async (reset = false) => {
 
 		loadStatus.value = hasMore.value ? 'loadmore' : 'nomore'
 	} catch (e) {
+		if (requestId !== noteRequestId) return
 		console.error('加载笔记列表失败:', e)
 		loadStatus.value = 'loadmore'
 	} finally {
-		loading.value = false
+		if (requestId === noteRequestId) {
+			loading.value = false
+		}
 	}
 }
 
@@ -304,21 +324,24 @@ const onCollect = async (id) => {
 }
 
 onShow(() => {
-	loadCategories()
+	if (categoryTree.value.length === 0) {
+		loadCategories()
+	}
 	loadNotes(true)
 })
 </script>
 
 <style>
-.page-container { background-color: #f5f7f9; min-height: 100vh; }
+.page-container {
+	background-color: #f5f7f9;
+	min-height: 100vh;
+	padding-bottom: 100rpx;
+	box-sizing: border-box;
+}
 .list-body { padding-top: 10rpx; }
 </style>
 
 <style scoped>
-view {
-  padding-bottom: 100rpx;
-}
-
 /* 二级分类横向滚动 */
 .sub-category-scroll {
 	white-space: nowrap;
