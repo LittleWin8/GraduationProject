@@ -53,6 +53,7 @@ import { onShow, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { noteApi } from '@/api/modules/note.js'
 import { interactionApi } from '@/api/modules/interaction.js'
 import { categoryApi } from '@/api/modules/category.js'
+import { logApi } from '@/api/modules/log.js'
 import NoteCard from '@/components/notecard/index.vue'
 import CustomTabBar from '@/components/custom-tab-bar/index.vue'
 
@@ -246,6 +247,9 @@ onReachBottom(() => {
 })
 
 const onSearch = () => {
+	if (keyword.value.trim()) {
+		logApi.report('search', keyword.value.trim()).catch(() => {})
+	}
 	loadNotes(true)
 }
 
