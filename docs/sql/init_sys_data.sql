@@ -106,9 +106,13 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (3010, 3000, 'noteList', '/note/list', '/note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1);
 
--- 内容审核
-INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
-(3020, 3000, 'audit', '/note/audit', '/note/audit/index', 'C', '内容审核', 'Checked', 'note:audit:view', 2);
+-- 内容审核（审核功能已集成到笔记列表页，隐藏此菜单）
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide, sort_order) VALUES
+(3020, 3000, 'audit', '/note/audit', '/note/audit/index', 'C', '内容审核', 'Checked', 'note:audit:view', 1, 2);
+-- 笔记列表按钮权限
+INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
+(3011, 3010, 'F', '审核笔记', 'note:audit', 1),
+(3012, 3010, 'F', '删除笔记', 'note:delete', 2);
 
 
 -- ---------------------------------------------
@@ -121,9 +125,14 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (4010, 4000, 'tag', '/category/tag', '/category/tag/index', 'C', '标签管理', 'PriceTag', 'note:tag:list', 1);
 
--- 分类树
+-- 分类管理（TreeFilter + ProTable 组合布局）
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
-(4020, 4000, 'tree', '/category/tree', '/category/tree/index', 'C', '分类树', 'Operation', 'note:cat:list', 2);
+(4020, 4000, 'tree', '/note/category', '/note/category/index', 'C', '分类管理', 'Operation', 'note:cat:list', 2);
+-- 分类管理按钮权限
+INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
+(4021, 4020, 'F', '新增分类', 'category:add', 1),
+(4022, 4020, 'F', '编辑分类', 'category:edit', 2),
+(4023, 4020, 'F', '删除分类', 'category:delete', 3);
 
 
 -- ---------------------------------------------
@@ -201,6 +210,7 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 ('note_status', '草稿', '0', 'info', 1),
 ('note_status', '正常', '1', 'success', 2),
 ('note_status', '回收站', '2', 'danger', 3),
+('note_status', '下架', '3', 'warning', 4),
 
 -- 公开性
 ('note_public', '私密', '0', 'danger', 1),
