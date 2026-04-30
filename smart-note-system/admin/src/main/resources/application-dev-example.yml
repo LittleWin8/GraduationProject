@@ -1,12 +1,17 @@
 # ===============================
-# 数据源配置（开发环境 - 示例）
+# 开发环境配置（示例模板）
+# 使用方式：复制此文件 → 重命名为 application-dev.yml → 填入真实值
 # ===============================
+
+# -------------------------------
+# MySQL 数据源
+# -------------------------------
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/smart_note?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
     username: root
-    password: your_password_here
+    password: your_mysql_password
     hikari:
       pool-name: HikariCP
       minimum-idle: 5
@@ -15,26 +20,40 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
 
-# ===============================
-# 微信小程序配置
-# ===============================
+  # -------------------------------
+  # Redis
+  # -------------------------------
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# -------------------------------
+# JWT
+# -------------------------------
+jwt:
+  secret: your_jwt_secret_here
+
+# -------------------------------
+# 微信小程序
+# -------------------------------
 wx:
   mp:
-    app-id: your_wechat_app_id_here
-    secret: your_wechat_secret_here
+    app-id: your_wechat_app_id
+    secret: your_wechat_secret
     api:
       code2session: https://api.weixin.qq.com/sns/jscode2session
 
-# ===============================
-# 系统业务配置
-# ===============================
+# -------------------------------
+# 系统业务
+# -------------------------------
 system:
   user:
     default-password: 123456
 
-# ===============================
-# 文件上传配置
-# ===============================
+# -------------------------------
+# 文件上传（按 Windows / Mac / Linux 修改路径）
+# -------------------------------
 upload:
   local-root-path: /path/to/your/upload/folder
   user-avatar-path: user/avatar

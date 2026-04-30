@@ -1,5 +1,5 @@
 # ===============================
-# 服务基础配置
+# 公共配置（所有环境共享）
 # ===============================
 server:
   port: 8080
@@ -8,17 +8,17 @@ spring:
   application:
     name: smart-note-admin
   profiles:
-    active: dev  # 开发用 dev，上线改 prod
+    active: dev
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
   servlet:
     multipart:
-      max-file-size: 10MB      # 单个文件大小限制比业务限制稍大
-      max-request-size: 10MB   # 整个请求大小限制
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 # ===============================
-# MyBatis-Plus 配置
+# MyBatis-Plus
 # ===============================
 mybatis-plus:
   configuration:
@@ -39,14 +39,13 @@ knife4j:
   enable: true
 
 # ===============================
-# JWT 配置
+# JWT
 # ===============================
 jwt:
-  secret: smart-note-secret-key
   expire: 86400000
 
 # ===============================
-# 日志级别
+# 日志
 # ===============================
 logging:
   level:

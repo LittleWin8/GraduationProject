@@ -54,4 +54,18 @@ public class JwtUtils {
                 .getBody();
         return claims.getSubject();
     }
+
+    /**
+     * 获取 token 剩余有效期（毫秒）
+     * 用于 Redis 黑名单 TTL 设置
+     */
+    public static long getRemainingExpiration(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET)
+                .parseClaimsJws(token)
+                .getBody();
+        long now = System.currentTimeMillis();
+        long exp = claims.getExpiration().getTime();
+        return Math.max(0, exp - now);
+    }
 }
