@@ -6,28 +6,20 @@ import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
-import com.littlewin.common.utils.JwtUtils;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.system.service.WxUserService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/wx/auth")
 public class WxAuthController {
 
-    private static final String REDIS_KEY_PREFIX = "token:blacklist:";
-
     @Resource
     private WxUserService wxUserService;
-
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
 
     @PostMapping("/login")
     @Log(module = LogModule.AUTH, action = LogAction.LOGIN, desc = "微信小程序登录")
@@ -47,15 +39,10 @@ public class WxAuthController {
     public Result logout(HttpServletRequest request) {
         LogContext.setBusinessId(SecurityUtils.getLoginUser().getUserId());
 
-        // 将 token 加入 Redis 黑名单，TTL 设为剩余有效期
         String header = request.getHeader(Constants.TOKEN_HEADER);
         if (header != null && header.startsWith(Constants.TOKEN_PREFIX)) {
             String token = header.substring(Constants.TOKEN_PREFIX.length());
-            long remaining = JwtUtils.getRemainingExpiration(token);
-            if (remaining > 0) {
-                stringRedisTemplate.opsForValue()
-                        .set(REDIS_KEY_PREFIX + token, "1", remaining, TimeUnit.MILLISECONDS);
-            }
+            wxUserService.addTokenToBlacklist(token);
         }
 
         return Result.success("退出成功");

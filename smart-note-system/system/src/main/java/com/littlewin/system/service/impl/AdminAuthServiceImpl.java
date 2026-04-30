@@ -1,10 +1,12 @@
 package com.littlewin.system.service.impl;
 
+import com.littlewin.common.constants.RedisKeyConstants;
 import com.littlewin.common.enums.LogAction;
 import com.littlewin.common.enums.LogModule;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
+import com.littlewin.common.redis.RedisService;
 import com.littlewin.common.utils.*;
 import com.littlewin.common.core.LoginDTO;
 import com.littlewin.system.domain.dto.SecurityUpdateDTO;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +39,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private UserAuthMapper userAuthMapper;
     @Resource
     private UserInfoMapper userInfoMapper;
+    @Resource
+    private RedisService redisService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -255,6 +260,15 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         result.put("useProTable", useProTablePerms);
 
         return result;
+    }
+
+    @Override
+    public void addTokenToBlacklist(String token) {
+        String jti = JwtUtils.getTokenId(token);
+        long remaining = JwtUtils.getRemainingExpiration(token);
+        if (remaining > 0) {
+            redisService.set(RedisKeyConstants.TOKEN_BLACKLIST + jti, "1", remaining, TimeUnit.MILLISECONDS);
+        }
     }
 
 }

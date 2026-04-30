@@ -2,66 +2,67 @@ package com.littlewin.common.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
 
-    /**
-     * 从配置文件读取
-     */
     @Value("${jwt.secret}")
     private String secretKey;
 
     @Value("${jwt.expire}")
     private Long expireTime;
 
-    /**
-     * 静态变量接收配置值
-     */
     private static String SECRET;
     private static Long EXPIRE_TIME;
+    private static SecretKey KEY;
 
     @PostConstruct
     public void init() {
         SECRET = this.secretKey;
         EXPIRE_TIME = this.expireTime;
+        KEY = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    /**
-     * 生成 token
-     */
     public static String createToken(String subject) {
         return Jwts.builder()
                 .setSubject(subject)
+                .setId(UUID.randomUUID().toString())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRE_TIME))
-                .signWith(SignatureAlgorithm.HS512, SECRET)
+                .signWith(KEY)
                 .compact();
     }
 
-    /**
-     * 解析 token
-     */
+    public static String getTokenId(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getId();
+    }
+
     public static String getSubject(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET)
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(KEY)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
     }
 
-    /**
-     * 获取 token 剩余有效期（毫秒）
-     * 用于 Redis 黑名单 TTL 设置
-     */
     public static long getRemainingExpiration(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET)
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(KEY)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
         long now = System.currentTimeMillis();

@@ -1,11 +1,13 @@
 package com.littlewin.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.littlewin.common.constants.RedisKeyConstants;
 import com.littlewin.common.core.FileUploadVO;
 import com.littlewin.common.core.LoginDTO;
 import com.littlewin.common.core.Upload;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.context.LogContext;
+import com.littlewin.common.redis.RedisService;
 import com.littlewin.common.utils.*;
 import com.littlewin.system.domain.dto.WxUserUpdateDTO;
 import com.littlewin.system.domain.entity.SysUser;
@@ -29,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 微信小程序用户服务实现类
@@ -56,6 +59,9 @@ public class WxUserServiceImpl implements WxUserService {
 
     @Resource
     private WechatApiUtils wechatApiUtils;
+
+    @Resource
+    private RedisService redisService;
 
     private static final Map<String, Integer> uploadLimitMap = new ConcurrentHashMap<>();
 
@@ -287,6 +293,15 @@ public class WxUserServiceImpl implements WxUserService {
             throw new ServiceException("上传过于频繁，请稍后再试");
         }
         uploadLimitMap.put(ip, count + 1);
+    }
+
+    @Override
+    public void addTokenToBlacklist(String token) {
+        String jti = JwtUtils.getTokenId(token);
+        long remaining = JwtUtils.getRemainingExpiration(token);
+        if (remaining > 0) {
+            redisService.set(RedisKeyConstants.TOKEN_BLACKLIST + jti, "1", remaining, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Scheduled(fixedRate = 3600000) // 每小时执行一次（3600000毫秒）

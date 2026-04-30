@@ -1,0 +1,17 @@
+# 使用方式：复制此文件 → 重命名为 docker-compose.yml → 填入真实密码
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: smart-note-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass your_redis_password --appendonly yes
+    volumes:
+      - redis-data:/data
+    environment:
+      TZ: Asia/Shanghai
+
+volumes:
+  redis-data:
+    name: smart-note-redis-data

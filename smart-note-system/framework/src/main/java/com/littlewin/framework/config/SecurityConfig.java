@@ -66,6 +66,16 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/wx/user/avatar").permitAll()
 
+                        // 放行 Knife4j 接口文档
+                        .requestMatchers(
+                                "/doc.html",
+                                "/webjars/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-resources",
+                                "/favicon.ico"
+                        ).permitAll()
+
                         // 其他所有请求需要认证
                         .anyRequest().authenticated()
                 );

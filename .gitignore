@@ -8,6 +8,7 @@
 # ===============================
 # 忽略包含真实密钥的本地配置文件
 **/application-dev.yml
+**/docker-compose.yml
 # 忽略微信小程序本地私密文件
 smart-note-mp/env.js
 

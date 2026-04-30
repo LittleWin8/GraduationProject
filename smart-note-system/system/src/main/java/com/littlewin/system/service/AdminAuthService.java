@@ -26,4 +26,7 @@ public interface AdminAuthService {
 
     // 修改个人手机号和密码
     void updateSecurityInfo(SecurityUpdateDTO dto);
+
+    // 将当前 token 加入 Redis 黑名单（退出登录时调用）
+    void addTokenToBlacklist(String token);
 }

@@ -28,5 +28,10 @@ public interface WxUserService {
      * 上传当前微信用户头像到本地资源目录
      */
     FileUploadVO uploadAvatar(MultipartFile file);
+
+    /**
+     * 将当前 token 加入 Redis 黑名单（退出登录时调用）
+     */
+    void addTokenToBlacklist(String token);
 }
 

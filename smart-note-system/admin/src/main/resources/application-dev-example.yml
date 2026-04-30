@@ -27,6 +27,13 @@ spring:
     redis:
       host: localhost
       port: 6379
+      password: your_redis_password
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
 
 # -------------------------------
 # JWT
