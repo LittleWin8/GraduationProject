@@ -18,7 +18,6 @@ import com.littlewin.system.mapper.SysUserMapper;
 import com.littlewin.system.mapper.UserAuthMapper;
 import com.littlewin.system.mapper.UserInfoMapper;
 import com.littlewin.system.service.WxUserService;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +29,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,8 +60,6 @@ public class WxUserServiceImpl implements WxUserService {
 
     @Resource
     private RedisService redisService;
-
-    private static final Map<String, Integer> uploadLimitMap = new ConcurrentHashMap<>();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -287,12 +283,14 @@ public class WxUserServiceImpl implements WxUserService {
     }
 
     private void checkUploadLimit() {
-        String ip = ServletUtils.getClientIp();
-        int count = uploadLimitMap.getOrDefault(ip, 0);
-        if (count > 20) { // 同一个IP每天/每小时限制上传20张
+        Long userId = getCurrentUserId();
+        String key = RedisKeyConstants.UPLOAD_LIMIT + userId;
+        int maxUploadsPerHour = 10;
+
+        Long count = redisService.incr(key, 1, 1, TimeUnit.HOURS);
+        if (count > maxUploadsPerHour) {
             throw new ServiceException("上传过于频繁，请稍后再试");
         }
-        uploadLimitMap.put(ip, count + 1);
     }
 
     @Override
@@ -302,10 +300,5 @@ public class WxUserServiceImpl implements WxUserService {
         if (remaining > 0) {
             redisService.set(RedisKeyConstants.TOKEN_BLACKLIST + jti, "1", remaining, TimeUnit.MILLISECONDS);
         }
-    }
-
-    @Scheduled(fixedRate = 3600000) // 每小时执行一次（3600000毫秒）
-    public void clearUploadLimitMap() {
-        uploadLimitMap.clear();
     }
 }

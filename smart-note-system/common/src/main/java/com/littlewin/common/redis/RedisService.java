@@ -31,4 +31,26 @@ public class RedisService {
     public boolean expire(String key, long timeout, TimeUnit unit) {
         return Boolean.TRUE.equals(stringRedisTemplate.expire(key, timeout, unit));
     }
+
+    public Long incr(String key, long delta) {
+        return stringRedisTemplate.opsForValue().increment(key, delta);
+    }
+
+    public Long incr(String key, long delta, long timeout, TimeUnit unit) {
+        Long result = stringRedisTemplate.opsForValue().increment(key, delta);
+        if (result != null && result == delta) {
+            stringRedisTemplate.expire(key, timeout, unit);
+        }
+        return result;
+    }
+
+    public Long decr(String key, long delta) {
+        return stringRedisTemplate.opsForValue().increment(key, -delta);
+    }
+
+    public boolean setNx(String key, String value, long timeout, TimeUnit unit) {
+        return Boolean.TRUE.equals(
+            stringRedisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit)
+        );
+    }
 }

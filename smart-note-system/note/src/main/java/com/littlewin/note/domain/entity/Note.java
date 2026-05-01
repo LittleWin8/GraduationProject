@@ -32,6 +32,14 @@ public class Note implements Serializable {
     @TableField("view_count")
     private Integer viewCount;
 
+    @TableField("like_count")
+    private Integer likeCount;
+
+    @TableField("comment_count")
+    private Integer commentCount;
+
+    private String summary;
+
     @TableLogic  // MyBatis-Plus 逻辑删除注解
     @TableField("del_flag")
     private Integer delFlag;

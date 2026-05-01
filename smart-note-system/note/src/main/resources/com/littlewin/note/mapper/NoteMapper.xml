@@ -48,18 +48,8 @@
             n.is_public AS isPublic,
             n.category_id AS categoryId,
             CASE WHEN IFNULL(cur.attitude, 0) = 1 THEN 1 ELSE 0 END AS isLiked,
-            (
-                SELECT COUNT(1)
-                FROM note_reaction nr
-                WHERE nr.note_id = n.note_id
-                  AND nr.attitude = 1
-            ) AS likes,
-            (
-                SELECT COUNT(1)
-                FROM note_comment nc
-                WHERE nc.note_id = n.note_id
-                  AND nc.del_flag = 0
-            ) AS comments,
+            n.like_count AS likes,
+            n.comment_count AS comments,
             n.update_time AS updateTime
         FROM note n
         INNER JOIN sys_user u ON u.user_id = n.user_id
@@ -75,20 +65,10 @@
         SELECT
             n.note_id AS noteId,
             n.title AS title,
-            LEFT(n.content, 200) AS summary,
+            IFNULL(n.summary, LEFT(n.content, 200)) AS summary,
             n.view_count AS viewCount,
-            (
-                SELECT COUNT(1)
-                FROM note_reaction nr
-                WHERE nr.note_id = n.note_id
-                  AND nr.attitude = 1
-            ) AS likeCount,
-            (
-                SELECT COUNT(1)
-                FROM note_comment nc
-                WHERE nc.note_id = n.note_id
-                  AND nc.del_flag = 0
-            ) AS commentCount,
+            n.like_count AS likeCount,
+            n.comment_count AS commentCount,
             n.is_public AS isPublic,
             n.create_time AS createTime,
             u.nickname AS author,
@@ -135,7 +115,10 @@
         UPDATE note
         <set>
             <if test="dto.title != null and dto.title != ''">title = #{dto.title},</if>
-            <if test="dto.content != null and dto.content != ''">content = #{dto.content},</if>
+            <if test="dto.content != null and dto.content != ''">
+                content = #{dto.content},
+                summary = LEFT(#{dto.content}, 200),
+            </if>
             category_id = #{dto.categoryId},
             <if test="dto.isPublic != null">is_public = #{dto.isPublic},</if>
             update_time = NOW()
@@ -171,20 +154,12 @@
         SELECT
             n.note_id     AS noteId,
             n.title       AS title,
-            LEFT(n.content, 200) AS summary,
+            IFNULL(n.summary, LEFT(n.content, 200)) AS summary,
             n.status      AS status,
             n.is_public   AS isPublic,
             n.view_count  AS viewCount,
-            (
-                SELECT COUNT(1)
-                FROM note_reaction nr
-                WHERE nr.note_id = n.note_id AND nr.attitude = 1
-            ) AS likeCount,
-            (
-                SELECT COUNT(1)
-                FROM note_comment nc
-                WHERE nc.note_id = n.note_id AND nc.del_flag = 0
-            ) AS commentCount,
+            n.like_count  AS likeCount,
+            n.comment_count AS commentCount,
             n.user_id     AS userId,
             u.nickname    AS author,
             u.avatar      AS avatar,
@@ -228,16 +203,8 @@
             u.avatar  AS avatar,
             n.is_public AS isPublic,
             n.category_id AS categoryId,
-            (
-                SELECT COUNT(1)
-                FROM note_reaction nr
-                WHERE nr.note_id = n.note_id AND nr.attitude = 1
-            ) AS likes,
-            (
-                SELECT COUNT(1)
-                FROM note_comment nc
-                WHERE nc.note_id = n.note_id AND nc.del_flag = 0
-            ) AS comments,
+            n.like_count AS likes,
+            n.comment_count AS comments,
             n.update_time AS updateTime
         FROM note n
         INNER JOIN sys_user u ON u.user_id = n.user_id
@@ -262,5 +229,17 @@
 
     <update id="incrementViewCount">
         UPDATE note SET view_count = view_count + 1 WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
+
+    <update id="addViewCount">
+        UPDATE note SET view_count = view_count + #{count} WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
+
+    <update id="addLikeCount">
+        UPDATE note SET like_count = GREATEST(like_count + #{count}, 0) WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
+
+    <update id="addCommentCount">
+        UPDATE note SET comment_count = GREATEST(comment_count + #{count}, 0) WHERE note_id = #{noteId} AND del_flag = 0
     </update>
 </mapper>

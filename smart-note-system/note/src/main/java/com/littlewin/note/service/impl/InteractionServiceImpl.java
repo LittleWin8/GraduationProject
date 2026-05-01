@@ -2,9 +2,11 @@ package com.littlewin.note.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.littlewin.common.exception.ServiceException;
+import com.littlewin.note.domain.entity.Note;
 import com.littlewin.note.domain.entity.NoteReaction;
 import com.littlewin.note.domain.vo.InteractionResultVO;
 import com.littlewin.note.domain.vo.InteractionStatusVO;
+import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.mapper.NoteReactionMapper;
 import com.littlewin.note.service.InteractionService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,21 @@ import java.util.Map;
 public class InteractionServiceImpl implements InteractionService {
 
     private final NoteReactionMapper noteReactionMapper;
+    private final NoteMapper noteMapper;
+
+    private InteractionResultVO buildResultFromExisting(NoteReaction existing, Long noteId) {
+        boolean isLiked = existing != null && existing.getAttitude() != null && existing.getAttitude() == 1;
+        boolean isCollected = existing != null && existing.getIsFavorite() != null && existing.getIsFavorite() == 1;
+        Note note = noteMapper.selectById(noteId);
+        int likeCount = note != null && note.getLikeCount() != null ? note.getLikeCount() : 0;
+        int collectCount = noteReactionMapper.countCollectsByNoteId(noteId).intValue();
+        return InteractionResultVO.builder()
+                .isLiked(isLiked)
+                .isCollected(isCollected)
+                .likeCount(likeCount)
+                .collectCount(collectCount)
+                .build();
+    }
 
     /**
      * 点赞/收藏切换入口
@@ -60,28 +77,37 @@ public class InteractionServiceImpl implements InteractionService {
             try {
                 noteReactionMapper.insert(reaction);
             } catch (DuplicateKeyException e) {
-                throw new ServiceException("操作过于频繁，请稍后再试");
+                existing = noteReactionMapper.selectOne(
+                        new LambdaQueryWrapper<NoteReaction>()
+                                .eq(NoteReaction::getNoteId, noteId)
+                                .eq(NoteReaction::getUserId, userId)
+                );
+                return buildResultFromExisting(existing, noteId);
             }
+            noteMapper.addLikeCount(noteId, 1L);
             isLiked = true;
         } else if (existing.getAttitude() != null && existing.getAttitude() == 1) {
             existing.setAttitude(0);
             existing.setUpdateTime(LocalDateTime.now());
             noteReactionMapper.updateById(existing);
+            noteMapper.addLikeCount(noteId, -1L);
             isLiked = false;
         } else {
             existing.setAttitude(1);
             existing.setUpdateTime(LocalDateTime.now());
             noteReactionMapper.updateById(existing);
+            noteMapper.addLikeCount(noteId, 1L);
             isLiked = true;
         }
 
-        Long likeCount = noteReactionMapper.countLikesByNoteId(noteId);
+        Note note = noteMapper.selectById(noteId);
+        int likeCount = note != null && note.getLikeCount() != null ? note.getLikeCount() : 0;
         Long collectCount = noteReactionMapper.countCollectsByNoteId(noteId);
 
         return InteractionResultVO.builder()
                 .isLiked(isLiked)
                 .isCollected(existing != null && existing.getIsFavorite() != null && existing.getIsFavorite() == 1)
-                .likeCount(likeCount.intValue())
+                .likeCount(likeCount)
                 .collectCount(collectCount.intValue())
                 .build();
     }
@@ -100,7 +126,12 @@ public class InteractionServiceImpl implements InteractionService {
             try {
                 noteReactionMapper.insert(reaction);
             } catch (DuplicateKeyException e) {
-                throw new ServiceException("操作过于频繁，请稍后再试");
+                existing = noteReactionMapper.selectOne(
+                        new LambdaQueryWrapper<NoteReaction>()
+                                .eq(NoteReaction::getNoteId, noteId)
+                                .eq(NoteReaction::getUserId, userId)
+                );
+                return buildResultFromExisting(existing, noteId);
             }
             isCollected = true;
         } else if (existing.getIsFavorite() != null && existing.getIsFavorite() == 1) {
@@ -115,13 +146,14 @@ public class InteractionServiceImpl implements InteractionService {
             isCollected = true;
         }
 
-        Long likeCount = noteReactionMapper.countLikesByNoteId(noteId);
+        Note note = noteMapper.selectById(noteId);
+        int likeCount = note != null && note.getLikeCount() != null ? note.getLikeCount() : 0;
         Long collectCount = noteReactionMapper.countCollectsByNoteId(noteId);
 
         return InteractionResultVO.builder()
                 .isLiked(existing != null && existing.getAttitude() != null && existing.getAttitude() == 1)
                 .isCollected(isCollected)
-                .likeCount(likeCount.intValue())
+                .likeCount(likeCount)
                 .collectCount(collectCount.intValue())
                 .build();
     }
@@ -138,13 +170,14 @@ public class InteractionServiceImpl implements InteractionService {
         boolean isLiked = existing != null && existing.getAttitude() != null && existing.getAttitude() == 1;
         boolean isCollected = existing != null && existing.getIsFavorite() != null && existing.getIsFavorite() == 1;
 
-        Long likeCount = noteReactionMapper.countLikesByNoteId(noteId);
+        Note note = noteMapper.selectById(noteId);
+        int likeCount = note != null && note.getLikeCount() != null ? note.getLikeCount() : 0;
         Long collectCount = noteReactionMapper.countCollectsByNoteId(noteId);
 
         return InteractionStatusVO.builder()
                 .isLiked(isLiked)
                 .isCollected(isCollected)
-                .likeCount(likeCount.intValue())
+                .likeCount(likeCount)
                 .collectCount(collectCount.intValue())
                 .build();
     }
@@ -173,14 +206,18 @@ public class InteractionServiceImpl implements InteractionService {
             reactionMap.put(r.getNoteId(), r);
         }
 
-        // 2. 一条GROUP BY SQL批量统计所有笔记的点赞数和收藏数
+        // 2. 批量查询笔记冗余的 like_count + 仍用 GROUP BY 统计收藏数
+        List<Note> notes = noteMapper.selectBatchIds(noteIds);
+        Map<Long, Integer> noteLikeMap = new HashMap<>();
+        for (Note n : notes) {
+            noteLikeMap.put(n.getNoteId(), n.getLikeCount() != null ? n.getLikeCount() : 0);
+        }
         List<Map<String, Object>> countRows = noteReactionMapper.batchCountByNoteIds(noteIds);
-        Map<Long, int[]> countMap = new HashMap<>();
+        Map<Long, Integer> collectMap = new HashMap<>();
         for (Map<String, Object> row : countRows) {
             Long nid = ((Number) row.get("note_id")).longValue();
-            int likeCnt = ((Number) row.get("like_count")).intValue();
             int collectCnt = ((Number) row.get("collect_count")).intValue();
-            countMap.put(nid, new int[]{likeCnt, collectCnt});
+            collectMap.put(nid, collectCnt);
         }
 
         // 3. 组装结果
@@ -189,9 +226,8 @@ public class InteractionServiceImpl implements InteractionService {
             boolean isLiked = existing != null && existing.getAttitude() != null && existing.getAttitude() == 1;
             boolean isCollected = existing != null && existing.getIsFavorite() != null && existing.getIsFavorite() == 1;
 
-            int[] counts = countMap.get(noteId);
-            int likeCount = (counts != null) ? counts[0] : 0;
-            int collectCount = (counts != null) ? counts[1] : 0;
+            int likeCount = noteLikeMap.getOrDefault(noteId, 0);
+            int collectCount = collectMap.getOrDefault(noteId, 0);
 
             result.put(String.valueOf(noteId), InteractionStatusVO.builder()
                     .isLiked(isLiked)

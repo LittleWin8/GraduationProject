@@ -55,6 +55,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setCreateTime(LocalDateTime.now());
         comment.setDelFlag(0);
         noteCommentMapper.insert(comment);
+        noteMapper.addCommentCount(dto.getNoteId(), 1L);
 
         // 评论时给笔记作者发站内消息（自己评论自己的笔记不发）
         Note note = noteMapper.selectById(dto.getNoteId());
@@ -93,5 +94,6 @@ public class CommentServiceImpl implements CommentService {
         }
         comment.setDelFlag(1);
         noteCommentMapper.updateById(comment);
+        noteMapper.addCommentCount(comment.getNoteId(), -1L);
     }
 }

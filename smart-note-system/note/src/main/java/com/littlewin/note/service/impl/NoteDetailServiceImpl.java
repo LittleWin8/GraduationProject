@@ -2,7 +2,9 @@ package com.littlewin.note.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.littlewin.common.constants.RedisKeyConstants;
 import com.littlewin.common.exception.ServiceException;
+import com.littlewin.common.redis.RedisService;
 import com.littlewin.common.utils.TreeUtils;
 import com.littlewin.note.domain.dto.NoteCreateDTO;
 import com.littlewin.note.domain.dto.NoteQueryDTO;
@@ -18,6 +20,7 @@ import com.littlewin.note.mapper.NoteTagRelMapper;
 import com.littlewin.note.mapper.SysCategoryMapper;
 import com.littlewin.note.service.NoteDetailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NoteDetailServiceImpl implements NoteDetailService {
@@ -35,6 +39,7 @@ public class NoteDetailServiceImpl implements NoteDetailService {
     private final NoteTagRelMapper noteTagRelMapper;
     private final NoteTagMapper noteTagMapper;
     private final SysCategoryMapper sysCategoryMapper;
+    private final RedisService redisService;
 
     @Override
     public NoteDetailVO getNoteDetail(Long noteId, Long userId) {
@@ -42,7 +47,14 @@ public class NoteDetailServiceImpl implements NoteDetailService {
         if (detail == null) {
             throw new ServiceException("笔记不存在或无权限访问");
         }
-        noteMapper.incrementViewCount(noteId);
+
+        try {
+            redisService.incr(RedisKeyConstants.NOTE_VIEWS + noteId, 1);
+        } catch (Exception e) {
+            log.warn("Redis 浏览量写入失败，降级走 DB: noteId={}", noteId, e);
+            noteMapper.incrementViewCount(noteId);
+        }
+
         // 查询笔记关联的标签ID列表
         List<NoteTagRel> relList = noteTagRelMapper.selectList(
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<NoteTagRel>()
@@ -82,6 +94,11 @@ public class NoteDetailServiceImpl implements NoteDetailService {
         note.setIsPublic(dto.getIsPublic() != null ? dto.getIsPublic() : 1);
         note.setStatus(1);
         note.setViewCount(0);
+        note.setLikeCount(0);
+        note.setCommentCount(0);
+        note.setSummary(dto.getContent().trim().length() > 200
+                ? dto.getContent().trim().substring(0, 200)
+                : dto.getContent().trim());
         note.setDelFlag(0);
         note.setCreateTime(LocalDateTime.now());
         note.setUpdateTime(LocalDateTime.now());

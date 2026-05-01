@@ -118,15 +118,20 @@ CREATE TABLE note (
     title VARCHAR(200) NOT NULL COMMENT '笔记标题',
     content LONGTEXT COMMENT 'Markdown内容',
     is_public TINYINT NOT NULL DEFAULT 1 COMMENT '是否公开：0 私密, 1 公开',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0 草稿, 1 正常, 2 回收站',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0 草稿, 1 正常, 2 回收站, 3 下架',
     view_count INT NOT NULL DEFAULT 0 COMMENT '浏览次数',
+    like_count INT NOT NULL DEFAULT 0 COMMENT '点赞数（冗余）',
+    comment_count INT NOT NULL DEFAULT 0 COMMENT '评论数（冗余）',
+    summary VARCHAR(500) DEFAULT NULL COMMENT '内容摘要（冗余，前200字）',
     del_flag TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0 正常, 1 删除',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
     INDEX idx_user_id (user_id),
     INDEX idx_category_id (category_id),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    INDEX idx_note_public_status (is_public, status, del_flag, create_time),
+    INDEX idx_note_user_status (user_id, status, del_flag)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记主表';
 
 /* 3. 用户标签定义表 (用户自由创建) - 完善态 */
@@ -175,7 +180,8 @@ CREATE TABLE note_comment (
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
     INDEX idx_note_id (note_id),
-    INDEX idx_user_id (user_id)
+    INDEX idx_user_id (user_id),
+    INDEX idx_comment_note (note_id, del_flag, create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记评论表';
 
 /* 7. 笔记互动表 */
@@ -188,7 +194,10 @@ CREATE TABLE note_reaction (
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
-    UNIQUE KEY uk_note_user (note_id, user_id)
+    UNIQUE KEY uk_note_user (note_id, user_id),
+    INDEX idx_reaction_note_attitude (note_id, attitude),
+    INDEX idx_reaction_user_favorite (user_id, is_favorite),
+    INDEX idx_reaction_user_attitude (user_id, attitude)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记用户互动表';
 
 /* ============================= */
@@ -212,7 +221,8 @@ CREATE TABLE sys_log_behavior (
     content VARCHAR(255) COMMENT '内容(笔记ID或关键词)',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发生时间',
 
-    INDEX idx_user_id (user_id)
+    INDEX idx_user_id (user_id),
+    INDEX idx_log_behavior_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户行为日志表';
 
 /* 3. 系统操作审计表 */
@@ -231,7 +241,8 @@ CREATE TABLE sys_log_operation (
     error_msg TEXT COMMENT '失败原因',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '时间',
 
-    INDEX idx_module (module)
+    INDEX idx_module (module),
+    INDEX idx_log_operation_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作审计表';
 
 /* ============================= */
