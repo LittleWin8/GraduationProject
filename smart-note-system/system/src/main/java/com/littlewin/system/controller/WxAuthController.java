@@ -2,8 +2,8 @@ package com.littlewin.system.controller;
 
 import com.littlewin.common.constants.Constants;
 import com.littlewin.common.core.Result;
-import com.littlewin.common.enums.LogAction;
-import com.littlewin.common.enums.LogModule;
+import com.littlewin.common.log.enums.LogAction;
+import com.littlewin.common.log.enums.LogModule;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.SecurityUtils;

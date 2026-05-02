@@ -22,6 +22,12 @@
             <artifactId>common</artifactId>
         </dependency>
 
+        <!-- 日志模块（@Log 注解 + 枚举） -->
+        <dependency>
+            <groupId>com.littlewin</groupId>
+            <artifactId>common-log</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.littlewin</groupId>
             <artifactId>framework</artifactId>

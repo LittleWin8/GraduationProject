@@ -1,7 +1,7 @@
 package com.littlewin.common.log.aspect;
 
 
-import com.littlewin.common.enums.LogAction;
+import com.littlewin.common.log.enums.LogAction;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.core.LoginDTO;

@@ -1,7 +1,7 @@
 package com.littlewin.common.log.annotation;
 
-import com.littlewin.common.enums.LogAction;
-import com.littlewin.common.enums.LogModule;
+import com.littlewin.common.log.enums.LogAction;
+import com.littlewin.common.log.enums.LogModule;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -57,6 +57,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
+                .exceptionHandling(exception -> exception
+                        // 未认证时返回 401 而非默认的 403
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"code\":401,\"msg\":\"未登录或Token已过期\",\"data\":null,\"timestamp\":" + System.currentTimeMillis() + "}");
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         // 登录和退出都设置为 permitAll()
                         .requestMatchers("/api/admin/auth/login","/api/admin/auth/logout", "/api/wx/auth/login").permitAll()

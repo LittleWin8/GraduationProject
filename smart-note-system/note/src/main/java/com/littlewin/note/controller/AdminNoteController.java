@@ -2,18 +2,18 @@ package com.littlewin.note.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.littlewin.common.core.Result;
-import com.littlewin.common.enums.LogAction;
-import com.littlewin.common.enums.LogModule;
+import com.littlewin.common.log.enums.LogAction;
+import com.littlewin.common.log.enums.LogModule;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
 import com.littlewin.note.domain.dto.AdminNoteQueryDTO;
+import com.littlewin.note.domain.dto.NoteAuditDTO;
 import com.littlewin.note.domain.vo.AdminNoteVO;
 import com.littlewin.note.domain.vo.NoteDetailVO;
 import com.littlewin.note.service.AdminNoteService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,11 +38,10 @@ public class AdminNoteController {
     @PutMapping("/{id}/audit")
     @Log(module = LogModule.NOTE, action = LogAction.UPDATE, desc = "审核笔记")
     public Result<Void> audit(@PathVariable("id") Long id,
-                              @RequestBody Map<String, Integer> body) {
-        Integer status = body.get("status");
-        adminNoteService.auditNote(id, status);
+                              @RequestBody @Valid NoteAuditDTO dto) {
+        adminNoteService.auditNote(id, dto.getStatus());
         LogContext.setBusinessId(id);
-        LogContext.setDesc((status != null && status == 1) ? "上架笔记: " + id : "下架笔记: " + id);
+        LogContext.setDesc((dto.getStatus() != null && dto.getStatus() == 1) ? "上架笔记: " + id : "下架笔记: " + id);
         return Result.success(null);
     }
 

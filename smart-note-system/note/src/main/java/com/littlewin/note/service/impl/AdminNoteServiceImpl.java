@@ -35,7 +35,7 @@ public class AdminNoteServiceImpl implements AdminNoteService {
     @Override
     public void auditNote(Long noteId, Integer status) {
         if (status == null || (status != 1 && status != 3)) {
-            throw new ServiceException("审核状态只接受1(上架)或3(下架)");
+            throw new ServiceException("状态只能是 1（上架）或 3（下架）");
         }
         int rows = noteMapper.auditNote(noteId, status);
         if (rows == 0) {

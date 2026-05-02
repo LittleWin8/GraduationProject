@@ -1,8 +1,8 @@
 package com.littlewin.system.service.impl;
 
 import com.littlewin.common.constants.RedisKeyConstants;
-import com.littlewin.common.enums.LogAction;
-import com.littlewin.common.enums.LogModule;
+import com.littlewin.common.log.enums.LogAction;
+import com.littlewin.common.log.enums.LogModule;
 import com.littlewin.common.exception.ServiceException;
 import com.littlewin.common.log.annotation.Log;
 import com.littlewin.common.log.context.LogContext;
