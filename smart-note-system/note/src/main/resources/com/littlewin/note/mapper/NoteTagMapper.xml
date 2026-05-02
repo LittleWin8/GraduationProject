@@ -48,4 +48,30 @@
         ORDER BY n.update_time DESC
     </select>
 
+    <select id="selectAdminTagPage" resultType="com.littlewin.note.domain.vo.AdminTagVO">
+        SELECT
+            t.tag_id AS tagId,
+            t.name AS name,
+            t.user_id AS userId,
+            u.nickname AS userName,
+            (SELECT COUNT(*) FROM note_tag_rel r WHERE r.tag_id = t.tag_id) AS noteCount,
+            t.create_time AS createTime
+        FROM note_tag t
+        LEFT JOIN sys_user u ON u.user_id = t.user_id
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND t.name LIKE CONCAT('%', #{query.keyword}, '%')
+            </if>
+        </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <delete id="deleteTagRelByTagId">
+        DELETE FROM note_tag_rel WHERE tag_id = #{tagId}
+    </delete>
+
+    <delete id="deleteTagById">
+        DELETE FROM note_tag WHERE tag_id = #{tagId}
+    </delete>
+
 </mapper>
