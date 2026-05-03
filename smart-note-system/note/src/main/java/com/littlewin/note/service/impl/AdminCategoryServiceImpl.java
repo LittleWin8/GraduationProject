@@ -23,14 +23,20 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
     private final NoteMapper noteMapper;
 
     @Override
-    public List<SysCategory> listCategories(Long parentId) {
+    public List<SysCategory> listCategories(Long parentId, Integer status) {
         if (parentId != null) {
             QueryWrapper<SysCategory> wrapper = new QueryWrapper<>();
-            wrapper.eq("parent_id", parentId)
-                    .orderByAsc("sort_order");
+            wrapper.eq("parent_id", parentId);
+            if (status != null) {
+                wrapper.eq("status", status);
+            }
+            wrapper.orderByAsc("sort_order");
             return categoryMapper.selectList(wrapper);
         }
         QueryWrapper<SysCategory> wrapper = new QueryWrapper<>();
+        if (status != null) {
+            wrapper.eq("status", status);
+        }
         wrapper.orderByAsc("sort_order");
         List<SysCategory> all = categoryMapper.selectList(wrapper);
         return TreeUtils.build(all, 0L, Comparator.comparingInt(SysCategory::getSortOrder));

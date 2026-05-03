@@ -20,11 +20,12 @@ public class AdminCategoryController {
 
     private final AdminCategoryService adminCategoryService;
 
-    /** 分类列表（树形/扁平） */
+    /** 分类列表（树形/扁平），支持 parentId 和 status 筛选 */
     @GetMapping("/list")
     public Result<List<SysCategory>> list(
-            @RequestParam(value = "parentId", required = false) Long parentId) {
-        return Result.success(adminCategoryService.listCategories(parentId));
+            @RequestParam(value = "parentId", required = false) Long parentId,
+            @RequestParam(value = "status", required = false) Integer status) {
+        return Result.success(adminCategoryService.listCategories(parentId, status));
     }
 
     /** 新增分类 */

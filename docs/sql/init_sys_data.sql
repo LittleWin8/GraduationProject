@@ -126,7 +126,7 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 
 -- 分类管理（TreeFilter + ProTable 组合布局）
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
-(4020, 4000, 'tree', '/note/category', '/note/category/index', 'C', '分类管理', 'Operation', 'note:cat:list', 2);
+(4020, 4000, 'tree', '/category/category', '/category/category/index', 'C', '分类管理', 'Operation', 'note:cat:list', 2);
 
 -- 分类管理按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES

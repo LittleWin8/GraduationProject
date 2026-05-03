@@ -32,6 +32,10 @@ const dataCallback = (data: any) => {
 };
 
 const getTableList = (params: any) => {
+  if (params.name) {
+    params.keyword = params.name;
+    delete params.name;
+  }
   return getTagList(params);
 };
 
@@ -62,11 +66,7 @@ const columns = reactive<ColumnProps<TagVO>[]>([
 ]);
 
 const handleDelete = async (row: TagVO) => {
-  await useHandleData(
-    () => deleteTag(row.tagId),
-    {},
-    `删除标签【${row.name}】，删除后该标签下的笔记关联关系也将被删除`
-  );
+  await useHandleData(() => deleteTag(row.tagId), {}, `删除标签【${row.name}】，删除后该标签下的笔记关联关系也将被删除`);
   proTable.value?.getTableList();
 };
 </script>

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface AdminCategoryService {
 
-    List<SysCategory> listCategories(Long parentId);
+    List<SysCategory> listCategories(Long parentId, Integer status);
 
     void addCategory(CategoryDTO dto);
 
