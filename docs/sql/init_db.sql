@@ -283,7 +283,7 @@ CREATE TABLE IF NOT EXISTS user_message (
     title VARCHAR(100) DEFAULT NULL COMMENT '消息标题（系统通知用）',
     note_id BIGINT DEFAULT NULL COMMENT '关联笔记ID（系统公告可为空）',
     comment_id BIGINT COMMENT '关联评论ID',
-    type TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型：1评论, 2回复, 3系统通知, 4点赞, 5收藏, 6公告, 7被点赞, 8被收藏',
+    type TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型：1评论, 2回复, 3审核通过, 4审核不通过, 5违规下架, 6系统公告, 7点赞, 8收藏',
     content VARCHAR(500) COMMENT '消息内容摘要（评论内容前50字）',
     is_read TINYINT NOT NULL DEFAULT 0 COMMENT '是否已读：0未读, 1已读',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
