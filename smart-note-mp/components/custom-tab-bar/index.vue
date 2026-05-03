@@ -74,8 +74,18 @@ export default {
 		async fetchUnreadCount() {
 			try {
 				const res = await messageApi.getUnreadCount()
-				this.unreadCount = res?.count || 0
-				uni.setStorageSync('unreadCount', this.unreadCount)
+				const newCount = res?.totalCount || 0
+				const oldCount = this.unreadCount
+				this.unreadCount = newCount
+				uni.setStorageSync('unreadCount', newCount)
+				if (newCount > 0 && newCount > oldCount) {
+					const diff = newCount - oldCount
+					uni.showToast({
+						title: `你有 ${diff} 条新消息`,
+						icon: 'none',
+						duration: 2000
+					})
+				}
 			} catch (e) {
 				console.warn('获取未读消息数失败:', e)
 			}

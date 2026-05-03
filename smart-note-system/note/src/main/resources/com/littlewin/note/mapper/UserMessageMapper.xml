@@ -6,6 +6,7 @@
     <select id="selectMessagePage" resultType="com.littlewin.note.domain.vo.MessageVO">
         SELECT um.id,
                um.type,
+               um.title,
                um.content,
                um.is_read     AS isRead,
                um.create_time AS createTime,
@@ -24,12 +25,47 @@
         ORDER BY um.create_time DESC
     </select>
 
+    <!-- 按类型分页查询消息列表 -->
+    <select id="selectMessagePageByGroup" resultType="com.littlewin.note.domain.vo.MessageVO">
+        SELECT um.id,
+               um.type,
+               um.title,
+               um.content,
+               um.is_read     AS isRead,
+               um.create_time AS createTime,
+               um.note_id     AS noteId,
+               um.comment_id  AS commentId,
+               CASE
+                   WHEN LENGTH(n.title) > 30 THEN CONCAT(LEFT(n.title, 30), '...')
+                   ELSE n.title
+               END            AS noteTitle,
+               su.nickname    AS senderName,
+               su.avatar      AS senderAvatar
+        FROM user_message um
+                 LEFT JOIN sys_user su ON um.sender_id = su.user_id
+                 LEFT JOIN note n ON um.note_id = n.note_id
+        WHERE um.receiver_id = #{receiverId}
+          AND um.type IN
+        <foreach collection="types" item="t" open="(" separator="," close=")">#{t}</foreach>
+        ORDER BY um.create_time DESC
+    </select>
+
     <!-- 查询未读消息数 -->
     <select id="countUnread" resultType="int">
         SELECT COUNT(*)
         FROM user_message
         WHERE receiver_id = #{receiverId}
           AND is_read = 0
+    </select>
+
+    <!-- 按类型组查询未读消息数 -->
+    <select id="countUnreadGrouped" resultType="int">
+        SELECT COUNT(*)
+        FROM user_message
+        WHERE receiver_id = #{receiverId}
+          AND is_read = 0
+          AND type IN
+        <foreach collection="types" item="t" open="(" separator="," close=")">#{t}</foreach>
     </select>
 
     <!-- 全部标记已读 -->
@@ -47,5 +83,10 @@
         WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
     </update>
+
+    <!-- 查询所有有效用户ID（未逻辑删除） -->
+    <select id="selectAllUserIds" resultType="java.lang.Long">
+        SELECT user_id FROM sys_user WHERE del_flag = 0
+    </select>
 
 </mapper>

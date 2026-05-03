@@ -9,6 +9,7 @@ import com.littlewin.note.domain.vo.InteractionStatusVO;
 import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.mapper.NoteReactionMapper;
 import com.littlewin.note.service.InteractionService;
+import com.littlewin.note.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class InteractionServiceImpl implements InteractionService {
 
     private final NoteReactionMapper noteReactionMapper;
     private final NoteMapper noteMapper;
+    private final MessageService messageService;
 
     private InteractionResultVO buildResultFromExisting(NoteReaction existing, Long noteId) {
         boolean isLiked = existing != null && existing.getAttitude() != null && existing.getAttitude() == 1;
@@ -54,13 +56,27 @@ public class InteractionServiceImpl implements InteractionService {
                         .eq(NoteReaction::getUserId, userId)
         );
 
+        InteractionResultVO result;
         if ("like".equals(type)) {
-            return toggleLike(userId, noteId, existing);
+            result = toggleLike(userId, noteId, existing);
+            if (result.getIsLiked()) {
+                Note note = noteMapper.selectById(noteId);
+                if (note != null && !note.getUserId().equals(userId)) {
+                    messageService.sendMessage(note.getUserId(), userId, noteId, null, 7, "点赞了你的笔记");
+                }
+            }
         } else if ("collect".equals(type)) {
-            return toggleCollect(userId, noteId, existing);
+            result = toggleCollect(userId, noteId, existing);
+            if (result.getIsCollected()) {
+                Note note = noteMapper.selectById(noteId);
+                if (note != null && !note.getUserId().equals(userId)) {
+                    messageService.sendMessage(note.getUserId(), userId, noteId, null, 8, "收藏了你的笔记");
+                }
+            }
         } else {
             throw new ServiceException("不支持的互动类型: " + type);
         }
+        return result;
     }
 
     /** 点赞切换：无记录→插入attitude=1；attitude=1→改0(取消)；attitude=0→改1 */

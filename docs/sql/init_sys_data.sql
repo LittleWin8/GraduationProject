@@ -152,6 +152,10 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (5020, 5000, 'aiLog', '/monitor/aiLog', '/monitor/aiLog/index', 'C', 'AI 监控', 'Cpu', 'sys:ai:log', 3);
 
+-- 通知管理
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
+(5030, 5000, 'notification', '/monitor/notification', '/monitor/notification/index', 'C', '通知管理', 'Bell', 'sys:notification:send', 4);
+
 
 -- =============================================
 -- 4. 角色菜单权限关联 (RBAC Assign)
@@ -192,7 +196,8 @@ INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark) VALUES
 (6, '互动态度', 'reaction_attitude', 1, 'note_reaction.attitude'),
 (7, '操作类型', 'operation_type', 1, '审计日志操作行为'),
 (8, '角色名称', 'role_name', 1, 'sys_role.role_id'),
-(9, '行为类型', 'behavior_type', 1, 'sys_log_behavior.action_type');
+(9, '行为类型', 'behavior_type', 1, 'sys_log_behavior.action_type'),
+(10, '笔记审核状态', 'note_review', 1, 'note.reviewed');
 
 
 -- 6.2 字典数据
@@ -240,4 +245,8 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 
 -- 用户行为
 ('behavior_type', '浏览', '1', 'primary', 1),
-('behavior_type', '搜索', '2', 'warning', 2);
+('behavior_type', '搜索', '2', 'warning', 2),
+
+-- 笔记审核状态
+('note_review', '未审核', '0', 'warning', 1),
+('note_review', '已审核', '1', 'success', 2);

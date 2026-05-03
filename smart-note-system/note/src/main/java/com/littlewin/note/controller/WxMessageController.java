@@ -20,21 +20,21 @@ public class WxMessageController {
 
     private final MessageService messageService;
 
-    /** 未读消息数 */
+    /** 未读消息数（分组） */
     @GetMapping("/unread-count")
-    public Result<Map<String, Object>> unreadCount() {
+    public Result<Map<String, Integer>> unreadCount() {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        int count = messageService.getUnreadCount(userId);
-        return Result.success(Map.of("count", count));
+        return Result.success(messageService.getUnreadCountGrouped(userId));
     }
 
-    /** 消息列表（分页，查询后自动标记已读） */
+    /** 消息列表（分页，支持按类型组过滤，查询后自动标记已读） */
     @GetMapping
     public Result<IPage<MessageVO>> list(
+            @RequestParam(value = "group", required = false) String group,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
         Long userId = SecurityUtils.getLoginUser().getUserId();
-        return Result.success(messageService.listMessages(userId, page, size));
+        return Result.success(messageService.listMessages(userId, group, page, size));
     }
 
     /** 全部标记已读 */

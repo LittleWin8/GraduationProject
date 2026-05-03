@@ -305,7 +305,7 @@ const loadUserInfoFromCache = () => {
 const fetchUnreadCount = async () => {
 	try {
 		const res = await messageApi.getUnreadCount()
-		unreadCount.value = res?.count || 0
+		unreadCount.value = res?.totalCount || 0
 		uni.setStorageSync('unreadCount', unreadCount.value)
 		uni.$emit('refreshUnread')
 	} catch (e) {

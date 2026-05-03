@@ -20,6 +20,8 @@ public class UserMessage implements Serializable {
 
     private Long senderId;
 
+    private String title;
+
     private Long noteId;
 
     private Long commentId;

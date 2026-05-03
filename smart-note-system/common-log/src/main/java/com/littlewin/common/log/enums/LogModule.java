@@ -10,6 +10,7 @@ public enum LogModule {
     NOTE("NOTE"),
     DICT("DICT"),
     AI("AI"),
+    SYSTEM("SYSTEM"),
     ROLE("ROLE");
     private final String module;
 

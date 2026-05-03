@@ -230,7 +230,7 @@ CREATE TABLE sys_log_operation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
     user_id BIGINT COMMENT '执行者ID',
     username VARCHAR(50) COMMENT '昵称',
-    module VARCHAR(30) NOT NULL COMMENT '模块：AUTH, USER, NOTE, DICT, AI',
+    module VARCHAR(30) NOT NULL COMMENT '模块：AUTH, USER, NOTE, DICT, AI, SYSTEM, ROLE',
     action_type TINYINT NOT NULL COMMENT '类型：1登录, 2退出, 3创建, 4修改, 5删除, 6审核',
     business_id BIGINT COMMENT '业务ID',
     description VARCHAR(255) COMMENT '描述',
@@ -280,12 +280,17 @@ CREATE TABLE IF NOT EXISTS user_message (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '消息ID',
     receiver_id BIGINT NOT NULL COMMENT '接收者用户ID（笔记作者）',
     sender_id BIGINT NOT NULL COMMENT '触发者用户ID（评论者）',
-    note_id BIGINT NOT NULL COMMENT '关联笔记ID',
+    title VARCHAR(100) DEFAULT NULL COMMENT '消息标题（系统通知用）',
+    note_id BIGINT DEFAULT NULL COMMENT '关联笔记ID（系统公告可为空）',
     comment_id BIGINT COMMENT '关联评论ID',
-    type TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型：1评论, 2回复(预留)',
+    type TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型：1评论, 2回复, 3系统通知, 4点赞, 5收藏, 6公告, 7被点赞, 8被收藏',
     content VARCHAR(500) COMMENT '消息内容摘要（评论内容前50字）',
     is_read TINYINT NOT NULL DEFAULT 0 COMMENT '是否已读：0未读, 1已读',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_receiver_read (receiver_id, is_read),
     INDEX idx_receiver_time (receiver_id, create_time DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内消息表';
+
+-- 存量数据库升级：user_message 表新增 title 字段 + note_id 去除 NOT NULL
+-- ALTER TABLE user_message ADD COLUMN title VARCHAR(100) DEFAULT NULL COMMENT '消息标题（系统通知用）';
+-- ALTER TABLE user_message MODIFY COLUMN note_id BIGINT DEFAULT NULL COMMENT '关联笔记ID（系统公告可为空）';

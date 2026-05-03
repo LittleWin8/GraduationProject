@@ -2,7 +2,7 @@ import request from '../request.js'
 import { APIS } from '../config.js'
 
 export const messageApi = {
-  // 获取未读消息数
+  // 获取未读消息数（分组）
   getUnreadCount() {
     return request({
       url: APIS.MESSAGE.UNREAD_COUNT,
@@ -10,12 +10,14 @@ export const messageApi = {
     })
   },
 
-  // 获取消息列表
-  getList(page = 1, size = 20) {
+  // 获取消息列表（支持 group 过滤）
+  getList(page = 1, size = 20, group = '') {
+    const params = { page, size }
+    if (group) params.group = group
     return request({
       url: APIS.MESSAGE.LIST,
       method: 'GET',
-      params: { page, size }
+      params
     })
   },
 

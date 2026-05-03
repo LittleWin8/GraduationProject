@@ -20,6 +20,8 @@ public class MessageVO {
 
     private Integer type;
 
+    private String title;
+
     private String content;
 
     private Boolean isRead;
