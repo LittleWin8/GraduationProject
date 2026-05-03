@@ -2,16 +2,22 @@
   <div class="table-box">
     <ProTable ref="proTable" :columns="columns" :request-api="getTableList" :data-callback="dataCallback" row-key="roleId">
       <template #tableHeader="scope">
-        <el-button type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增角色</el-button>
+        <el-button v-auth="'sys:role:add'" type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增角色</el-button>
         <el-button type="danger" :icon="Delete" plain :disabled="!scope.isSelected" @click="batchDelete(scope.selectedListIds)">
           批量删除
         </el-button>
       </template>
 
       <template #operation="scope">
-        <el-button type="primary" link :icon="Lock" @click="openPermissionDrawer(scope.row)">分配权限</el-button>
-        <el-button type="primary" link :icon="EditPen" @click="openDrawer('编辑', scope.row)">编辑</el-button>
-        <el-button type="primary" link :icon="Delete" @click="deleteRoleItem(scope.row)">删除</el-button>
+        <el-button type="primary" link :icon="Lock" v-auth="'sys:role:assign'" @click="openPermissionDrawer(scope.row)">
+          分配权限
+        </el-button>
+        <el-button type="primary" link :icon="EditPen" v-auth="'sys:role:edit'" @click="openDrawer('编辑', scope.row)">
+          编辑
+        </el-button>
+        <el-button type="primary" link :icon="Delete" v-auth="'sys:role:delete'" @click="deleteRoleItem(scope.row)">
+          删除
+        </el-button>
       </template>
     </ProTable>
 

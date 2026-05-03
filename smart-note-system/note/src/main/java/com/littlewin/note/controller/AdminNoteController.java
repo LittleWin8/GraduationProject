@@ -45,6 +45,16 @@ public class AdminNoteController {
         return Result.success(null);
     }
 
+    /** 标记笔记已审核 */
+    @PutMapping("/{id}/review")
+    @Log(module = LogModule.NOTE, action = LogAction.UPDATE, desc = "标记笔记已审核")
+    public Result<Void> review(@PathVariable("id") Long id) {
+        adminNoteService.reviewNote(id);
+        LogContext.setBusinessId(id);
+        LogContext.setDesc("标记笔记已审核: " + id);
+        return Result.success(null);
+    }
+
     /** 管理员强制删除笔记 */
     @DeleteMapping("/{id}")
     @Log(module = LogModule.NOTE, action = LogAction.DELETE, desc = "管理员强制删除笔记")

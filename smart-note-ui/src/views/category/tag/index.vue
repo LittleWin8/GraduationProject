@@ -10,7 +10,7 @@
       @sort-change="handleSortChange"
     >
       <template #operation="scope">
-        <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+        <el-button type="danger" link :icon="Delete" v-auth="'note:tag:del'" @click="handleDelete(scope.row)">删除</el-button>
       </template>
     </ProTable>
   </div>

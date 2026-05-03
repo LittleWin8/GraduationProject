@@ -55,9 +55,9 @@ INSERT INTO sys_user_role (user_id, role_id) VALUES (1, 1), (2, 2);
 -- ---------------------------------------------
 -- [1000系列] 门户与个人基础 (Portal)
 -- ---------------------------------------------
--- 首页
-INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
-(1000, 0, 'home', '/home/index', '/home/index', 'C', '首页', 'HomeFilled', 1);
+-- 首页菜单已由工作台 (menu_id=1100) 替代，不再需要独立的 /home/index 路由
+-- INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
+-- (1000, 0, 'home', '/home/index', '/home/index', 'C', '首页', 'HomeFilled', 1);
 
 -- 工作台
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
@@ -95,6 +95,13 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide,active_menu,sort_order) VALUES
 (2031,2030,'dictData','/system/dict/data/:dictType','/system/dict/detail','C','字典数据','Menu','sys:dict:edit',1,'/system/dict',1);
 
+-- 角色管理按钮权限
+INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
+(2021, 2020, 'F', '新增角色', 'sys:role:add', 1),
+(2022, 2020, 'F', '修改角色', 'sys:role:edit', 2),
+(2023, 2020, 'F', '删除角色', 'sys:role:delete', 3),
+(2024, 2020, 'F', '分配权限', 'sys:role:assign', 4);
+
 
 -- ---------------------------------------------
 -- [3000系列] 内容管理 (Content)
@@ -112,7 +119,8 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 -- 笔记列表按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
 (3011, 3010, 'F', '审核笔记', 'note:audit', 1),
-(3012, 3010, 'F', '删除笔记', 'note:delete', 2);
+(3012, 3010, 'F', '删除笔记', 'note:delete', 2),
+(3013, 3010, 'F', '标记已审核', 'note:review', 3);
 
 -- ---------------------------------------------
 -- [4000系列] 分类维护 (Category)
@@ -133,6 +141,10 @@ INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) V
 (4021, 4020, 'F', '新增分类', 'category:add', 1),
 (4022, 4020, 'F', '编辑分类', 'category:edit', 2),
 (4023, 4020, 'F', '删除分类', 'category:delete', 3);
+
+-- 标签管理按钮权限
+INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
+(4011, 4010, 'F', '删除标签', 'note:tag:del', 1);
 
 -- ---------------------------------------------
 -- [5000系列] 系统监控 (Monitor)
@@ -155,6 +167,10 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 -- 通知管理
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (5030, 5000, 'notification', '/monitor/notification', '/monitor/notification/index', 'C', '通知管理', 'Bell', 'sys:notification:send', 4);
+
+-- 通知管理按钮权限
+INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
+(5031, 5030, 'F', '发送通知', 'sys:notification:send', 1);
 
 
 -- =============================================

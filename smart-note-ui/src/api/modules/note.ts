@@ -14,6 +14,7 @@ export interface ReqNoteParams {
   userId?: number;
   startTime?: string;
   endTime?: string;
+  reviewed?: number;
 }
 
 /** 笔记列表项 */
@@ -26,6 +27,7 @@ export interface NoteListVO {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  reviewed: number;
   userId: number;
   author: string;
   avatar: string;
@@ -78,6 +80,11 @@ export const auditNote = (noteId: number, status: number) => {
 // 删除笔记
 export const deleteNote = (noteId: number) => {
   return http.delete(`/admin/notes/${noteId}`);
+};
+
+// 标记笔记已审核
+export const reviewNote = (noteId: number) => {
+  return http.put(`/admin/notes/${noteId}/review`);
 };
 
 // 获取分类树（管理端，不过滤状态）

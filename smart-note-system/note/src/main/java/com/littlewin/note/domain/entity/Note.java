@@ -40,6 +40,8 @@ public class Note implements Serializable {
 
     private String summary;
 
+    private Integer reviewed;
+
     @TableLogic  // MyBatis-Plus 逻辑删除注解
     @TableField("del_flag")
     private Integer delFlag;

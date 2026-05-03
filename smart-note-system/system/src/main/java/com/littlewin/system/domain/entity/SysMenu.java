@@ -43,6 +43,12 @@ public class SysMenu implements Serializable {
 
     private String perms;
 
+    @TableField(exist = false)
+    private String parentName;
+
+    @TableField(exist = false)
+    private String parentTitle;
+
     private Integer sortOrder;
 
     private LocalDateTime createTime;

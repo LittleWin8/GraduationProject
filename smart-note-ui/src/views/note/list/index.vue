@@ -10,9 +10,25 @@
     >
       <template #operation="scope">
         <el-button type="primary" link :icon="View" @click="viewDetail(scope.row)">详情</el-button>
-        <el-button v-if="scope.row.status === 1" type="danger" link @click="handleAudit(scope.row, 3)">下架</el-button>
-        <el-button v-if="scope.row.status === 3" type="success" link @click="handleAudit(scope.row, 1)">上架</el-button>
-        <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+        <el-button
+          v-auth="'note:audit'"
+          :type="scope.row.status === 1 ? 'danger' : scope.row.status === 3 ? 'success' : 'info'"
+          link
+          :disabled="scope.row.status !== 1 && scope.row.status !== 3"
+          @click="handleAudit(scope.row, scope.row.status === 1 ? 3 : 1)"
+        >
+          {{ scope.row.status === 1 ? "下架" : scope.row.status === 3 ? "上架" : "私密" }}
+        </el-button>
+        <el-button
+          v-auth="'note:review'"
+          :type="scope.row.reviewed === 0 ? 'warning' : 'success'"
+          link
+          :disabled="scope.row.reviewed === 1"
+          @click="handleReview(scope.row)"
+        >
+          {{ scope.row.reviewed === 0 ? "标记已审核" : "审核已通过" }}
+        </el-button>
+        <el-button v-auth="'note:delete'" type="danger" link :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
       </template>
     </ProTable>
 
@@ -33,6 +49,7 @@ import {
   getNoteDetail,
   auditNote,
   deleteNote,
+  reviewNote,
   getCategoryTree,
   type NoteListVO,
   type CategoryTreeNode
@@ -99,6 +116,11 @@ const statusOptions = [
   { label: "下架", value: 3 }
 ];
 
+const reviewedOptions = [
+  { label: "未审核", value: 0 },
+  { label: "已审核", value: 1 }
+];
+
 // 表格列配置
 const columns = reactive<ColumnProps<NoteListVO>[]>([
   { prop: "noteId", label: "ID", width: 80, sortable: true },
@@ -131,6 +153,17 @@ const columns = reactive<ColumnProps<NoteListVO>[]>([
       return <el-tag type={isPublic ? "success" : "info"}>{isPublic ? "公开" : "私密"}</el-tag>;
     }
   },
+  {
+    prop: "reviewed",
+    label: "审核",
+    width: 90,
+    search: { el: "select", props: { placeholder: "审核状态" } },
+    enum: reviewedOptions,
+    render: (scope: any) => {
+      const reviewed = scope.row.reviewed === 1;
+      return <el-tag type={reviewed ? "success" : "warning"}>{reviewed ? "已审核" : "未审核"}</el-tag>;
+    }
+  },
   { prop: "viewCount", label: "浏览", width: 80 },
   { prop: "likeCount", label: "点赞", width: 80 },
   { prop: "commentCount", label: "评论", width: 80 },
@@ -161,7 +194,7 @@ const columns = reactive<ColumnProps<NoteListVO>[]>([
     search: { el: "select", props: { placeholder: "全部分类" } },
     enum: categoryOptions
   },
-  { prop: "operation", label: "操作", fixed: "right", width: 220 }
+  { prop: "operation", label: "操作", fixed: "right", width: 300 }
 ]);
 
 /** 查看笔记详情（侧边抽屉） */
@@ -178,6 +211,12 @@ const viewDetail = async (row: NoteListVO) => {
 const handleAudit = async (row: NoteListVO, status: number) => {
   const action = status === 3 ? "下架" : "上架";
   await useHandleData(() => auditNote(row.noteId, status), {}, `${action}笔记【${row.title}】`);
+  proTable.value?.getTableList();
+};
+
+/** 标记笔记已审核 */
+const handleReview = async (row: NoteListVO) => {
+  await useHandleData(() => reviewNote(row.noteId), {}, `标记笔记【${row.title}】已审核`);
   proTable.value?.getTableList();
 };
 

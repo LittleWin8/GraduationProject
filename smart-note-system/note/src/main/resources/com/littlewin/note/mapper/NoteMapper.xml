@@ -160,6 +160,7 @@
             n.view_count  AS viewCount,
             n.like_count  AS likeCount,
             n.comment_count AS commentCount,
+            n.reviewed    AS reviewed,
             n.user_id     AS userId,
             u.nickname    AS author,
             u.avatar      AS avatar,
@@ -189,6 +190,9 @@
         <if test="query.endTime != null">
             AND n.create_time &lt;= #{query.endTime}
         </if>
+        <if test="query.reviewed != null">
+            AND n.reviewed = #{query.reviewed}
+        </if>
         ORDER BY n.create_time DESC
     </select>
 
@@ -217,6 +221,12 @@
     <update id="auditNote">
         UPDATE note
         SET status = #{status}, update_time = NOW()
+        WHERE note_id = #{noteId} AND del_flag = 0
+    </update>
+
+    <!-- 标记笔记已审核 -->
+    <update id="reviewNote">
+        UPDATE note SET reviewed = 1, update_time = NOW()
         WHERE note_id = #{noteId} AND del_flag = 0
     </update>
 

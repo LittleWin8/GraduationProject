@@ -30,6 +30,8 @@ public class AdminNoteVO {
 
     private Integer commentCount;
 
+    private Integer reviewed;
+
     private Long userId;
 
     private String author;

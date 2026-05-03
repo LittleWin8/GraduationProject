@@ -44,7 +44,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="submitting" @click="handleSubmit">发送</el-button>
+          <el-button type="primary" :loading="submitting" v-auth="'sys:notification:send'" @click="handleSubmit">发送</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>

@@ -44,6 +44,14 @@ public class AdminNoteServiceImpl implements AdminNoteService {
     }
 
     @Override
+    public void reviewNote(Long noteId) {
+        int rows = noteMapper.reviewNote(noteId);
+        if (rows == 0) {
+            throw new ServiceException("笔记不存在或已删除");
+        }
+    }
+
+    @Override
     public void forceDelete(Long noteId) {
         int rows = noteMapper.adminForceDelete(noteId);
         if (rows == 0) {

@@ -22,4 +22,6 @@ public class AdminNoteQueryDTO {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    private Integer reviewed;
 }

@@ -227,36 +227,34 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     /**
      * 获取按钮权限列表
-     * 适配 Geeker-Admin 数据格式: { "authButton": [...], "useProTable": [...] }
+     * 按页面路由名（sys_menu.name）分组返回，适配前端 v-auth 指令
      */
     @Override
     public Map<String, List<String>> getAuthButtonList() {
         LoginDTO user = SecurityUtils.getLoginUser();
         if (user == null) return new HashMap<>();
 
-        // 1. 从数据库获取该用户拥有的所有按钮级权限 (menu_type = 'F')
         List<SysMenu> buttons = userAuthMapper.selectButtonListByUserId(user.getUserId());
 
-        // 2. 提取所有非空的 perms 标识符
-        List<String> allPerms = buttons.stream()
-                .map(SysMenu::getPerms)
-                .filter(Objects::nonNull)
-                .filter(p -> !p.isEmpty())
-                .distinct()
-                .collect(Collectors.toList());
+        // 按页面路由名（parentName = sys_menu.name）分组
+        Map<String, List<String>> pageButtons = buttons.stream()
+                .filter(b -> b.getPerms() != null && !b.getPerms().isEmpty())
+                .collect(Collectors.groupingBy(
+                        b -> b.getParentName() != null ? b.getParentName() : "unknown",
+                        Collectors.mapping(SysMenu::getPerms, Collectors.toList())
+                ));
 
         Map<String, List<String>> result = new HashMap<>();
+        result.putAll(pageButtons);
 
-        // 3. 组装 authButton: 包含页面上所有基础操作权限 (如 add, edit, delete, export 以及自定义 perms)
-        result.put("authButton", allPerms);
-
-        // 4. 组装 useProTable: 专门过滤出 ProTable 组件识别的增强功能权限
-        // 这些字符串需要与 SQL 中的 perms 字段严格对应
+        // ProTable 增强权限：筛选 ProTable 识别的标识
         List<String> proTableKeys = List.of("add", "batchAdd", "export", "batchDelete", "status");
-        List<String> useProTablePerms = allPerms.stream()
+        List<String> useProTablePerms = buttons.stream()
+                .map(SysMenu::getPerms)
+                .filter(Objects::nonNull)
                 .filter(proTableKeys::contains)
+                .distinct()
                 .collect(Collectors.toList());
-
         result.put("useProTable", useProTablePerms);
 
         return result;

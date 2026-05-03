@@ -11,10 +11,12 @@
         :data-callback="dataCallback"
       >
         <template #tableHeader>
-          <el-button type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增分类</el-button>
+          <el-button v-auth="'category:add'" type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增分类</el-button>
         </template>
         <template #operation="scope">
-          <el-button type="primary" link :icon="EditPen" @click="openDrawer('编辑', scope.row)">编辑</el-button>
+          <el-button type="primary" link :icon="EditPen" v-auth="'category:edit'" @click="openDrawer('编辑', scope.row)">
+            编辑
+          </el-button>
           <el-button
             :type="scope.row.status === 1 ? 'danger' : 'success'"
             link
@@ -23,7 +25,9 @@
           >
             {{ scope.row.status === 1 ? "禁用" : "启用" }}
           </el-button>
-          <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button type="danger" link :icon="Delete" v-auth="'category:delete'" @click="handleDelete(scope.row)">
+            删除
+          </el-button>
         </template>
       </ProTable>
       <CategoryDrawer ref="drawerRef" />

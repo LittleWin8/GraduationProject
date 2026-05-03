@@ -13,5 +13,7 @@ public interface AdminNoteService {
 
     void auditNote(Long noteId, Integer status);
 
+    void reviewNote(Long noteId);
+
     void forceDelete(Long noteId);
 }

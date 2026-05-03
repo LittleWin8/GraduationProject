@@ -11,7 +11,7 @@
       @sort-change="handleSortChange"
     >
       <template #tableHeader="scope">
-        <el-button type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增用户</el-button>
+        <el-button v-auth="'sys:user:add'" type="primary" :icon="CirclePlus" @click="openDrawer('新增')">新增用户</el-button>
         <!-- <el-button type="primary" plain @click="toDetail">To 子集详情页面</el-button> -->
         <el-button type="danger" :icon="Delete" plain :disabled="!scope.isSelected" @click="batchDelete(scope.selectedListIds)">
           批量删除用户
@@ -24,9 +24,13 @@
 
       <template #operation="scope">
         <el-button type="primary" link :icon="View" @click="openDrawer('查看', scope.row)">查看</el-button>
-        <el-button type="primary" link :icon="EditPen" @click="openDrawer('编辑', scope.row)">编辑</el-button>
+        <el-button type="primary" link :icon="EditPen" v-auth="'sys:user:edit'" @click="openDrawer('编辑', scope.row)">
+          编辑
+        </el-button>
         <el-button type="primary" link :icon="Refresh" @click="resetPass(scope.row)">重置密码</el-button>
-        <el-button type="primary" link :icon="Delete" @click="deleteAccount(scope.row)">删除</el-button>
+        <el-button type="primary" link :icon="Delete" v-auth="'sys:user:delete'" @click="deleteAccount(scope.row)">
+          删除
+        </el-button>
       </template>
     </ProTable>
     <UserDrawer ref="drawerRef" />
