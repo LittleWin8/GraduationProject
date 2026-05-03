@@ -7,6 +7,7 @@
       :init-param="initParam"
       :data-callback="dataCallback"
       row-key="tagId"
+      @sort-change="handleSortChange"
     >
       <template #operation="scope">
         <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
@@ -27,16 +28,43 @@ const proTable = ref<ProTableInstance>();
 
 const initParam = reactive({});
 
+const sortParam = reactive({
+  orderColumn: "",
+  orderRule: ""
+});
+
+const handleSortChange = ({ prop, order }: any) => {
+  const columnMap: Record<string, string> = {
+    tagId: "t.tag_id",
+    noteCount: "noteCount",
+    createTime: "t.create_time"
+  };
+  if (!order) {
+    sortParam.orderColumn = "";
+    sortParam.orderRule = "";
+  } else {
+    sortParam.orderColumn = columnMap[prop] || "";
+    sortParam.orderRule = order;
+  }
+  proTable.value?.getTableList();
+};
+
 const dataCallback = (data: any) => {
   return { list: data.records, total: data.total };
 };
 
 const getTableList = (params: any) => {
-  if (params.name) {
-    params.keyword = params.name;
-    delete params.name;
+  const newParams = JSON.parse(JSON.stringify(params));
+  if (newParams.name || newParams.userName) {
+    newParams.keyword = newParams.name || newParams.userName || "";
+    delete newParams.name;
+    delete newParams.userName;
   }
-  return getTagList(params);
+  if (sortParam.orderColumn) {
+    newParams.orderColumn = sortParam.orderColumn;
+    newParams.orderRule = sortParam.orderRule;
+  }
+  return getTagList(newParams);
 };
 
 const columns = reactive<ColumnProps<TagVO>[]>([
@@ -51,7 +79,12 @@ const columns = reactive<ColumnProps<TagVO>[]>([
     label: "标签名称",
     search: { el: "input", props: { placeholder: "搜索标签名" } }
   },
-  { prop: "userName", label: "所属用户", width: 120 },
+  {
+    prop: "userName",
+    label: "所属用户",
+    width: 120,
+    search: { el: "input", props: { placeholder: "搜索用户名" } }
+  },
   { prop: "noteCount", label: "笔记数", width: 100, sortable: "custom" },
   {
     prop: "createTime",

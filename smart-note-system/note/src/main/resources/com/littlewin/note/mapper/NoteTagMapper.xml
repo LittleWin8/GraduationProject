@@ -60,10 +60,22 @@
         LEFT JOIN sys_user u ON u.user_id = t.user_id
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                AND t.name LIKE CONCAT('%', #{query.keyword}, '%')
+                AND (t.name LIKE CONCAT('%', #{query.keyword}, '%')
+                     OR u.nickname LIKE CONCAT('%', #{query.keyword}, '%'))
             </if>
         </where>
-        ORDER BY t.create_time DESC
+        <choose>
+            <when test="query.orderColumn != null and query.orderColumn != ''">
+                ORDER BY ${query.orderColumn}
+                <choose>
+                    <when test="query.orderRule == 'descending'">DESC</when>
+                    <otherwise>ASC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                ORDER BY t.create_time DESC
+            </otherwise>
+        </choose>
     </select>
 
     <delete id="deleteTagRelByTagId">

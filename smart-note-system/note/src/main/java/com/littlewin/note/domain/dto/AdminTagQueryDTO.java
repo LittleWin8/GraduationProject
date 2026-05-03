@@ -10,4 +10,8 @@ public class AdminTagQueryDTO {
     private Integer pageSize = 20;
 
     private String keyword;
+
+    private String orderColumn;
+
+    private String orderRule;
 }

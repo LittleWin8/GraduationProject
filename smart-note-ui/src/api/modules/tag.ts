@@ -4,6 +4,8 @@ export interface ReqTagParams {
   pageNum?: number;
   pageSize?: number;
   keyword?: string;
+  orderColumn?: string;
+  orderRule?: string;
 }
 
 export interface TagVO {
