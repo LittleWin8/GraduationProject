@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.littlewin.note.mapper.AiUsageLogMapper">
+
+    <!-- 用户本月 token 总量 -->
+    <select id="sumTokensByUserThisMonth" resultType="int">
+        SELECT IFNULL(SUM(total_tokens), 0)
+        FROM ai_usage_log
+        WHERE user_id = #{userId}
+          AND status = 1
+          AND YEAR(create_time) = YEAR(CURDATE())
+          AND MONTH(create_time) = MONTH(CURDATE())
+    </select>
+
+    <!-- 用户本月请求次数 -->
+    <select id="countRequestsByUserThisMonth" resultType="int">
+        SELECT COUNT(*)
+        FROM ai_usage_log
+        WHERE user_id = #{userId}
+          AND status = 1
+          AND YEAR(create_time) = YEAR(CURDATE())
+          AND MONTH(create_time) = MONTH(CURDATE())
+    </select>
+
+    <!-- 管理端：分页查询日志（关联用户信息） -->
+    <select id="selectLogPage" resultType="com.littlewin.note.domain.vo.AiUsageLogVO">
+        SELECT
+            l.id,
+            l.user_id AS userId,
+            u.nickname AS userName,
+            l.note_id AS noteId,
+            n.title AS noteTitle,
+            l.action_type AS actionType,
+            l.prompt_tokens AS promptTokens,
+            l.completion_tokens AS completionTokens,
+            l.total_tokens AS totalTokens,
+            l.model_name AS modelName,
+            l.status,
+            l.error_msg AS errorMsg,
+            l.create_time AS createTime
+        FROM ai_usage_log l
+                 LEFT JOIN sys_user u ON l.user_id = u.user_id
+                 LEFT JOIN note n ON l.note_id = n.note_id
+        <where>
+            <if test="query.userId != null">AND l.user_id = #{query.userId}</if>
+            <if test="query.status != null">AND l.status = #{query.status}</if>
+            <if test="query.actionType != null and query.actionType != ''">AND l.action_type = #{query.actionType}</if>
+            <if test="query.startTime != null">AND l.create_time &gt;= #{query.startTime}</if>
+            <if test="query.endTime != null">AND l.create_time &lt;= #{query.endTime}</if>
+        </where>
+        ORDER BY l.create_time DESC
+    </select>
+
+    <!-- 管理端：统计面板数据 -->
+    <select id="selectGlobalStats" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalRequests,
+            IFNULL(SUM(total_tokens), 0) AS totalTokens,
+            IFNULL(SUM(prompt_tokens), 0) AS totalPromptTokens,
+            IFNULL(SUM(completion_tokens), 0) AS totalCompletionTokens,
+            COUNT(DISTINCT user_id) AS activeUsers
+        FROM ai_usage_log
+        WHERE status = 1
+          AND YEAR(create_time) = YEAR(CURDATE())
+          AND MONTH(create_time) = MONTH(CURDATE())
+    </select>
+
+    <!-- 管理端：按用户统计排行 -->
+    <select id="selectUserRanking" resultType="java.util.Map">
+        SELECT
+            l.user_id AS userId,
+            u.nickname AS userName,
+            COUNT(*) AS requestCount,
+            IFNULL(SUM(l.total_tokens), 0) AS totalTokens
+        FROM ai_usage_log l
+                 LEFT JOIN sys_user u ON l.user_id = u.user_id
+        WHERE l.status = 1
+          AND YEAR(l.create_time) = YEAR(CURDATE())
+          AND MONTH(l.create_time) = MONTH(CURDATE())
+        <if test="startTime != null and startTime != ''">
+            AND l.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND l.create_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        </if>
+        GROUP BY l.user_id, u.nickname
+        ORDER BY totalTokens DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

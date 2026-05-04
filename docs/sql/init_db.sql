@@ -214,7 +214,37 @@ CREATE TABLE note_ai_summary (
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='笔记AI摘要表';
 
-/* 2. 用户行为日志表 */
+/* 2. AI 调用日志表（每次请求一条记录） */
+CREATE TABLE ai_usage_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    user_id BIGINT NOT NULL COMMENT '调用用户ID',
+    note_id BIGINT COMMENT '关联笔记ID',
+    action_type VARCHAR(20) NOT NULL DEFAULT 'summary' COMMENT '操作类型：summary(摘要生成)',
+    prompt_tokens INT DEFAULT 0 COMMENT '输入 token 数',
+    completion_tokens INT DEFAULT 0 COMMENT '输出 token 数',
+    total_tokens INT DEFAULT 0 COMMENT '总 token 数',
+    model_name VARCHAR(50) COMMENT '使用的AI模型',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1成功, 0失败',
+    error_msg VARCHAR(500) COMMENT '错误信息',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '调用时间',
+    INDEX idx_user_id (user_id),
+    INDEX idx_create_time (create_time),
+    INDEX idx_user_time (user_id, create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI调用日志表';
+
+/* 3. 用户 AI 配额表（每个用户一条记录） */
+CREATE TABLE ai_user_quota (
+    user_id BIGINT PRIMARY KEY COMMENT '用户ID',
+    monthly_token_limit INT NOT NULL DEFAULT 100000 COMMENT '每月 token 上限',
+    monthly_request_limit INT NOT NULL DEFAULT 50 COMMENT '每月请求次数上限',
+    used_tokens INT NOT NULL DEFAULT 0 COMMENT '本月已用 token 数',
+    used_requests INT NOT NULL DEFAULT 0 COMMENT '本月已用请求次数',
+    quota_reset_date DATE COMMENT '配额重置日期（每月1日重置）',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户AI配额表';
+
+/* 4. 用户行为日志表 */
 CREATE TABLE sys_log_behavior (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
     user_id BIGINT COMMENT '用户ID',
@@ -226,7 +256,7 @@ CREATE TABLE sys_log_behavior (
     INDEX idx_log_behavior_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户行为日志表';
 
-/* 3. 系统操作审计表 */
+/* 5. 系统操作审计表 */
 CREATE TABLE sys_log_operation (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
     user_id BIGINT COMMENT '执行者ID',
@@ -291,7 +321,3 @@ CREATE TABLE IF NOT EXISTS user_message (
     INDEX idx_receiver_read (receiver_id, is_read),
     INDEX idx_receiver_time (receiver_id, create_time DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内消息表';
-
--- 存量数据库升级：user_message 表新增 title 字段 + note_id 去除 NOT NULL
--- ALTER TABLE user_message ADD COLUMN title VARCHAR(100) DEFAULT NULL COMMENT '消息标题（系统通知用）';
--- ALTER TABLE user_message MODIFY COLUMN note_id BIGINT DEFAULT NULL COMMENT '关联笔记ID（系统公告可为空）';

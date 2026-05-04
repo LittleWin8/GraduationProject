@@ -40,6 +40,7 @@ export const APIS = {
     DELETE: '/api/wx/notes',        // /{id}?permanent=false/true
     RESTORE: '/api/wx/notes',       // /{id}/restore
     AI_SUMMARY: '/api/wx/notes/ai/summary',
+    AI_QUOTA: '/api/wx/notes/ai/quota',
     UPLOAD: '/api/wx/notes/attachment',
 	MY_NOTES: '/api/wx/note/my-notes',  // 我的笔记列表
 	STATS: '/api/wx/note/stats'         ,// 统计数据

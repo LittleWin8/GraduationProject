@@ -64,12 +64,23 @@ export const noteApi = {
     })
   },
   
-  // AI生成摘要和关键词
-  aiSummary(content) {
+  getAiSummary(noteId) {
     return request({
       url: APIS.NOTE.AI_SUMMARY,
-      method: 'POST',
-      data: { content }
+      method: 'GET',
+      params: { noteId }
+    })
+  },
+  generateAiSummary(noteId) {
+    return request({
+      url: `${APIS.NOTE.AI_SUMMARY}?noteId=${noteId}`,
+      method: 'POST'
+    })
+  },
+  getAiQuota() {
+    return request({
+      url: APIS.NOTE.AI_QUOTA,
+      method: 'GET'
     })
   },
   

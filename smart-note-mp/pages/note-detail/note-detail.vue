@@ -38,6 +38,21 @@
 				<rich-text :nodes="renderedContent"></rich-text>
 			</view>
 
+			<!-- AI 摘要卡片 -->
+			<view v-if="aiSummary" class="ai-summary-card">
+				<view class="ai-header">
+					<text class="ai-label">AI 摘要</text>
+					<text class="ai-model">{{ aiSummary.modelName || 'DeepSeek' }}</text>
+				</view>
+				<text class="ai-content">{{ aiSummary.summary }}</text>
+				<view v-if="aiSummary.keywords" class="ai-keywords">
+					<text class="keyword-tag" v-for="kw in aiSummary.keywords.split(',')" :key="kw">{{ kw.trim() }}</text>
+				</view>
+			</view>
+			<view v-else-if="noteData" class="ai-generate-btn" @click="onGenerateSummary">
+				<text>{{ generating ? '生成中...' : '生成 AI 摘要' }}</text>
+			</view>
+
 			<!-- 评论区 -->
 			<view class="comment-section">
 				<view class="comment-header">
@@ -153,6 +168,9 @@ const commentInput = ref('')
 const replyTarget = ref(null)
 const sending = ref(false)
 
+const aiSummary = ref(null)
+const generating = ref(false)
+
 /** 拼接头像URL */
 const resolveAvatar = (avatar) => {
 	if (!avatar) return '/static/default-avatar.png'
@@ -253,6 +271,36 @@ const loadMoreComments = () => {
 	loadComments(false)
 }
 
+const loadAiSummary = async (id) => {
+	try {
+		const res = await noteApi.getAiSummary(id)
+		if (res) {
+			aiSummary.value = res
+		}
+	} catch {
+		// 无摘要时静默失败
+	}
+}
+
+const onGenerateSummary = async () => {
+	if (generating.value) return
+	generating.value = true
+	try {
+		await noteApi.generateAiSummary(Number(noteId.value))
+		await loadAiSummary(noteId.value)
+		uni.showToast({ title: '摘要生成成功', icon: 'success' })
+	} catch (e) {
+		const msg = e?.message || e?.msg || ''
+		if (e?.code === 403 || msg.includes('配额') || msg.includes('limit') || msg.includes('quota')) {
+			uni.showToast({ title: '本月 AI 请求次数已用完', icon: 'none' })
+		} else {
+			uni.showToast({ title: msg || '生成失败，请稍后重试', icon: 'none' })
+		}
+	} finally {
+		generating.value = false
+	}
+}
+
 const loadDetail = async (id) => {
 	loading.value = true
 	try {
@@ -269,6 +317,7 @@ const loadDetail = async (id) => {
 		checkOwnership()
 		loadInteractionStatus()
 		loadComments(true)
+		loadAiSummary(id)
 		logApi.report('view', String(id)).catch(() => {})
 	} catch (error) {
 		console.error('加载笔记详情失败:', error)
@@ -508,6 +557,68 @@ onLoad((options) => {
 	word-break: break-word;
 	padding-bottom: 24rpx;
 	border-bottom: 1px solid #f0f0f0;
+}
+
+/* AI 摘要卡片 */
+.ai-summary-card {
+	margin-top: 24rpx;
+	padding: 24rpx;
+	background: #fff;
+	border-radius: 12rpx;
+	border-left: 6rpx solid #409eff;
+}
+
+.ai-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16rpx;
+}
+
+.ai-label {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #409eff;
+}
+
+.ai-model {
+	font-size: 22rpx;
+	color: #c0c4cc;
+}
+
+.ai-content {
+	font-size: 28rpx;
+	color: #606266;
+	line-height: 1.6;
+}
+
+.ai-keywords {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12rpx;
+	margin-top: 16rpx;
+}
+
+.keyword-tag {
+	font-size: 22rpx;
+	color: #409eff;
+	background: rgba(64, 158, 255, 0.1);
+	padding: 6rpx 16rpx;
+	border-radius: 20rpx;
+}
+
+.ai-generate-btn {
+	margin-top: 24rpx;
+	padding: 20rpx;
+	text-align: center;
+	background: #fff;
+	border-radius: 12rpx;
+	border: 1rpx dashed #409eff;
+}
+
+.ai-generate-btn text {
+	font-size: 28rpx;
+	color: #409eff;
 }
 
 /* 评论区 */
