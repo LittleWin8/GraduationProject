@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -75,7 +76,7 @@ public class AiSummaryServiceImpl implements AiSummaryService {
                     + "标题：" + note.getTitle() + "\n"
                     + "内容：" + note.getContent().substring(0, Math.min(note.getContent().length(), 2000));
 
-            Response<AiMessage> response = chatModel.generate(UserMessage.from(prompt));
+            Response<AiMessage> response = chatModel.chat(List.of(UserMessage.from(prompt)));
             String result = response.content().text();
 
             TokenUsage usage = response.tokenUsage();

@@ -47,7 +47,7 @@
             <if test="query.status != null">AND l.status = #{query.status}</if>
             <if test="query.actionType != null and query.actionType != ''">AND l.action_type = #{query.actionType}</if>
             <if test="query.startTime != null">AND l.create_time &gt;= #{query.startTime}</if>
-            <if test="query.endTime != null">AND l.create_time &lt;= #{query.endTime}</if>
+            <if test="query.endTime != null and query.endTime != ''">AND l.create_time &lt;= CONCAT(#{query.endTime}, ' 23:59:59')</if>
         </where>
         ORDER BY l.create_time DESC
     </select>
