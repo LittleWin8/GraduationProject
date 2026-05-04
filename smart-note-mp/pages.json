@@ -12,51 +12,21 @@
 			"path": "pages/login/login",
 			"style": {
 				"navigationBarTitleText": "登录",
-				"navigationStyle": "custom" 
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/community/community",
-			"style": { 
+			"style": {
 				"navigationBarTitleText": "笔记社区",
 				"enablePullDownRefresh": true
 			}
 		},
 		{
-			"path": "pages/create/create",
-			"style": { 
-				"navigationBarTitleText": "发布笔记" 
-			}
-		},
-		{
 			"path": "pages/profile/profile",
-			"style": { 
+			"style": {
 				"navigationBarTitleText": "个人中心",
 				"enablePullDownRefresh": true
-			}
-		},
-		{ 
-			"path": "pages/tag-manage/tag-manage", 
-			"style": { 
-				"navigationBarTitleText": "我的标签" 
-			} 
-		},
-		{ 
-			"path": "pages/tag-notes/tag-notes", 
-			"style": { 
-				"navigationBarTitleText": "标签笔记" 
-			} 
-		},
-		{
-			"path": "pages/user-info/user-info",
-			"style": {
-				"navigationBarTitleText": ""
-			}
-		},
-		{
-			"path": "pages/note-list/note-list",
-			"style": {
-				"navigationBarTitleText": ""
 			}
 		},
 		{
@@ -66,18 +36,60 @@
 			}
 		},
 		{
-			"path": "pages/recycle-bin/recycle-bin",
-			"style": {
-				"navigationBarTitleText": "回收站",
-				"enablePullDownRefresh": true
-			}
-		},
-		{
 			"path": "pages/message/message",
 			"style": {
 				"navigationBarTitleText": "消息",
 				"enablePullDownRefresh": true
 			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pages/subNote",
+			"pages": [
+				{
+					"path": "create/create",
+					"style": {
+						"navigationBarTitleText": "发布笔记"
+					}
+				},
+				{
+					"path": "note-list/note-list",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "tag-manage/tag-manage",
+					"style": {
+						"navigationBarTitleText": "我的标签"
+					}
+				},
+				{
+					"path": "tag-notes/tag-notes",
+					"style": {
+						"navigationBarTitleText": "标签笔记"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/subTools",
+			"pages": [
+				{
+					"path": "recycle-bin/recycle-bin",
+					"style": {
+						"navigationBarTitleText": "回收站",
+						"enablePullDownRefresh": true
+					}
+				},
+				{
+					"path": "user-info/user-info",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				}
+			]
 		}
 	],
 	"globalStyle": {

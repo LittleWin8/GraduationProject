@@ -7,11 +7,11 @@ import com.littlewin.note.mapper.NoteAiSummaryMapper;
 import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.service.AiQuotaService;
 import com.littlewin.note.service.AiSummaryService;
-import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -76,8 +76,11 @@ public class AiSummaryServiceImpl implements AiSummaryService {
                     + "标题：" + note.getTitle() + "\n"
                     + "内容：" + note.getContent().substring(0, Math.min(note.getContent().length(), 2000));
 
-            Response<AiMessage> response = chatModel.chat(List.of(UserMessage.from(prompt)));
-            String result = response.content().text();
+            ChatRequest request = ChatRequest.builder()
+                    .messages(List.of(UserMessage.from(prompt)))
+                    .build();
+            ChatResponse response = chatModel.chat(request);
+            String result = response.aiMessage().text();
 
             TokenUsage usage = response.tokenUsage();
             promptTokens = usage.inputTokenCount();

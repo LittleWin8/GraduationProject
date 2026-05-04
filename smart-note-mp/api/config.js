@@ -4,11 +4,12 @@ const ENV = {
     baseURL: 'http://10.152.38.241:8080'
   },
   prod: {
-    baseURL: ''
+    baseURL: 'https://your-domain.com' // ⚠️ 替换为实际域名
   }
 }
 
-const currentEnv = 'dev'
+// 切换环境：改这里即可
+const currentEnv = 'dev' // 'dev' 或 'prod'
 
 export const config = {
   baseURL: ENV[currentEnv].baseURL,

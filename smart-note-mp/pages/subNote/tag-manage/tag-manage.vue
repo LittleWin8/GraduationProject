@@ -151,7 +151,7 @@ const deleteTag = async (id) => {
 // 跳转到标签笔记页
 const goToTagNotes = (tag) => {
 	uni.navigateTo({
-		url: `/pages/tag-notes/tag-notes?tagId=${tag.tagId || tag.id}&tagName=${encodeURIComponent(tag.name)}`
+		url: `/pages/subNote/tag-notes/tag-notes?tagId=${tag.tagId || tag.id}&tagName=${encodeURIComponent(tag.name)}`
 	})
 }
 

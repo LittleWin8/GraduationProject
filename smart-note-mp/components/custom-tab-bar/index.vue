@@ -36,7 +36,7 @@ export default {
 					showBadge: false
 				},
 				{
-					pagePath: '/pages/create/create',
+					pagePath: '/pages/subNote/create/create',
 					text: '创作',
 					icon: 'icon-chuangzuo',
 					isTab: false,

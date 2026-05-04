@@ -132,18 +132,12 @@
 <script setup>
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import MarkdownIt from 'markdown-it'
+import md from '@/utils/markdown.js'
 import { noteApi } from '@/api/index.js'
 import { interactionApi } from '@/api/modules/interaction.js'
 import { commentApi } from '@/api/modules/comment.js'
 import { logApi } from '@/api/modules/log.js'
 import { config } from '@/api/config.js'
-
-const md = new MarkdownIt({
-	html: false,
-	linkify: true,
-	breaks: true
-})
 
 const loading = ref(false)
 const noteData = ref(null)
@@ -330,7 +324,7 @@ const loadDetail = async (id) => {
 }
 
 const goToEdit = () => {
-	uni.navigateTo({ url: `/pages/create/create?id=${noteId.value}` })
+	uni.navigateTo({ url: `/pages/subNote/create/create?id=${noteId.value}` })
 }
 
 const confirmDelete = () => {

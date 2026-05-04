@@ -112,12 +112,10 @@
 <script setup>
 import { ref, reactive, computed } from 'vue';
 import { onLoad, onShow } from '@dcloudio/uni-app';
-import MarkdownIt from 'markdown-it';
+import md from '@/utils/markdown.js';
 import { noteApi } from '@/api/modules/note.js';
 import { categoryApi } from '@/api/modules/category.js';
 import { tagApi } from '@/api/modules/tag.js';
-
-const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
 const showPicker = ref(false);
 const submitting = ref(false);

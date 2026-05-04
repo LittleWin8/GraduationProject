@@ -343,12 +343,12 @@ onPullDownRefresh(() => {
 const goToFullList = (type) => {
 	const titleMap = { notes: '我的笔记', favorites: '我的收藏', liked: '我的赞过' }
 	uni.navigateTo({
-		url: `/pages/note-list/note-list?type=${type}&title=${titleMap[type]}`
+		url: `/pages/subNote/note-list/note-list?type=${type}&title=${titleMap[type]}`
 	})
 }
 
 const goToUserInfo = () => {
-	uni.navigateTo({ url: '/pages/user-info/user-info' })
+	uni.navigateTo({ url: '/pages/subTools/user-info/user-info' })
 }
 
 const goToNoteDetail = (noteId) => {
@@ -356,11 +356,11 @@ const goToNoteDetail = (noteId) => {
 }
 
 const goToTagManage = () => {
-	uni.navigateTo({ url: '/pages/tag-manage/tag-manage' })
+	uni.navigateTo({ url: '/pages/subNote/tag-manage/tag-manage' })
 }
 
 const goToRecycleBin = () => {
-	uni.navigateTo({ url: '/pages/recycle-bin/recycle-bin' })
+	uni.navigateTo({ url: '/pages/subTools/recycle-bin/recycle-bin' })
 }
 
 const msg = () => {
