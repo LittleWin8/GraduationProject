@@ -21,3 +21,14 @@ export interface DashboardStats {
 export const getDashboardStats = () => {
   return http.get<DashboardStats>("/admin/dashboard/stats");
 };
+
+/** 数据分析结果 */
+export interface AnalyzeResult {
+  answer: string;
+  sql: string;
+  data: Record<string, any>[];
+}
+
+export const analyzeData = (question: string) => {
+  return http.post<AnalyzeResult>("/admin/ai/analyze", { question });
+};

@@ -59,9 +59,17 @@ INSERT INTO sys_user_role (user_id, role_id) VALUES (1, 1), (2, 2);
 -- INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
 -- (1000, 0, 'home', '/home/index', '/home/index', 'C', '首页', 'HomeFilled', 1);
 
--- 工作台
+-- 工作台（M 型目录，下设仪表盘和数据分析）
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
-(1100, 0, 'dashboard', '/dashboard/index', '/dashboard/index', 'C', '工作台', 'Odometer', 2);
+(1100, 0, 'dashboard', '/dashboard', '', 'M', '工作台', 'Odometer', 2);
+
+-- 仪表盘
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
+(1101, 1100, 'dashboardIndex', '/dashboard/index', '/dashboard/index', 'C', '仪表盘', 'DataLine', 1);
+
+-- 数据分析
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
+(1102, 1100, 'analyze', '/dashboard/analyze', '/dashboard/analyze/index', 'C', '数据分析', 'ChatLineRound', 2);
 
 -- 个人中心 (顶级目录，扁平化 Path，独立组件路径)
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, sort_order) VALUES
