@@ -66,3 +66,20 @@ upload:
   user-avatar-path: user/avatar
   allowed-image-suffixes: jpg,jpeg,png,gif,webp
   max-avatar-size: 5242880
+
+# -------------------------------
+# CORS 跨域配置
+# -------------------------------
+cors:
+  allowed-origins:
+    - http://localhost:8848
+
+# -------------------------------
+# AI 配置（DeepSeek / OpenAI 兼容）
+# -------------------------------
+ai:
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:your_deepseek_api_key}
+    base-url: https://api.deepseek.com
+    model-name: deepseek-chat
+    max-tokens: 500
