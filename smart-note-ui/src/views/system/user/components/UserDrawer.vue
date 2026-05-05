@@ -111,8 +111,11 @@
 <script setup lang="ts" name="UserDrawer">
 import { ref, reactive } from "vue";
 import { ElMessage, FormInstance } from "element-plus";
+import { useUserStore } from "@/stores/modules/user";
 import UploadImg from "@/components/Upload/Img.vue";
 import { Avatar } from "@element-plus/icons-vue";
+
+const userStore = useUserStore();
 
 const rules = reactive({
   nickname: [{ required: true, message: "请填写用户昵称" }],
@@ -152,6 +155,10 @@ const handleSubmit = () => {
     try {
       await drawerProps.value.api!(drawerProps.value.row);
       ElMessage.success({ message: `${drawerProps.value.title}用户成功！` });
+      // 如果编辑的是当前登录用户，刷新用户 Store（头像/昵称同步更新）
+      if (drawerProps.value.row.userId === userStore.userInfo.userId) {
+        await userStore.getUserInfoAction();
+      }
       drawerProps.value.getTableList!();
       drawerVisible.value = false;
     } catch (error) {

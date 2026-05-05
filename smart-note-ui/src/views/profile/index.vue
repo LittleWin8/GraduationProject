@@ -5,7 +5,20 @@
         <el-col :xs="24" :sm="24" :md="8" :lg="7" :xl="7">
           <el-card shadow="hover" class="user-card info-card">
             <div class="user-avatar-wrapper">
-              <el-avatar :size="100" :src="userInfo.avatar || defaultAvatar" class="user-avatar" />
+              <div class="avatar-upload-area" @click="triggerAvatarUpload">
+                <el-avatar :size="100" :src="avatarDisplayUrl" class="user-avatar" />
+                <div class="avatar-overlay">
+                  <el-icon :size="24"><Camera /></el-icon>
+                  <span>更换头像</span>
+                </div>
+              </div>
+              <input
+                ref="avatarInputRef"
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                style="display: none"
+                @change="handleAvatarChange"
+              />
               <h3 class="user-name">{{ userInfo.name }}</h3>
               <p class="user-signature">{{ userInfo.signature || "这家伙很懒，什么都没留下" }}</p>
             </div>
@@ -97,25 +110,72 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useUserStore } from "@/stores/modules/user";
 import { getDictDataByType } from "@/api/modules/dict";
 import { Dict } from "@/api/interface/index";
-import { Calendar, Postcard, Edit, Lock, Iphone } from "@element-plus/icons-vue";
+import { Calendar, Postcard, Edit, Lock, Iphone, Camera } from "@element-plus/icons-vue";
 import defaultAvatarImg from "@/assets/images/avatar.gif";
 import UserDrawer from "./components/personalDrawer.vue";
-import PasswordDialog from "./components/passwordDialog.vue";
+import PasswordDialog from "./components/PasswordDialog.vue";
 import PhoneDialog from "./components/phoneDialog.vue";
 import { editUser } from "@/api/modules/user";
+import { uploadImg } from "@/api/modules/upload";
+import { ElMessage } from "element-plus";
 
 const userStore = useUserStore();
 const defaultAvatar = defaultAvatarImg;
 const activeTab = ref("info");
 
 const userInfo = computed(() => userStore.userInfo);
+const avatarDisplayUrl = computed(() => userStore.userInfo.avatar || defaultAvatar);
 const genderDict = ref<Dict.ResDictData[]>([]);
 
 const responsiveColumns = ref(2);
+const avatarInputRef = ref<HTMLInputElement>();
+const avatarUploading = ref(false);
 
 const userDrawerRef = ref<InstanceType<typeof UserDrawer> | null>(null);
 const passwordRef = ref();
 const phoneRef = ref();
+
+const triggerAvatarUpload = () => {
+  if (avatarUploading.value) return;
+  avatarInputRef.value?.click();
+};
+
+const handleAvatarChange = async (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    ElMessage.warning("请选择图片文件");
+    input.value = "";
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    ElMessage.warning("图片大小不能超过 3MB");
+    input.value = "";
+    return;
+  }
+  try {
+    avatarUploading.value = true;
+    const formData = new FormData();
+    formData.append("file", file);
+    const { data } = await uploadImg(formData);
+    const newAvatarUrl = data.fileUrl;
+    await editUser({
+      ...userStore.userInfo,
+      userId: userStore.userInfo.userId,
+      nickname: userStore.userInfo.name,
+      identifier: userStore.userInfo.account,
+      avatar: newAvatarUrl
+    } as any);
+    await userStore.getUserInfoAction();
+    ElMessage.success("头像更新成功");
+  } catch (err) {
+    ElMessage.error("头像上传失败");
+  } finally {
+    avatarUploading.value = false;
+    input.value = "";
+  }
+};
 
 // 打开抽屉的方法
 const openUserDrawer = () => {

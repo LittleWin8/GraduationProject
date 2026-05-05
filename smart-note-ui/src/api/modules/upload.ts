@@ -7,7 +7,7 @@ import http from "@/api";
  */
 // 图片上传
 export const uploadImg = (params: FormData) => {
-  return http.post<Upload.ResFileUrl>(PORT1 + `/file/upload/img`, params, { cancel: false });
+  return http.post<Upload.ResFileUrl>(`/admin/file/upload/img`, params, { cancel: false });
 };
 
 // 视频上传

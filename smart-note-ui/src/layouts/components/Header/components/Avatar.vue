@@ -28,7 +28,6 @@ import defaultAvatar from "@/assets/images/avatar.gif";
 const router = useRouter();
 const userStore = useUserStore();
 
-// 头像计算属性：优先从 store 获取，没有则使用本地 gif
 const avatarSrc = computed(() => {
   return userStore.userInfo.avatar || defaultAvatar;
 });

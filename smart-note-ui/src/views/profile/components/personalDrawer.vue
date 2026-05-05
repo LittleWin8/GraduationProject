@@ -2,7 +2,7 @@
   <el-drawer v-model="drawerVisible" :destroy-on-close="true" size="450px" title="编辑个人资料">
     <el-form ref="ruleFormRef" label-width="100px" label-suffix=" :" :rules="rules" :model="drawerProps.row">
       <el-form-item label="用户头像" prop="avatar">
-        <UploadImg v-model:image-url="drawerProps.row!.avatar" width="120px" height="120px" :file-size="3">
+        <UploadImg v-model:image-url="drawerProps.row!.avatar" width="120px" height="120px" :file-size="3" border-radius="50%">
           <template #empty>
             <el-icon><Avatar /></el-icon>
             <span>请上传头像</span>
