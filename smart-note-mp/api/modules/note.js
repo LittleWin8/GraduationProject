@@ -83,6 +83,20 @@ export const noteApi = {
       method: 'GET'
     })
   },
+  assist(content, action) {
+    return request({
+      url: APIS.NOTE.AI_ASSIST,
+      method: 'POST',
+      data: { content, action }
+    })
+  },
+  recommendTags(content) {
+    return request({
+      url: APIS.NOTE.AI_RECOMMEND_TAGS,
+      method: 'POST',
+      data: { content }
+    })
+  },
   
   // 上传附件
   uploadAttachment(filePath, noteId = null) {

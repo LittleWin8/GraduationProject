@@ -21,10 +21,26 @@
 						{{ tag.name }}
 					</view>
 					<view class="tag-item add-tag" @click="showTagInput = true">
-						+ 新增
+					+ 新增
+				</view>
+			</view>
+			<view class="recommend-tags-section">
+				<view class="recommend-btn" :class="{ disabled: !form.content || recommendLoading }" @click="onRecommendTags">
+					<text>{{ recommendLoading ? '推荐中...' : '推荐标签' }}</text>
+				</view>
+				<view v-if="recommendedTags.length" class="recommended-list">
+					<view
+						v-for="tag in recommendedTags"
+						:key="tag"
+						class="recommended-tag"
+						:class="{ active: selectedTagNames.includes(tag) }"
+						@click="onSelectRecommendedTag(tag)"
+					>
+						{{ tag }}
 					</view>
 				</view>
 			</view>
+		</view>
 
 			<u-cell-group :border="false">
 				<u-cell title="选择分类" :value="selectedCategoryName" isLink @click="showPicker = true"></u-cell>
@@ -36,7 +52,21 @@
 			</u-cell-group>
 
 			<view class="u-margin-top-30 content-editor">
-				<textarea
+			<view class="ai-assist-bar">
+				<view class="ai-btn" :class="{ disabled: !form.content || aiLoading }" @click="onAiAssist('expand')">
+					<text>扩写</text>
+				</view>
+				<view class="ai-btn" :class="{ disabled: !form.content || aiLoading }" @click="onAiAssist('polish')">
+					<text>润色</text>
+				</view>
+				<view class="ai-btn" :class="{ disabled: !form.content || aiLoading }" @click="onAiAssist('summarize')">
+					<text>总结</text>
+				</view>
+				<view v-if="aiLoading" class="ai-loading">
+					<text>AI 处理中...</text>
+				</view>
+			</view>
+			<textarea
 					v-model="form.content"
 					placeholder="开始记录你的想法...(支持Markdown)"
 					:maxlength="-1"
@@ -215,6 +245,59 @@ const toggleTag = (tagId) => {
 	} else {
 		selectedTagIds.value.splice(index, 1);
 	}
+};
+
+const aiLoading = ref(false);
+const recommendLoading = ref(false);
+const recommendedTags = ref([]);
+
+const selectedTagNames = computed(() => {
+	return selectedTagIds.value.map(id => {
+		const tag = myTags.value.find(t => t.tagId === id);
+		return tag ? tag.name : '';
+	}).filter(Boolean);
+});
+
+const onAiAssist = async (action) => {
+	if (!form.content || aiLoading.value) return;
+	aiLoading.value = true;
+	try {
+		const result = await noteApi.assist(form.content, action);
+		if (result) {
+			if (action === 'summarize') {
+				form.content = form.content + '\n\n> 摘要：' + result;
+			} else {
+				form.content = result;
+			}
+			uni.showToast({ title: '处理成功', icon: 'success' });
+		}
+	} catch (e) {
+		// error handled
+	} finally {
+		aiLoading.value = false;
+	}
+};
+
+const onRecommendTags = async () => {
+	if (!form.content || recommendLoading.value) return;
+	recommendLoading.value = true;
+	try {
+		const tags = await noteApi.recommendTags(form.content);
+		recommendedTags.value = tags || [];
+		if (!tags || tags.length === 0) {
+			uni.showToast({ title: '没有匹配的标签', icon: 'none' });
+		}
+	} catch (e) {
+		// error handled
+	} finally {
+		recommendLoading.value = false;
+	}
+};
+
+const onSelectRecommendedTag = (tagName) => {
+	const tag = myTags.value.find(t => t.name === tagName);
+	if (!tag) return;
+	toggleTag(tag.tagId);
 };
 
 const addNewTag = async () => {
@@ -497,5 +580,73 @@ onShow(() => {
 	font-size: 30rpx;
 	line-height: 1.8;
 	color: #303133;
+}
+
+.ai-assist-bar {
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
+	margin-bottom: 20rpx;
+	padding: 16rpx 0;
+	border-bottom: 1rpx solid #f0f0f0;
+}
+
+.ai-btn {
+	padding: 8rpx 24rpx;
+	border-radius: 24rpx;
+	background: #e8f4fd;
+	font-size: 24rpx;
+	color: #1890ff;
+}
+
+.ai-btn.disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.ai-loading {
+	margin-left: auto;
+	font-size: 24rpx;
+	color: #909399;
+}
+
+.recommend-tags-section {
+	margin-top: 16rpx;
+}
+
+.recommend-btn {
+	display: inline-block;
+	padding: 8rpx 24rpx;
+	border-radius: 24rpx;
+	background: #f0f9eb;
+	font-size: 24rpx;
+	color: #67c23a;
+}
+
+.recommend-btn.disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.recommended-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12rpx;
+	margin-top: 12rpx;
+}
+
+.recommended-tag {
+	padding: 6rpx 20rpx;
+	border-radius: 20rpx;
+	background: #f5f5f5;
+	font-size: 22rpx;
+	color: #606266;
+	border: 1rpx solid #e4e7ed;
+}
+
+.recommended-tag.active {
+	background: #e8f4fd;
+	color: #1890ff;
+	border-color: #1890ff;
 }
 </style>

@@ -42,6 +42,8 @@ export const APIS = {
     RESTORE: '/api/wx/notes',       // /{id}/restore
     AI_SUMMARY: '/api/wx/notes/ai/summary',
     AI_QUOTA: '/api/wx/notes/ai/quota',
+    AI_ASSIST: '/api/wx/notes/ai/assist',
+    AI_RECOMMEND_TAGS: '/api/wx/notes/ai/recommend-tags',
     UPLOAD: '/api/wx/notes/attachment',
 	MY_NOTES: '/api/wx/note/my-notes',  // 我的笔记列表
 	STATS: '/api/wx/note/stats'         ,// 统计数据
