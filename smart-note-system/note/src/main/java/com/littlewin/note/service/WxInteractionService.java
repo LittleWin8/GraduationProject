@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 互动服务接口（点赞/收藏切换、状态查询）
  */
-public interface InteractionService {
+public interface WxInteractionService {
 
     /** 点赞或收藏切换，返回切换后完整状态 */
     InteractionResultVO toggle(Long userId, Long noteId, String type);

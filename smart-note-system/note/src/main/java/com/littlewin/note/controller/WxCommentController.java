@@ -9,7 +9,7 @@ import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.note.domain.dto.CommentCreateDTO;
 import com.littlewin.note.domain.vo.CommentVO;
-import com.littlewin.note.service.CommentService;
+import com.littlewin.note.service.WxCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/wx/comments")
 public class WxCommentController {
 
-    private final CommentService commentService;
+    private final WxCommentService commentService;
 
     /** 评论列表（分页，按时间倒序） */
     @GetMapping

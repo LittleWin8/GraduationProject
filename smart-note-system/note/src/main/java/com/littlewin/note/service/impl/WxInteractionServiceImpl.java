@@ -8,7 +8,7 @@ import com.littlewin.note.domain.vo.InteractionResultVO;
 import com.littlewin.note.domain.vo.InteractionStatusVO;
 import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.mapper.NoteReactionMapper;
-import com.littlewin.note.service.InteractionService;
+import com.littlewin.note.service.WxInteractionService;
 import com.littlewin.note.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
-public class InteractionServiceImpl implements InteractionService {
+public class WxInteractionServiceImpl implements WxInteractionService {
 
     private final NoteReactionMapper noteReactionMapper;
     private final NoteMapper noteMapper;

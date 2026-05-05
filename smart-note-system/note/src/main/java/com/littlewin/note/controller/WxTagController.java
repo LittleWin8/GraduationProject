@@ -10,7 +10,7 @@ import com.littlewin.common.log.context.LogContext;
 import com.littlewin.common.utils.SecurityUtils;
 import com.littlewin.note.domain.entity.NoteTag;
 import com.littlewin.note.domain.vo.TagNoteVO;
-import com.littlewin.note.service.NoteTagService;
+import com.littlewin.note.service.WxNoteTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequestMapping("/api/wx/tags")
 public class WxTagController {
 
-    private final NoteTagService tagService;
+    private final WxNoteTagService tagService;
 
     // 获取我的标签列表
     @GetMapping

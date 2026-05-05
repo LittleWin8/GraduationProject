@@ -8,7 +8,7 @@ import com.littlewin.note.domain.vo.NoteListVO;
 
 import java.util.Map;
 
-public interface NoteDetailService {
+public interface WxNoteService {
     /**
      * 获取笔记详情（公开笔记或本人笔记）
      */

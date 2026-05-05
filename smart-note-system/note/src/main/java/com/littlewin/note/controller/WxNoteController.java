@@ -11,7 +11,7 @@ import com.littlewin.note.domain.dto.NoteCreateDTO;
 import com.littlewin.note.domain.dto.NoteQueryDTO;
 import com.littlewin.note.domain.vo.NoteDetailVO;
 import com.littlewin.note.domain.vo.NoteListVO;
-import com.littlewin.note.service.NoteDetailService;
+import com.littlewin.note.service.WxNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +25,7 @@ import java.util.Map;
 @RequestMapping("/api/wx/notes")
 public class WxNoteController {
 
-    private final NoteDetailService noteDetailService;
+    private final WxNoteService noteDetailService;
 
     /**
      * 获取笔记详情

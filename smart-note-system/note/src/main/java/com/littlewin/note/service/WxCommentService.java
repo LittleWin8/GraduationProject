@@ -7,7 +7,7 @@ import com.littlewin.note.domain.vo.CommentVO;
 /**
  * 评论服务接口（列表查询、发表、删除）
  */
-public interface CommentService {
+public interface WxCommentService {
 
     /** 分页查询评论列表 */
     IPage<CommentVO> listComments(Long noteId, Long userId, int page, int size);

@@ -10,7 +10,7 @@ import com.littlewin.note.domain.dto.InteractionBatchDTO;
 import com.littlewin.note.domain.dto.InteractionToggleDTO;
 import com.littlewin.note.domain.vo.InteractionResultVO;
 import com.littlewin.note.domain.vo.InteractionStatusVO;
-import com.littlewin.note.service.InteractionService;
+import com.littlewin.note.service.WxInteractionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ import java.util.Map;
 @RequestMapping("/api/wx/interactions")
 public class WxInteractionController {
 
-    private final InteractionService interactionService;
+    private final WxInteractionService interactionService;
 
     /** 点赞/收藏切换 */
     @PostMapping

@@ -9,7 +9,7 @@ import com.littlewin.note.domain.entity.NoteComment;
 import com.littlewin.note.domain.vo.CommentVO;
 import com.littlewin.note.mapper.NoteCommentMapper;
 import com.littlewin.note.mapper.NoteMapper;
-import com.littlewin.note.service.CommentService;
+import com.littlewin.note.service.WxCommentService;
 import com.littlewin.note.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
  */
 @Service
 @RequiredArgsConstructor
-public class CommentServiceImpl implements CommentService {
+public class WxCommentServiceImpl implements WxCommentService {
 
     private final NoteCommentMapper noteCommentMapper;
     private final NoteMapper noteMapper;

@@ -18,7 +18,7 @@ import com.littlewin.note.mapper.NoteMapper;
 import com.littlewin.note.mapper.NoteTagMapper;
 import com.littlewin.note.mapper.NoteTagRelMapper;
 import com.littlewin.note.mapper.SysCategoryMapper;
-import com.littlewin.note.service.NoteDetailService;
+import com.littlewin.note.service.WxNoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NoteDetailServiceImpl implements NoteDetailService {
+public class WxNoteServiceImpl implements WxNoteService {
 
     private final NoteMapper noteMapper;
     private final NoteTagRelMapper noteTagRelMapper;

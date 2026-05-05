@@ -8,7 +8,7 @@ import com.littlewin.note.domain.vo.FavoriteNoteVO;
 import com.littlewin.note.domain.vo.LikedNoteVO;
 import com.littlewin.note.domain.vo.MyNoteVO;
 import com.littlewin.note.domain.vo.NoteStatsVO;
-import com.littlewin.note.service.NoteStatsService;
+import com.littlewin.note.service.WxNoteStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class WxNoteStatsController {
 
-    private final NoteStatsService noteStatsService;
+    private final WxNoteStatsService noteStatsService;
 
     @GetMapping("/stats")
     public Result<NoteStatsVO> getStats() {
