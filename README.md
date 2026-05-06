@@ -4,6 +4,8 @@
 
 本项目是一个前后端分离的个人知识管理与智能笔记系统，面向学习记录、笔记沉淀与轻量社交互动场景。
 
+> Web 管理端基于开源项目 [Geeker-Admin](https://github.com/HalseySpicy/Geeker-Admin) 二次开发，感谢原作者 [HalseySpicy](https://github.com/HalseySpicy)。
+
 系统由三个核心子项目组成：
 
 - `smart-note-system`：后端服务（Spring Boot 多模块）
@@ -54,22 +56,7 @@
 | 安全 | SQL 注入防护、敏感字段黑名单、接口权限校验 |
 | 日志 | AOP 操作审计、行为日志上报 |
 
-## 三、技术栈
-
-| 维度 | 技术选型 | 说明 |
-|:---|:---|:---|
-| 后端框架 | Spring Boot 3.x | RESTful API |
-| 持久层 | MyBatis-Plus | ORM + XML 自定义 SQL |
-| 安全 | Spring Security + JWT + Redis | 认证鉴权 + Token 黑名单 |
-| AI | LangChain4j + DeepSeek | 摘要/助手/标签推荐/数据分析 |
-| 缓存 | Redis 7.2（Docker） | 浏览量计数、分布式锁、限流 |
-| 数据库 | MySQL 8.0 | 22 张业务表 |
-| 接口文档 | Knife4j（OpenAPI 3） | 接口调试 |
-| Web 前端 | Vue 3 + Vite + Element Plus + ECharts | 管理端 |
-| 小程序 | uni-app（Vue 3）+ uview-plus | 微信小程序 |
-| 构建 | Java 17 / Node.js 16+ / Maven 3.x | 运行环境 |
-
-## 四、项目结构
+## 三、项目结构
 
 ```
 GraduationProject
@@ -80,7 +67,7 @@ GraduationProject
 │   ├── framework/              # 安全框架
 │   ├── note/                   # 笔记业务模块
 │   └── system/                 # 系统管理模块
-├── smart-note-ui/              # Web 管理端（Vue 3）
+├── smart-note-ui/              # Web 管理端（Vue 3 + pnpm）
 │   ├── src/api/modules/        # API 接口定义
 │   ├── src/views/              # 页面组件
 │   └── src/components/         # 公共组件
@@ -88,31 +75,32 @@ GraduationProject
 │   ├── api/modules/            # API 接口
 │   ├── pages/                  # 页面
 │   └── components/             # 公共组件
-├── docs/
-│   ├── sql/                    # 数据库脚本
-│   └── design/                 # 设计文档
-└── GraduationProject_PLAN/     # 开发计划与提示词
+└── docs/
+    ├── sql/                    # 数据库脚本与字典
+    ├── design/                 # 架构设计文档
+    └── plan/                   # 开发计划与提示词
 ```
 
-## 五、快速启动
+## 四、快速启动
 
 ### 后端
 
 ```bash
 # 1. 创建数据库并导入
-mysql -u root -p < docs/sql/init_db.sql
-mysql -u root -p smart_note < docs/sql/init_sys_data.sql
+mysql -u root -p < docs/sql/init_all.sql
 
 # 2. 启动 Redis（Docker）
+cd smart-note-system
+cp docker-compose-example.yml docker-compose.yml
+# 编辑 docker-compose.yml 配置 Redis 密码等
 docker-compose up -d redis
 
 # 3. 复制配置文件
-cp smart-note-system/admin/src/main/resources/application-dev.yml.example \
-   smart-note-system/admin/src/main/resources/application-dev.yml
-# 编辑 application-dev.yml 填写真实配置
+cp admin/src/main/resources/application-dev-example.yml \
+   admin/src/main/resources/application-dev.yml
+# 编辑 application-dev.yml 填写数据库、Redis、JWT 密钥等配置
 
 # 4. 启动后端
-cd smart-note-system
 mvn clean install -DskipTests
 cd admin && mvn spring-boot:run
 ```
@@ -121,8 +109,8 @@ cd admin && mvn spring-boot:run
 
 ```bash
 cd smart-note-ui
-npm install
-npm run dev
+pnpm install
+pnpm dev
 # 访问 http://localhost:8848
 ```
 
@@ -133,23 +121,9 @@ npm run dev
 # 运行到微信小程序开发者工具
 ```
 
-## 六、数据库
+## 五、相关文档
 
-共 22 张表：
-
-| 分类 | 表名 | 说明 |
-|:---|:---|:---|
-| 用户 | sys_user, user_auth, user_info | 用户基础信息 |
-| 权限 | sys_role, sys_menu, sys_role_menu, sys_user_role | RBAC 权限 |
-| 笔记 | note, note_tag, note_tag_rel, note_comment, note_reaction, note_attachment | 笔记核心业务 |
-| AI | note_ai_summary, ai_usage_log, ai_user_quota | AI 摘要与配额 |
-| 消息 | user_message | 站内消息（8 种类型） |
-| 分类 | sys_category | 系统分类 |
-| 日志 | sys_log_behavior, sys_log_operation | 行为+操作日志 |
-| 字典 | sys_dict_type, sys_dict_data | 数据字典 |
-
-## 七、相关文档
-
-- 数据库初始化脚本：[docs/sql/init_db.sql](docs/sql/init_db.sql)
-- 系统数据初始化：[docs/sql/init_sys_data.sql](docs/sql/init_sys_data.sql)
+- 架构设计（技术栈、模块职责、数据库概览）：[docs/design/architecture.md](docs/design/architecture.md)
+- 数据库字典：[docs/sql/data_dictionary.md](docs/sql/data_dictionary.md)
+- 数据库初始化脚本：[docs/sql/init_all.sql](docs/sql/init_all.sql)
 - 开发计划：[docs/plan/plan.md](docs/plan/plan.md)

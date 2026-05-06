@@ -35,10 +35,13 @@
 |                | note_comment      | 笔记评论表     | 用户对笔记的评论                             |
 |                | note_reaction     | 笔记互动表     | 点赞 / 踩 / 收藏记录                         |
 | **增强与日志** | note_ai_summary   | AI 摘要表      | 存储 AI 生成内容                             |
+|                | ai_usage_log      | AI 调用日志表  | 记录每次 AI 请求的 token 消耗与状态          |
+|                | ai_user_quota     | 用户 AI 配额表 | 管控用户月度 token 用量与请求次数            |
 |                | sys_log_behavior  | 用户行为日志表 | 记录浏览、搜索等行为                         |
 |                | sys_log_operation | 系统操作审计表 | 记录全部用户关键动作，用于安全追溯和管理审计 |
 | **数据字典**   | sys_dict_type     | 字典类型表     | 定义字典类型                                 |
 |                | sys_dict_data     | 字典数据表     | 存储字典键值对                               |
+| **消息**       | user_message      | 站内消息表     | 评论/回复/审核/公告等站内通知                |
 
 # 四、各表字段详细设计
 
@@ -137,20 +140,24 @@
 
 ### note（笔记主表）
 
-| 字段名      | 类型         | 说明                                     |
-| :---------- | :----------- | :--------------------------------------- |
-| note_id     | BIGINT (PK)  | 笔记 ID，自增                            |
-| user_id     | BIGINT       | 作者 ID                                  |
-| category_id | BIGINT       | 关联系统分类 ID                          |
-| title       | VARCHAR(200) | 标题                                     |
-| content     | LONGTEXT     | Markdown 内容                            |
-| is_public   | TINYINT      | 是否公开：0 私密，1 公开                 |
-| status      | TINYINT      | 状态：1 正常，2 回收站           |
-| view_count  | INT          | 浏览次数，默认 0                         |
-| del_flag    | TINYINT      | 逻辑删除：0 正常，1 删除                 |
-| create_time | DATETIME     | 创建时间，默认当前时间                   |
-| update_time | DATETIME     | 更新时间，自动更新                       |
-| **索引**    |              | idx_user_id, idx_category_id, idx_status |
+| 字段名       | 类型          | 说明                                     |
+| :----------- | :------------ | :--------------------------------------- |
+| note_id      | BIGINT (PK)   | 笔记 ID，自增                            |
+| user_id      | BIGINT        | 作者 ID                                  |
+| category_id  | BIGINT        | 关联系统分类 ID                          |
+| title        | VARCHAR(200)  | 标题                                     |
+| content      | LONGTEXT      | Markdown 内容                            |
+| is_public    | TINYINT       | 是否公开：0 私密，1 公开                 |
+| status       | TINYINT       | 状态：1 正常，2 回收站，3 下架           |
+| view_count   | INT           | 浏览次数，默认 0                         |
+| like_count   | INT           | 点赞数（冗余），默认 0                   |
+| comment_count| INT           | 评论数（冗余），默认 0                   |
+| summary      | VARCHAR(500)  | 内容摘要（冗余，前200字）                |
+| reviewed     | TINYINT       | 审核标记：0 未审核，1 已审核             |
+| del_flag     | TINYINT       | 逻辑删除：0 正常，1 删除                 |
+| create_time  | DATETIME      | 创建时间，默认当前时间                   |
+| update_time  | DATETIME      | 更新时间，自动更新                       |
+| **索引**     |               | idx_user_id, idx_category_id, idx_status, idx_note_public_status (is_public, status, del_flag, create_time), idx_note_user_status (user_id, status, del_flag) |
 
 ### sys_category（系统预设分类表）
 
@@ -171,7 +178,7 @@
 | name        | VARCHAR(50) | 标签名称               |
 | user_id     | BIGINT      | 所属用户 ID            |
 | create_time | DATETIME    | 创建时间，默认当前时间 |
-| **索引**    |             | idx_user_id            |
+| **索引**    |             | uk_note_tag_user_name (user_id, name) 唯一；idx_user_id；idx_create_time |
 
 ### note_tag_rel（笔记标签关联表）
 
@@ -179,6 +186,7 @@
 | :------ | :----- | :----------------- |
 | note_id | BIGINT | 笔记ID（联合主键） |
 | tag_id  | BIGINT | 标签ID（联合主键） |
+| **索引** |       | idx_tag_id         |
 
 ### note_attachment（附件表）
 
@@ -205,7 +213,7 @@
 | parent_id   | BIGINT      | 父评论 ID（用于回复）            |
 | del_flag    | TINYINT     | 逻辑删除：0 正常，1 删除，默认 0 |
 | create_time | DATETIME    | 创建时间，默认当前时间           |
-| **索引**    |             | idx_note_id, idx_user_id         |
+| **索引**    |             | idx_note_id, idx_user_id, idx_comment_note (note_id, del_flag, create_time) |
 
 ### note_reaction（互动表）
 
@@ -218,9 +226,9 @@
 | is_favorite  | TINYINT     | 收藏状态：0 未收藏，1 已收藏，默认 0 |
 | create_time  | DATETIME    | 创建时间，默认当前时间               |
 | update_time  | DATETIME    | 更新时间，自动更新                   |
-| **唯一约束** |             | uk_note_user (note_id, user_id)      |
+| **索引**     |             | uk_note_user (note_id, user_id) 唯一；idx_reaction_note_attitude (note_id, attitude)；idx_reaction_user_favorite (user_id, is_favorite)；idx_reaction_user_attitude (user_id, attitude) |
 
-## 3. 增强与日志模块（3张表）
+## 3. 增强与日志模块（5张表）
 
 ### note_ai_summary（AI 摘要表）
 
@@ -241,7 +249,7 @@
 | action_type | TINYINT      | 行为类型：1 浏览，2 搜索 |
 | content     | VARCHAR(255) | 内容（笔记 ID 或关键词） |
 | create_time | DATETIME     | 发生时间，默认当前时间   |
-| **索引**    |              | idx_user_id              |
+| **索引**    |              | idx_user_id, idx_log_behavior_time (create_time) |
 
 ### sys_log_operation（系统操作审计表）
 
@@ -250,7 +258,7 @@
 | id             | BIGINT (PK)  | 日志ID，自增                                             |
 | user_id        | BIGINT       | 执行操作的用户ID                                         |
 | username       | VARCHAR(50)  | 操作人账号/昵称                                          |
-| module         | VARCHAR(30)  | 操作模块：AUTH, USER, NOTE, CATEGORY, INTERACT, AI       |
+| module         | VARCHAR(30)  | 操作模块：AUTH, USER, NOTE, DICT, AI, SYSTEM, ROLE       |
 | action_type    | TINYINT      | 行为类型：1 登录, 2 退出, 3 创建, 4 修改, 5 删除, 6 审核 |
 | business_id    | BIGINT       | 业务主键ID（如笔记ID、用户ID）                           |
 | description    | VARCHAR(255) | 详细操作描述                                             |
@@ -260,7 +268,37 @@
 | status         | TINYINT      | 操作结果：1 成功，0 失败                                 |
 | error_msg      | TEXT         | 失败原因                                                 |
 | create_time    | DATETIME     | 触发时间                                                 |
-| **索引**       |              | idx_user_id, idx_module, idx_create_time                 |
+| **索引**       |              | idx_module, idx_log_operation_time (create_time)         |
+
+### ai_usage_log（AI 调用日志表）
+
+| 字段名            | 类型         | 说明                                      |
+| :---------------- | :----------- | :---------------------------------------- |
+| id                | BIGINT (PK)  | 日志 ID，自增                             |
+| user_id           | BIGINT       | 调用用户 ID                               |
+| note_id           | BIGINT       | 关联笔记 ID                               |
+| action_type       | VARCHAR(20)  | 操作类型：summary(摘要生成)，默认 summary |
+| prompt_tokens     | INT          | 输入 token 数，默认 0                     |
+| completion_tokens | INT          | 输出 token 数，默认 0                     |
+| total_tokens      | INT          | 总 token 数，默认 0                       |
+| model_name        | VARCHAR(50)  | 使用的 AI 模型                            |
+| status            | TINYINT      | 状态：1 成功，0 失败，默认 1              |
+| error_msg         | VARCHAR(500) | 错误信息                                  |
+| create_time       | DATETIME     | 调用时间，默认当前时间                    |
+| **索引**          |              | idx_user_id, idx_create_time, idx_user_time (user_id, create_time) |
+
+### ai_user_quota（用户 AI 配额表）
+
+| 字段名             | 类型     | 说明                               |
+| :----------------- | :------- | :--------------------------------- |
+| user_id            | BIGINT (PK) | 用户 ID                         |
+| monthly_token_limit| INT      | 每月 token 上限，默认 100000      |
+| monthly_request_limit | INT   | 每月请求次数上限，默认 50         |
+| used_tokens        | INT      | 本月已用 token 数，默认 0         |
+| used_requests      | INT      | 本月已用请求次数，默认 0          |
+| quota_reset_date   | DATE     | 配额重置日期（每月1日重置）       |
+| create_time        | DATETIME | 创建时间，默认当前时间            |
+| update_time        | DATETIME | 更新时间，自动更新                |
 
 ## 4. 数据字典模块（2 张表）
 
@@ -290,4 +328,22 @@
 | remark      | VARCHAR(500) | 备注                                                 |
 | create_time | DATETIME     | 创建时间，默认当前时间                               |
 | **索引**    |              | idx_dict_type                                        |
+
+## 5. 消息模块（1 张表）
+
+### user_message（站内消息表）
+
+| 字段名      | 类型         | 说明                                                               |
+| :---------- | :----------- | :----------------------------------------------------------------- |
+| id          | BIGINT (PK)  | 消息 ID，自增                                                      |
+| receiver_id | BIGINT       | 接收者用户 ID（笔记作者）                                          |
+| sender_id   | BIGINT       | 触发者用户 ID（评论者）                                            |
+| title       | VARCHAR(100) | 消息标题（系统通知用）                                             |
+| note_id     | BIGINT       | 关联笔记 ID（系统公告可为空）                                      |
+| comment_id  | BIGINT       | 关联评论 ID                                                        |
+| type        | TINYINT      | 消息类型：1评论, 2回复, 3审核通过, 4审核不通过, 5违规下架, 6系统公告, 7点赞, 8收藏 |
+| content     | VARCHAR(500) | 消息内容摘要（评论内容前50字）                                     |
+| is_read     | TINYINT      | 是否已读：0 未读，1 已读                                           |
+| create_time | DATETIME     | 创建时间，默认当前时间                                             |
+| **索引**    |              | idx_receiver_read (receiver_id, is_read), idx_receiver_time (receiver_id, create_time DESC) |
 
