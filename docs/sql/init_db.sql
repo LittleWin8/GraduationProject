@@ -106,7 +106,7 @@ CREATE TABLE sys_category (
     name VARCHAR(50) NOT NULL COMMENT '分类名称',
     parent_id BIGINT DEFAULT 0 COMMENT '父分类ID',
     sort_order INT DEFAULT 0 COMMENT '排序',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0 草稿, 1 正常, 2 回收站,3 下架',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0 禁用, 1 启用',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统预设分类表';
 
@@ -117,8 +117,8 @@ CREATE TABLE note (
     category_id BIGINT COMMENT '关联系统分类ID',
     title VARCHAR(200) NOT NULL COMMENT '笔记标题',
     content LONGTEXT COMMENT 'Markdown内容',
-    is_public TINYINT NOT NULL DEFAULT 1 COMMENT '是否公开：0 私密, 1 公开',
-    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0 草稿, 1 正常, 2 回收站, 3 下架',
+    is_public TINYINT NOT NULL DEFAULT 0 COMMENT '是否公开：0 私密, 1 公开',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1 正常, 2 回收站, 3 下架',
     view_count INT NOT NULL DEFAULT 0 COMMENT '浏览次数',
     like_count INT NOT NULL DEFAULT 0 COMMENT '点赞数（冗余）',
     comment_count INT NOT NULL DEFAULT 0 COMMENT '评论数（冗余）',

@@ -145,7 +145,7 @@ export const noteApi = {
    * @param {string} params.endTime - 结束时间
    * @param {string} params.orderBy - 排序字段
    * @param {string} params.orderDirection - 排序方向
-   * @param {number} params.status - 状态（0草稿/1正常/2回收站）
+   * @param {number} params.status - 状态（1正常/2回收站/3下架）
    */
   getMyNotes(params = {}) {
     return request({

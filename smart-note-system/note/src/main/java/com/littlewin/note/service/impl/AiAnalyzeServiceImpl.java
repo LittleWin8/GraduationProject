@@ -64,7 +64,7 @@ public class AiAnalyzeServiceImpl implements AiAnalyzeService {
             20. sys_log_operation (id, user_id, username, module, action_type, request_method, ip_address, status, create_time)
             21. sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_time)
             22. sys_dict_data (data_id, dict_type, dict_label, dict_value, tag_type, sort_order, status)
-            字段说明：note.status:0草稿/1正常/2回收站/3下架，user_message.type:1评论/2回复/3审核通过/4审核不通过/5违规下架/6公告/7点赞/8收藏
+            字段说明：note.status:1正常/2回收站/3下架，note.is_public:0私密/1公开，user_message.type:1评论/2回复/3审核通过/4审核不通过/5违规下架/6公告/7点赞/8收藏
             """;
 
     @PostConstruct

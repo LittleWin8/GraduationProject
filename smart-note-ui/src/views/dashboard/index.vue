@@ -93,7 +93,7 @@ const lineOption = computed<ECOption>(() => ({
 }));
 
 const pieOption = computed<ECOption>(() => {
-  const colorMap: Record<string, string> = { 草稿: "#909399", 正常: "#67c23a", 回收站: "#e6a23c", 下架: "#f56c6c" };
+  const colorMap: Record<string, string> = { 正常: "#67c23a", 回收站: "#e6a23c", 下架: "#f56c6c" };
   return {
     title: { text: "笔记状态分布", left: "center", textStyle: { fontSize: 15 } },
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },

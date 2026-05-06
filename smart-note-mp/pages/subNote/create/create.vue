@@ -159,7 +159,7 @@ const form = reactive({
 	title: '',
 	categoryId: null,
 	content: '',
-	isPublic: 1
+	isPublic: 0
 });
 
 const previewVisible = ref(false);
@@ -360,7 +360,7 @@ const resetForm = () => {
 	form.title = '';
 	form.content = '';
 	form.categoryId = null;
-	form.isPublic = 1;
+	form.isPublic = 0;
 	selectedTagIds.value = [];
 	editNoteId.value = null;
 	submitted.value = false;

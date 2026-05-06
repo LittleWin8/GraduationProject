@@ -241,10 +241,9 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 ('user_status', '注销', '2', 'info', 3),
 
 -- 笔记状态
-('note_status', '草稿', '0', 'info', 1),
-('note_status', '正常', '1', 'success', 2),
-('note_status', '回收站', '2', 'danger', 3),
-('note_status', '下架', '3', 'warning', 4),
+('note_status', '正常', '1', 'success', 1),
+('note_status', '回收站', '2', 'danger', 2),
+('note_status', '下架', '3', 'warning', 3),
 
 -- 公开性
 ('note_public', '私密', '0', 'danger', 1),
