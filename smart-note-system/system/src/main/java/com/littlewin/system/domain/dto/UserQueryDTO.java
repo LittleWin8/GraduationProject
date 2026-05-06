@@ -16,6 +16,8 @@ public class UserQueryDTO implements Serializable {
     /** 每页条数 */
     private Integer pageSize = 10;
 
+    /** 用户昵称（模糊查询） */
+    private String nickname;
     /** 认证类型 (password / wx_openid) */
     private String authType;
     /** 用户名/标识 (支持模糊查询，仅限服务端用户) */
