@@ -65,8 +65,6 @@ export const request = (options) => {
                     : ''
             },
             success: (res) => {
-                console.log('[API] 响应:', res.statusCode, res.data)
-                
                 if (res.statusCode === 200) {
                     const result = res.data
                     

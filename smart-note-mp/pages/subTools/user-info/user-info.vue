@@ -193,13 +193,10 @@ const loadFromCache = () => {
 				...cached,
 				avatar: cached.avatar || ''
 			}
-			console.log('从缓存加载用户信息成功:', cached)
 			return true
 		}
-		console.log('缓存中无用户信息')
 		return false
 	} catch (error) {
-		console.error('读取缓存失败:', error)
 		return false
 	}
 }
@@ -211,11 +208,8 @@ const fetchLatestUserInfo = async () => {
 	loading.value = true
 	
 	try {
-		console.log('开始请求后端获取最新用户信息...')
 		const data = await userApi.getUserInfo()
-		console.log('获取最新用户信息成功:', data)
 		
-		// 构建完整的用户信息对象
 		const latestUserInfo = {
 			userId: data.userId || '',
 			avatar: data.avatar || '',
@@ -235,17 +229,8 @@ const fetchLatestUserInfo = async () => {
 		const hasChanged = JSON.stringify(userInfo.value) !== JSON.stringify(latestUserInfo)
 		
 		if (hasChanged) {
-			// 更新页面数据（触发重新渲染）
 			userInfo.value = latestUserInfo
-			console.log('用户信息已更新')
-			
-			// 更新缓存
 			uni.setStorageSync('userInfo', latestUserInfo)
-			
-			// 可选：显示轻提示告知用户数据已更新
-			// uni.showToast({ title: '信息已同步', icon: 'none', duration: 1000 })
-		} else {
-			console.log('用户信息无变化，无需更新')
 		}
 		
 		hasFetched.value = true
@@ -269,12 +254,8 @@ onShow(() => {
 	const hasCache = loadFromCache()
 	
 	if (hasCache) {
-		// 有缓存数据：后台静默请求最新数据
-		console.log('有缓存数据，后台静默更新中...')
 		fetchLatestUserInfo()
 	} else {
-		// 无缓存数据：直接请求后端（显示加载提示）
-		console.log('无缓存数据，直接请求后端...')
 		uni.showLoading({ title: '加载中...', mask: true })
 		fetchLatestUserInfo().finally(() => {
 			uni.hideLoading()
@@ -483,7 +464,6 @@ const logout = () => {
 				// 调用后端退出接口
 				try {
 					await authApi.logout()
-					console.log('后端退出成功')
 				} catch (error) {
 					console.error('后端退出失败:', error)
 				}

@@ -131,8 +131,6 @@ const showAgreement = (type) => {
 
 // 预加载所有个人数据（登录成功后调用）
 const preloadUserData = async () => {
-	console.log('开始预加载用户数据...')
-	
 	try {
 		// 并行请求所有需要缓存的数据
 		const [userInfo, stats] = await Promise.all([
@@ -152,7 +150,6 @@ const preloadUserData = async () => {
 		
 		// 存入缓存
 		uni.setStorageSync('userInfo', fullUserInfo)
-		console.log('用户数据预加载完成，已缓存:', fullUserInfo)
 		
 		return fullUserInfo
 	} catch (error) {
@@ -203,12 +200,7 @@ const startLogin = async () => {
 
 // 提取公共登录成功逻辑
 const handleLoginSuccess = async (token) => {
-	console.log('登录成功，token:', token)
 	uni.setStorageSync('token', token)
-	
-	// 验证是否存成功
-	const savedToken = uni.getStorageSync('token')
-	console.log('存储后的 token:', savedToken)
 	uni.hideLoading();
 	
 	// 预加载所有个人数据（用户信息 + 统计数据）

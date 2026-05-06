@@ -1,14 +1,8 @@
 <script>
 	export default {
-		onLaunch: function() {
-			console.log('App Launch - 智能笔记小程序已启动')
-		},
-		onShow: function() {
-			console.log('App Show - 小程序进入前台')
-		},
-		onHide: function() {
-			console.log('App Hide - 小程序进入后台')
-		}
+		onLaunch: function() {},
+		onShow: function() {},
+		onHide: function() {}
 	}
 </script>
 
