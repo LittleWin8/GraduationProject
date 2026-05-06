@@ -22,5 +22,5 @@ public class NoteQueryDTO {
     private String orderDirection = "DESC";  // ASC, DESC
 
     // 我的笔记专用（赞过/收藏默认只查status=1）
-    private Integer status;              // 0-草稿, 1-正常, 2-回收站
+    private Integer status;              // 1-正常, 2-回收站
 }

@@ -27,7 +27,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private static final Map<Integer, String> STATUS_NAME_MAP = new HashMap<>();
 
     static {
-        STATUS_NAME_MAP.put(0, "草稿");
         STATUS_NAME_MAP.put(1, "正常");
         STATUS_NAME_MAP.put(2, "回收站");
         STATUS_NAME_MAP.put(3, "下架");

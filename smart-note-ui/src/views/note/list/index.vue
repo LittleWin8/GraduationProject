@@ -110,7 +110,6 @@ onMounted(() => {
 
 // 状态选项
 const statusOptions = [
-  { label: "草稿", value: 0 },
   { label: "正常", value: 1 },
   { label: "回收站", value: 2 },
   { label: "下架", value: 3 }
@@ -135,7 +134,6 @@ const columns = reactive<ColumnProps<NoteListVO>[]>([
     enum: statusOptions,
     render: (scope: any) => {
       const map: Record<number, { type: string; text: string }> = {
-        0: { type: "info", text: "草稿" },
         1: { type: "success", text: "正常" },
         2: { type: "warning", text: "回收站" },
         3: { type: "danger", text: "下架" }

@@ -237,7 +237,7 @@ json
 | size       | int    | 否   | 每页数量，默认20                             |
 | categoryId | int    | 否   | 分类ID筛选（仅type=my时有效）                |
 | tagId      | int    | 否   | 标签ID筛选（仅type=my时有效）                |
-| status     | int    | 否   | 状态：0草稿 1正常 2回收站（仅type=my时有效） |
+| status     | int    | 否   | 状态：1正常 2回收站（仅type=my时有效） |
 
 **请求示例**:
 

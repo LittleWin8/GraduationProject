@@ -145,7 +145,7 @@
 | title       | VARCHAR(200) | 标题                                     |
 | content     | LONGTEXT     | Markdown 内容                            |
 | is_public   | TINYINT      | 是否公开：0 私密，1 公开                 |
-| status      | TINYINT      | 状态：0 草稿，1 正常，2 回收站           |
+| status      | TINYINT      | 状态：1 正常，2 回收站           |
 | view_count  | INT          | 浏览次数，默认 0                         |
 | del_flag    | TINYINT      | 逻辑删除：0 正常，1 删除                 |
 | create_time | DATETIME     | 创建时间，默认当前时间                   |
