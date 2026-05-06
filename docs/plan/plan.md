@@ -1,0 +1,423 @@
+# 计划概述
+
+1. 项目起步阶段未使用 Agent 开发，主要由个人手写 + AI对话辅助是实现，顾没有严格的计划表
+2. 一二期的区分是毕业设计的中期检查，中期检查之前实现的功能为一期，中期检查之后实现的的二期
+3. 二期开发并非日计划表，而是为了将任务细化而做的区分
+4. 正式开发：一期`2026.4.7-2026.4.27`，二期`2026.4.28-2026.5.6`
+5. 持续优化中~
+
+
+
+# 一期开发
+
+> 一期开发并未指定严格的计划表，顾只有任务总结
+
+| 模块              | 功能项                                 | 状态 |
+| :---------------- | :------------------------------------- | :--- |
+| **认证模块**      | 用户登录、认证模块重构                 | ✅    |
+|                   | 同设备不同角色菜单显示异常             | ✅    |
+| **RBAC 权限管理** | 角色管理（增删改查 + 前后端）          | ✅    |
+|                   | 新增角色自动写入字典                   | ✅    |
+| **用户管理**      | 用户列表分页查询、用户详情查看         | ✅    |
+|                   | 新增/编辑/删除用户，重置密码           | ✅    |
+|                   | 用户个人信息查看与修改                 | ✅    |
+|                   | 修改密码与手机号                       | ✅    |
+|                   | 个人信息页 UI 美化                     | ✅    |
+| **字典管理**      | 字典管理模块（增删改查 + 分页）        | ✅    |
+|                   | 字典接口参数绑定修复                   | ✅    |
+| **标签管理**      | 标签后端接口实现                       | ✅    |
+|                   | 标签新增/删除链路修复 + 表结构约束完善 | ✅    |
+|                   | 标签管理与标签笔记列表接口             | ✅    |
+| **笔记模块**      | 通过分类条件检索笔记                   | ✅    |
+|                   | 笔记详情页功能                         | ✅    |
+| **微信小程序**    | 小程序登录（微信授权 + 用户信息保存）  | ✅    |
+|                   | 小程序 UI 设计 + 标签/用户信息组件     | ✅    |
+|                   | 查看用户详情、退出登录                 | ✅    |
+|                   | "我的"页面数据初始化                   | ✅    |
+| **系统日志**      | 注解式 AOP 异步记录                    | ✅    |
+| **基础工具**      | 树形工具类 + 路由树/菜单树重构         | ✅    |
+
+# 二期开发计划（接口→前端→联调 模式）
+
+## Day 1 — 笔记 CRUD：后端 + 小程序 + 联调
+
+| 阶段     | 任务                                                         |
+| -------- | ------------------------------------------------------------ |
+| 🔧 后端   | 笔记创建 `POST /api/wx/notes`、列表 `GET /api/wx/notes`、更新 `PUT /api/wx/notes/{id}`、删除 `DELETE /api/wx/notes/{id}`、恢复 `PUT /api/wx/notes/{id}/restore` |
+| 📱 小程序 | 社区页移除 mock 对接真实列表 API；发布页对接创建接口；笔记编辑（复用发布页）；笔记删除/恢复；回收站页面 |
+| 🔗 联调   | 创建笔记 → 社区页可见 → 编辑修改 → 删除进回收站 → 恢复，全流程走通 |
+
+**交付物**：笔记完整生命周期可用
+
+---
+
+## Day 2 — 互动模块：后端 + 小程序 + 联调
+
+| 阶段     | 任务                                                         |
+| -------- | ------------------------------------------------------------ |
+| 🔧 后端   | 点赞/收藏切换 `POST /api/wx/interactions`、互动状态查询（单条 GET + 批量 POST） |
+| 📱 小程序 | 社区页/详情页点赞按钮对接；详情页收藏按钮对接；点赞/收藏数实时更新；个人中心-收藏列表对接 `/favorites`；个人中心-点赞列表对接 `/liked` |
+| 🔗 联调   | 点赞→计数+1→再点取消→计数-1；收藏→个人中心可见→取消收藏→消失 |
+
+**交付物**：互动功能完整闭环
+
+---
+
+## Day 3 — 评论模块：后端 + 小程序 + 联调
+
+| 阶段     | 任务                                                         |
+| -------- | ------------------------------------------------------------ |
+| 🔧 后端   | 评论列表 `GET /api/wx/comments`、发表评论 `POST /api/wx/comments`、删除评论 `DELETE /api/wx/comments/{id}` |
+| 📱 小程序 | 笔记详情页-评论列表加载；发表评论输入框；删除自己的评论；评论数实时更新 |
+| 🔗 联调   | 发评论→列表刷新可见→删除→消失；详情页评论数与列表一致        |
+
+**交付物**：评论社交功能完成
+
+---
+
+## Day 4 — 管理端笔记管理：后端 + Web + 联调
+
+| 阶段   | 任务                                                         |
+| ------ | ------------------------------------------------------------ |
+| 🔧 后端 | 管理端笔记列表 `GET /api/admin/notes/list`、笔记审核 `PUT /api/admin/notes/{id}/audit`、管理端分类 CRUD `/api/admin/categories` |
+| 🖥️ Web  | 笔记管理页面（ProTable 列表、状态/分类筛选）；审核操作（通过/下架）；笔记详情查看弹窗；分类管理页面（树形表格、增删改排序启禁用） |
+| 🔗 联调 | 小程序发布公开笔记 → Web 端可见 → 审核下架 → 小程序端不可见  |
+
+**交付物**：管理端可管理笔记和分类
+
+---
+
+## Day 5 — 管理端仪表盘 + 日志：后端 + Web + 联调
+
+| 阶段     | 任务                                                         |
+| -------- | ------------------------------------------------------------ |
+| 🔧 后端   | 仪表盘统计 `GET /api/admin/dashboard/stats`（用户数/笔记数/今日新增/增长趋势）、行为日志上报 `POST /api/wx/log/behavior`、操作日志查询 `GET /api/admin/log/operation/list`、行为日志查询 `GET /api/admin/log/behavior/list` |
+| 🖥️ Web    | 首页仪表盘（替换欢迎图片，ECharts 图表展示统计数据）；操作日志页面（ProTable + 筛选）；行为日志页面 |
+| 📱 小程序 | 行为日志上报（浏览笔记时自动上报 view、搜索时上报 search）   |
+| 🔗 联调   | 小程序浏览笔记 → Web 日志页可见行为记录；Web 仪表盘数据与实际一致 |
+
+**交付物**：管理端首页有数据，日志可追溯
+
+---
+
+## Day 6 — 小程序体验优化 + 个人中心完善
+
+| 阶段     | 任务                                                         |
+| -------- | ------------------------------------------------------------ |
+| 🔧 后端   | 个人中心统计接口完善 `/api/wx/user/stats`（确保笔记数/获赞数/收藏数准确） |
+| 📱 小程序 | 个人中心统计数据对接；我的笔记列表（编辑/删除操作）；登录态检查（Token 过期跳转登录页）；下拉刷新/上拉加载统一处理；空状态/加载态/骨架屏；页面切换动画优化 |
+| 🔗 联调   | 未登录→跳登录→登录后返回；各列表页刷新/加载更多正常          |
+
+**交付物**：小程序体验流畅，基础交互完善
+
+
+## Day 7 — Redis 环境搭建 + JWT 安全优化 + SecurityConfig 修复
+
+|    阶段    |                          任务                           | 详情                                                         |
+| :--------: | :-----------------------------------------------------: | :----------------------------------------------------------- |
+|  🐳 Docker  |                   Redis 7.2 容器部署                    | 编写 docker-compose.yml，redis:7.2-alpine + 持久化(AOF) + 密码 + 端口映射；验证 redis-cli ping |
+|   🔧 后端   |                 Spring Boot Redis 集成                  | ① 父 pom 添加 spring-boot-starter-data-redis + commons-pool2 依赖管理；② application-dev.yml 添加 spring.data.redis 配置(host/port/password)；③ RedisConfig（Key 用 StringRedisSerializer，Value 用 GenericJackson2JsonRedisSerializer）；④ RedisService 工具类（get/set/delete/incr/setNx/expire/hasKey） |
+|   🔧 后端   |                      JWT 安全优化                       | ① 密钥改为 64 字符随机串，放 application-dev.yml；② JwtUtils 改为 Spring Bean 注入方式（去掉 @PostConstruct 静态变量 hack）；③ 退出时 Token 写入 Redis 黑名单 token:blacklist:{jti} TTL=剩余有效期；④ JwtAuthenticationFilter 每次校验时检查黑名单 |
+|   🔧 后端   |               SecurityConfig 放行路径补全               | 放行 Knife4j：/doc.html、/webjars/**、/v3/api-docs/**、/swagger-resources/**、/favicon.ico；放行行为日志：/api/wx/log/behavior；放行微信回调：/api/wx/callback/** |
+| **交付物** | Redis 可用，退出登录 Token 立即失效，Knife4j 文档可访问 |                                                              |
+
+## Day 8 — Redis 应用实战 + SQL 性能优化
+
+|    阶段    |                          任务                          | 详情                                                         |
+| :--------: | :----------------------------------------------------: | :----------------------------------------------------------- |
+|   🔧 后端   |                   浏览量 Redis 优化                    | ① getNoteDetail 时 RedisService.incr("note:views:{id}") 替代直接 UPDATE；② @Scheduled(fixedRate=300000) 定时任务批量同步 Redis 计数到 DB（Lua 脚本 GET+DEL 原子操作）；③ 异常回退：Redis 不可用时走原 DB 更新（try-catch 降级） |
+|   🔧 后端   |                    上传限流改 Redis                    | RedisService.incr("upload:limit:{ip}", 1, 3600) 原子操作 + 自动过期，替换 ConcurrentHashMap |
+|   🔧 后端   |                       幂等性保护                       | 点赞/收藏 toggle() 前用 RedisService.setNx("interaction:lock:{userId}:{noteId}:{type}", "1", 3s) 防并发重复，操作完成后删除锁 |
+|   🔧 后端   |                     SQL 子查询优化                     | ① note 表增加 like_count INT DEFAULT 0、comment_count INT DEFAULT 0、summary VARCHAR(500) 冗余字段；② 点赞/取消点赞时同步更新 like_count；③ 评论增删时同步更新 comment_count；④ 笔记创建/更新时截取前 200 字符写入 summary；⑤ NoteMapper.xml 列表查询去掉子查询，直接读冗余字段 |
+|   🔧 后端   |                       数据库索引                       | SQL 脚本添加：note(is_public, status, del_flag, create_time)、note_comment(note_id, del_flag, create_time)、note_reaction(note_id, user_id) UNIQUE、sys_log_operation(user_id, create_time) |
+| **交付物** | 浏览量高并发安全，SQL 查询性能大幅提升，数据库索引完善 |                                                              |
+
+
+
+## Day 9 — 后端代码质量提升
+
+|    阶段    |                        任务                         | 详情                                                         |
+| :--------: | :-------------------------------------------------: | :----------------------------------------------------------- |
+|   🔧 后端   |                  全局异常处理完善                   | ① 引入 @Slf4j 替换 e.printStackTrace()；② 新增 MethodArgumentNotValidException（@Valid 校验失败返回 400）；③ 新增 ConstraintViolationException（路径参数校验失败返回 400）；④ 新增 AccessDeniedException（权限不足 403）；⑤ 新增 AuthenticationException（未认证 401）；⑥ ServiceException 使用 code 字段，Result.build(e.getCode(), e.getMessage(), null) |
+|   🔧 后端   |                 Controller 参数校验                 | ① 创建 DTO 替代 Map：InteractionBatchDTO(noteIds)、NoteAuditDTO(status, reason)；② Controller 方法参数加 @Valid + @RequestBody @Valid DTO；③ DTO 字段加 @NotNull、@NotEmpty、@Size 等注解 |
+|   🔧 后端   |                    CORS 配置收紧                    | addAllowedOriginPattern("*") → 从配置文件读取 cors.allowed-origins，dev 环境配 localhost:5173，prod 配实际域名 |
+|   🔧 后端   |                 common-log 模块整理                 | ① LogModule、LogAction 枚举从 common 移到 common-log；② common 模块不再依赖日志相关枚举；③ 确保模块依赖方向正确：common-log → common（单向） |
+| **交付物** | 异常处理规范、参数校验完善、CORS 安全、模块结构清晰 |                                                              |
+
+## Day 10 — 遗漏页面补充
+
+|  阶段  | 任务         | 详情                                                         |
+| :----: | :----------- | :----------------------------------------------------------- |
+| 🔧 后端 | 标签管理接口 | 新增 AdminTagController，管理端查看所有用户标签（分页、搜索），删除违规标签。注意：note_tag 表无 status 字段，不支持启禁用 |
+| 🖥️ Web  | 标签管理页面 | 新建 category/tag/index.vue，ProTable 列表（展示用户名+标签名+使用次数）+ 删除操作 |
+| 🖥️ Web  | AI 监控页面  | 新建 monitor/aiLog/index.vue，展示 AI 摘要生成记录（预留，Day 4 实现后端） |
+
+**注意：** Web 个人中心（修改密码/手机号）已完成，无需开发。
+
+**交付物：** 所有菜单页面齐全
+
+---
+
+## Day 11 — 消息系统重构（后端 + 小程序 + Web）
+
+**⚠️ 方案：复用 user_message 表扩展**
+
+现有代码基础：
+
+- user_message 表：已有 receiver_id, sender_id, note_id, comment_id, type(1评论/2回复), content, is_read, create_time
+- MessageServiceImpl：已有未读数、列表、标记已读、删除、发送逻辑
+- WxMessageController：已有 /api/wx/messages 四个接口
+- message.vue：已有完整消息列表页
+
+**type 扩展方案：**
+
+| type | 含义       | 来源 |
+| :--: | :--------- | :--- |
+|  1   | 评论       | 已有 |
+|  2   | 回复       | 已有 |
+|  3   | 审核通过   | 新增 |
+|  4   | 审核不通过 | 新增 |
+|  5   | 违规下架   | 新增 |
+|  6   | 系统公告   | 新增 |
+|  7   | 点赞       | 新增 |
+|  8   | 收藏       | 新增 |
+
+**设计决策：**
+
+- 点赞/收藏采用方案 A：取消后不删消息，历史记录保留
+- 自己点赞/收藏自己的笔记不发消息（与评论逻辑一致）
+
+|   阶段   | 任务                     | 详情                                                         |
+| :------: | :----------------------- | :----------------------------------------------------------- |
+|  🔧 后端  | 扩展 user_message 表     | ALTER TABLE：① ADD COLUMN title VARCHAR(100) COMMENT '消息标题（系统通知用）'；② MODIFY COLUMN note_id BIGINT DEFAULT NULL COMMENT '关联笔记ID（系统公告可为空）'；③ type 扩展为 1-8 |
+|  🔧 后端  | 改造 MessageServiceImpl  | 查询时支持按 type 范围过滤：互动消息(1,2,7,8)、系统通知(3,4,5,6)；未读数一次请求返回分类统计 |
+|  🔧 后端  | 改造 WxMessageController | GET /api/wx/messages 支持 group=interaction/notice 参数过滤；GET /api/wx/messages/unread-count 返回 {interactionCount, noticeCount, totalCount} |
+|  🔧 后端  | 点赞/收藏写入消息        | InteractionServiceImpl 注入 MessageService，点赞/收藏时写入 user_message（type=7/8）。注意：自己对自己不发消息，与评论逻辑一致 |
+|  🔧 后端  | 管理端通知接口           | 新增 POST /api/admin/notifications/send（发送系统公告：type=6，可选全部用户/指定用户） |
+| 📱 小程序 | message.vue 改造         | 在现有页面基础上，顶部添加两个 Tab：左"互动消息"（调 /api/wx/messages?group=interaction）、右"系统通知"（调 /api/wx/messages?group=notice） |
+| 📱 小程序 | 互动消息                 | 展示评论/回复/点赞/收藏通知                                  |
+| 📱 小程序 | 系统通知                 | 展示审核结果、违规通知、系统公告，点击跳转相关笔记（系统公告 noteId 为空时不跳转） |
+| 📱 小程序 | 未读数                   | TabBar 用 totalCount，Tab 标题旁显示各自未读数               |
+|  🖥️ Web   | 添加菜单配置             | init_sys_data.sql 添加：menu_id=5030，通知管理，路径 /monitor/notification |
+|  🖥️ Web   | 通知管理页面             | 新建 monitor/notification/index.vue，ProTable 展示已发送的系统通知 |
+|  🖥️ Web   | 发送系统公告             | 新建发送弹窗：输入标题+内容+接收范围（全部用户/指定用户），调用 POST /api/admin/notifications/send |
+
+**init_sys_data.sql 新增菜单：**
+
+```sql
+INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
+(5030, 5000, 'notification', '/monitor/notification', '/monitor/notification/index', 'C', '通知管理', 'Bell', 'sys:notification:send', 3);
+```
+
+**消息页面 UI 设计（小程序改造）：**
+
+```
+┌─────────────────────────────────┐
+│  消息                    全部已读 │
+├────────────────┬────────────────┤
+│  互动消息(5)   │   系统通知(2)   │
+├────────────────┴────────────────┤
+│                                 │
+│  互动消息 Tab：                  │
+│  ┌───────────────────────────┐ │
+│  │ [头像] 张三 评论了你的笔记  │ │
+│  │       「Spring Boot 笔记」 │ │
+│  │       写得真好！           │ │
+│  ├───────────────────────────┤ │
+│  │ [头像] 李四 点赞了你的笔记  │ │
+│  │       「Vue3 入门指南」     │ │
+│  ├───────────────────────────┤ │
+│  │ [头像] 王五 收藏了你的笔记  │ │
+│  │       「Java 面试题」      │ │
+│  └───────────────────────────┘ │
+│                                 │
+│  系统通知 Tab：                  │
+│  ┌───────────────────────────┐ │
+│  │ 🔔 你的笔记「xxx」已通过审核 │ │
+│  │    2024-01-15 10:30       │ │
+│  ├───────────────────────────┤ │
+│  │ ⚠️ 你的笔记「xxx」违规被下架 │ │
+│  │    原因：包含敏感内容       │ │
+│  ├───────────────────────────┤ │
+│  │ 📢 系统公告：新功能上线     │ │
+│  │    AI 摘要功能已开放...     │ │
+│  └───────────────────────────┘ │
+└─────────────────────────────────┘
+```
+
+**交付物：** 消息系统完善，Web 端可发送系统公告
+
+---
+
+## Day 12 — 权限细化 + 笔记审核 + Web 代码清理
+
+|  阶段  | 任务                  | 详情                                                         |
+| :----: | :-------------------- | :----------------------------------------------------------- |
+| 🔧 后端 | 笔记审核标记          | note 表新增 `reviewed` 字段（0未审核/1已审核），用户发布笔记时默认 reviewed=0 |
+| 🔧 后端 | 审核筛选接口          | AdminNoteQueryDTO 新增 `reviewed` 参数，管理员可筛选未审核笔记 |
+| 🔧 后端 | 标记已审核接口        | 新增 `PUT /api/admin/notes/{id}/review`，将 reviewed 设为 1  |
+| 🔧 后端 | 按钮权限分组          | SysMenu.java 新增 parentName 字段、UserAuthMapper.xml 返回 p.name、AdminAuthServiceImpl 按路由名分组 |
+| 🔧 后端 | 按钮权限 SQL 补全     | 角色管理（2021~2024）、标签管理（4011）、通知管理（5031）、笔记审核（3013） |
+| 🖥️ Web  | 笔记管理审核筛选      | 笔记管理页新增"审核"列 + 筛选项，调 reviewed=0 过滤          |
+| 🖥️ Web  | 一键审核按钮          | 笔记列表操作列新增"标记已审核"按钮                           |
+| 🖥️ Web  | 按钮权限控制          | 不同角色看到不同操作按钮（v-auth 指令），权限标识清单见下表  |
+| 🖥️ Web  | 菜单权限验证          | 不同角色登录看到不同菜单                                     |
+| 🖥️ Web  | 首页重定向            | 修改 HOME_URL 从 /home/index 改为 /dashboard/index，删除 views/home/index.vue |
+| 🖥️ Web  | Geeker-Admin 冗余清理 | 删除 src/views 下未使用的示例页面（assembly、directives、echarts、form、link、menu、proTable 示例等） |
+| 🖥️ Web  | API 路径检查          | 排查所有 API 路径是否有双斜杠问题                            |
+
+**笔记审核工作流（先发后审）：**
+
+```
+用户发布笔记 → reviewed=0（未审核）→ 社区可见
+                                        ↓
+管理员打开笔记管理 → 筛选 reviewed=0 → 看到所有未审核文章
+                                        ↓
+                                逐条审核：没问题 → reviewed=1（标记已审核）
+                                          有问题 → status=3（下架）+ reviewed=1
+```
+
+**数据字典补充（init_sys_data.sql）：**
+
+```sql
+-- 字典类型
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark) VALUES
+(10, '笔记审核状态', 'note_review', 1, 'note.reviewed');
+
+-- 字典数据
+INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_order) VALUES
+('note_review', '未审核', '0', 'warning', 1),
+('note_review', '已审核', '1', 'success', 2);
+```
+
+**v-auth 权限标识清单：**
+
+| 页面     | 按钮                      | 权限标识                                                     |
+| :------- | :------------------------ | :----------------------------------------------------------- |
+| 用户管理 | 新增/编辑/删除            | sys:user:add / sys:user:edit / sys:user:delete               |
+| 角色管理 | 新增/编辑/删除/分配权限   | sys:role:add / sys:role:edit / sys:role:delete / sys:role:assign |
+| 笔记管理 | 上架/下架/删除/标记已审核 | note:audit / note:delete / note:review                       |
+| 分类管理 | 新增/编辑/删除            | category:add / category:edit / category:delete               |
+| 标签管理 | 删除                      | note:tag:del                                                 |
+| 通知管理 | 发送通知                  | sys:notification:send                                        |
+
+**注意：** 需确认后端 getAuthButtonList 接口已按页面返回这些权限标识。
+
+**交付物：** 笔记审核体系完整，权限体系完整，Web 代码整洁
+
+---
+
+## Day 13 — AI 摘要功能
+
+|   阶段   | 任务             | 详情                                                       |
+| :------: | :--------------- | :--------------------------------------------------------- |
+|  🔧 后端  | LangChain4j 集成 | 配置 AI 模型（DeepSeek），实现摘要生成服务                 |
+|  🔧 后端  | AI 摘要接口      | POST /api/wx/notes/ai/summary，摘要存入 note_ai_summary 表 |
+|  🖥️ Web   | AI 监控数据      | monitor/aiLog/index.vue 对接后端接口，展示摘要生成记录     |
+| 📱 小程序 | AI 摘要卡片      | 笔记详情页展示摘要文本 + 关键词标签，手动触发生成按钮      |
+|  🔗 联调  | 验证             | 打开笔记详情 → 展示已有摘要 / 点击生成 → 摘要展示正常      |
+
+**交付物：** AI 亮点功能完成（⚠️ 如集成困难先 mock 接口保进度）
+
+---
+
+## Day 14 — 小程序优化
+
+|   阶段   | 任务                | 详情                                 |
+| :------: | :------------------ | :----------------------------------- |
+| 📱 小程序 | request.js 401 去重 | 提取 handleUnauthorized() 公共函数   |
+| 📱 小程序 | 环境配置优化        | config.js 区分 dev/prod 环境 baseURL |
+| 📱 小程序 | MarkdownIt 全局复用 | 提取到 utils/markdown.js 单例        |
+| 📱 小程序 | 分包加载优化        | 低频页面（回收站、标签管理）放入分包 |
+
+**交付物：** 小程序性能优化，代码整洁
+
+---
+
+## Day 15 — AI 笔记助手 + 标签推荐
+
+|   阶段   | 任务            | 详情                                                         |
+| :------: | :-------------- | :----------------------------------------------------------- |
+|  🔧 后端  | AI 笔记助手接口 | POST /api/wx/ai/assist（扩写/润色/总结），复用 AiQuotaService 配额校验 |
+|  🔧 后端  | 标签推荐接口    | POST /api/wx/ai/recommend-tags，LLM 从已有标签中匹配推荐     |
+| 📱 小程序 | 笔记助手 UI     | create.vue 编辑区加"AI 助手"按钮组（扩写/润色/总结）         |
+| 📱 小程序 | 标签推荐 UI     | create.vue 底部加"推荐标签"按钮，展示推荐结果一键添加        |
+
+**技术方案：**
+
+- 复用已有 LangChain4j + DeepSeek 基础设施
+- 复用 AiQuotaService 配额校验 + AiUsageLog 日志记录
+- prompt 模板：扩写="请将以下内容扩写到200字"，润色="请润色以下文字"，总结="请用50字总结"
+- 标签推荐：把用户已有标签列表 + 笔记内容喂给 LLM，返回匹配的标签名数组
+
+**交付物：** AI 辅助创作功能完成
+
+---
+
+## Day 16 — 管理端数据分析问答
+
+|  阶段  | 任务         | 详情                                                   |
+| :----: | :----------- | :----------------------------------------------------- |
+| 🔧 后端 | 数据分析接口 | POST /api/admin/ai/analyze，自然语言→SQL→执行→LLM 总结 |
+| 🔧 后端 | SQL 安全校验 | 正则拦截非 SELECT 语句，限制行数+超时                  |
+| 🖥️ Web  | 分析问答 UI  | 仪表盘页加"数据分析"聊天卡片（输入框+结果区）          |
+
+**技术方案：**
+
+- @PostConstruct 加载所有表结构 DDL 到 prompt 模板
+- LLM 生成 SQL → 正则校验（只允许 SELECT）→ JdbcTemplate 执行 → LLM 总结结果
+- 安全限制：只读、最多 100 行、3 秒超时、禁止 DELETE/UPDATE/DROP
+- 结果展示：AI 文字回答 + 数据表格（如有结构化数据）
+
+**交付物：** 管理端数据问答功能完成
+
+---
+
+## Day 17 — 全量联调 + Bug 修复
+
+|   阶段   | 任务       | 详情                                                         |
+| :------: | :--------- | :----------------------------------------------------------- |
+| 🔗 小程序 | 全流程走通 | 登录→社区→详情→互动→评论→发布→AI助手→标签推荐→消息           |
+|  🔗 Web   | 全流程走通 | 登录→仪表盘→数据问答→用户管理→角色管理→笔记管理→分类管理→标签管理→日志→通知管理 |
+|  🐛 Bug   | 集中修复   | 联调发现的所有问题                                           |
+|  🔒 安全  | 安全检查   | SQL 注入防护、XSS 过滤、接口权限验证                         |
+
+**交付物：** 三端全量功能联调通过
+
+---
+
+## Day 18 — 优化 + 收尾
+
+|  阶段  | 任务        | 详情                            |
+| :----: | :---------- | :------------------------------ |
+| ⚡ 性能 | 慢 SQL 优化 | N+1 排查、Redis 缓存命中率检查  |
+| ⚡ 前端 | 资源压缩    | 图片懒加载、代码分割            |
+| 📝 文档 | 文档更新    | README 更新、API 文档一致性检查 |
+| ✅ 验收 | 功能验收    | 按需求文档逐项确认功能完整性    |
+
+**交付物：** 项目完整可交付
+
+
+
+## 二期任务总结
+
+| Day  | 计划内容                                             | 完成状态 |
+| :--: | :--------------------------------------------------- | :------: |
+|  1   | 笔记 CRUD（后端 + 小程序 + 联调）                    |    ✅     |
+|  2   | 互动模块：点赞/收藏（后端 + 小程序 + 联调）          |    ✅     |
+|  3   | 评论模块（后端 + 小程序 + 联调）                     |    ✅     |
+|  4   | 管理端笔记管理 + 分类管理（后端 + Web + 联调）       |    ✅     |
+|  5   | 仪表盘统计 + 操作/行为日志（后端 + Web）             |    ✅     |
+|  6   | 小程序体验优化 + 个人中心完善                        |    ✅     |
+|  7   | Redis 环境搭建 + JWT 安全加固 + SecurityConfig 修复  |    ✅     |
+|  8   | Redis 应用实战 + SQL 性能优化                        |    ✅     |
+|  9   | 后端代码质量提升（异常处理/参数校验/CORS/模块整理）  |    ✅     |
+|  10  | 遗漏页面补充（标签管理 + AI 监控）                   |    ✅     |
+|  11  | 消息系统重构（后端 + 小程序 + Web）                  |    ✅     |
+|  12  | 权限细化 + 笔记审核 + Web 代码清理                   |    ✅     |
+|  13  | AI 摘要功能（LangChain4j + DeepSeek）                |    ✅     |
+|  14  | 小程序性能优化（401去重/环境配置/Markdown复用/分包） |    ✅     |
+|  15  | AI 笔记助手 + 标签推荐                               |    ✅     |
+|  16  | 管理端数据分析问答（自然语言→SQL→LLM总结）           |    ✅     |
+|  17  | 全量联调 + Bug 修复                                  |  ⚠️ 部分  |
+|  18  | 优化 + 收尾（慢SQL/资源压缩/文档更新/验收）          |  ⚠️ 部分  |
