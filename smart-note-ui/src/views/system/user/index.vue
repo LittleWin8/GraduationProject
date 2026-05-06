@@ -235,6 +235,12 @@ const openDrawer = async (title: string, row: any = {}) => {
 
   let detailData = { ...row };
 
+  // 新增用户默认值
+  if (title === "新增") {
+    detailData.authType = "password";
+    detailData.status = "1";
+  }
+
   if (title !== "新增" && row.userId) {
     try {
       const { data } = await getUserDetails(row.userId);
