@@ -10,46 +10,146 @@
 - `smart-note-ui`：管理端 Web（Vue 3 + Element Plus）
 - `smart-note-mp`：移动端小程序（uni-app + Vue 3，目标平台为微信小程序）
 
-## 二、核心目标
+## 二、核心功能
 
-- 高效记录：支持移动端随手创建与管理笔记。
-- 结构化沉淀：通过分类与标签组织知识内容，支持 Markdown。
-- 智能辅助：预留 AI 能力扩展，用于摘要、关键词提取等场景。
-- 轻量互动：支持公开笔记的评论、点赞与收藏。
+### 📱 小程序端
 
-## 三、技术栈与工具
+| 模块 | 功能 |
+|:---|:---|
+| 社区 | 公开笔记浏览、分类筛选、下拉刷新、上拉加载 |
+| 笔记详情 | Markdown 渲染、点赞、收藏、评论、AI 摘要生成 |
+| 发布笔记 | Markdown 编辑、分类选择、标签管理、AI 扩写/润色/总结、AI 标签推荐 |
+| 个人中心 | 统计数据、我的笔记/收藏/点赞、回收站、编辑个人信息 |
+| 消息 | 互动消息（评论/回复/点赞/收藏）、系统通知（审核/公告），双 Tab 分组 |
+| 认证 | 微信授权登录、Token 过期自动跳转、登录后返回来源页 |
 
-| 维度 | 分类 | 技术选型 / 工具 | 说明 |
-| --- | --- | --- | --- |
-| 后端 | 核心框架 | Spring Boot 3.x | 提供业务逻辑与 RESTful API |
-| 后端 | 持久层 | MyBatis-Plus | 简化数据库操作 |
-| 后端 | 安全认证 | Spring Security + JWT | 登录认证与接口权限控制 |
-| 后端 | 接口文档 | Knife4j（OpenAPI 3） | 接口调试与文档展示 |
-| 后端 | AI 扩展 | LangChain4j | 智能能力接入预留 |
-| 数据库 | 核心数据库 | MySQL 8.0 | 存储用户、笔记、交互与日志数据 |
-| 管理端 | 前端框架 | Vue 3 + Vite + Element Plus | 系统管理、审核与统计 |
-| 小程序端 | 前端框架 | uni-app（Vue 3）+ uview-plus | 面向微信小程序的业务端应用 |
-| 小程序端 | 开发工具 | HBuilderX（DCloud） | uni-app 主要开发与构建工具 |
-| 小程序端 | 联调工具 | 微信开发者工具 | 小程序预览、调试与上传 |
-| 其他 | 接口调试 | Postman | 接口联调与验证 |
-| 其他 | 运行环境 | Java 17 / Node.js（建议 16+） / Maven 3.x | 项目构建与运行依赖 |
+### 🖥️ Web 管理端
 
-> 说明：小程序端当前为 **uni-app 开发模式**，并非微信原生小程序开发。
+| 模块 | 功能 |
+|:---|:---|
+| 工作台 | 统计卡片、增长趋势图、笔记状态分布、热门笔记排行 |
+| 数据分析 | 自然语言问答，AI 生成 SQL 并返回分析结果 |
+| 用户管理 | 增删改查、头像上传、角色分配、重置密码 |
+| 角色管理 | 增删改查、菜单权限分配、按钮级权限控制 |
+| 笔记管理 | 列表筛选（状态/审核/分类）、上架/下架、标记已审核、审核自动通知 |
+| 分类管理 | 树形结构、增删改、启用/禁用 |
+| 标签管理 | 列表、搜索、删除 |
+| 字典管理 | 字典类型 + 字典数据增删改查 |
+| 日志 | 操作审计、行为日志、时间筛选 |
+| AI 监控 | Token 用量统计、用户排行、调用日志、配额管理 |
+| 通知管理 | 发送系统公告（全部/指定用户） |
+| 个人中心 | 修改密码、修改手机号 |
+
+### 🔧 后端能力
+
+| 模块 | 功能 |
+|:---|:---|
+| 认证 | Spring Security + JWT、Redis Token 黑名单、退出即时失效 |
+| 权限 | RBAC 角色权限、菜单权限、按钮权限（v-auth 指令） |
+| AI | LangChain4j + DeepSeek：摘要生成、笔记助手（扩写/润色/总结）、标签推荐、数据分析问答 |
+| AI 配额 | 用户级 Token 用量追踪、月度配额管控、自动重置 |
+| 消息 | 站内消息系统（8 种类型）、分组查询、未读数统计 |
+| 审核 | 笔记审核标记（reviewed）、审核自动发送系统通知 |
+| 缓存 | Redis 浏览量计数、定时同步 DB、Lua 脚本幂等操作 |
+| 安全 | SQL 注入防护、敏感字段黑名单、接口权限校验 |
+| 日志 | AOP 操作审计、行为日志上报 |
+
+## 三、技术栈
+
+| 维度 | 技术选型 | 说明 |
+|:---|:---|:---|
+| 后端框架 | Spring Boot 3.x | RESTful API |
+| 持久层 | MyBatis-Plus | ORM + XML 自定义 SQL |
+| 安全 | Spring Security + JWT + Redis | 认证鉴权 + Token 黑名单 |
+| AI | LangChain4j + DeepSeek | 摘要/助手/标签推荐/数据分析 |
+| 缓存 | Redis 7.2（Docker） | 浏览量计数、分布式锁、限流 |
+| 数据库 | MySQL 8.0 | 22 张业务表 |
+| 接口文档 | Knife4j（OpenAPI 3） | 接口调试 |
+| Web 前端 | Vue 3 + Vite + Element Plus + ECharts | 管理端 |
+| 小程序 | uni-app（Vue 3）+ uview-plus | 微信小程序 |
+| 构建 | Java 17 / Node.js 16+ / Maven 3.x | 运行环境 |
 
 ## 四、项目结构
 
-```text
+```
 GraduationProject
-├─ smart-note-system   # 后端（Spring Boot 多模块）
-├─ smart-note-ui       # 管理端前端（Vue3）
-├─ smart-note-mp       # 小程序端（uni-app）
-└─ docs                # 设计与数据库文档
+├── smart-note-system/          # 后端（Spring Boot 多模块）
+│   ├── admin/                  # 启动模块
+│   ├── common/                 # 通用工具
+│   ├── common-log/             # 日志模块
+│   ├── framework/              # 安全框架
+│   ├── note/                   # 笔记业务模块
+│   └── system/                 # 系统管理模块
+├── smart-note-ui/              # Web 管理端（Vue 3）
+│   ├── src/api/modules/        # API 接口定义
+│   ├── src/views/              # 页面组件
+│   └── src/components/         # 公共组件
+├── smart-note-mp/              # 小程序端（uni-app）
+│   ├── api/modules/            # API 接口
+│   ├── pages/                  # 页面
+│   └── components/             # 公共组件
+├── docs/
+│   ├── sql/                    # 数据库脚本
+│   └── design/                 # 设计文档
+└── GraduationProject_PLAN/     # 开发计划与提示词
 ```
 
-## 五、相关文档
+## 五、快速启动
 
-1. 数据库设计说明：[docs/sql/data_dictionary.md](docs/sql/data_dictionary.md)
-2. 数据库初始化脚本：[docs/sql/init_db.sql](docs/sql/init_db.sql)
-3. 系统架构设计：[docs/design/architecture.md](docs/design/architecture.md)
-4. 后端 API 设计：[docs/design/api-design.md](docs/design/api-design.md)
+### 后端
 
+```bash
+# 1. 创建数据库并导入
+mysql -u root -p < docs/sql/init_db.sql
+mysql -u root -p smart_note < docs/sql/init_sys_data.sql
+
+# 2. 启动 Redis（Docker）
+docker-compose up -d redis
+
+# 3. 复制配置文件
+cp smart-note-system/admin/src/main/resources/application-dev.yml.example \
+   smart-note-system/admin/src/main/resources/application-dev.yml
+# 编辑 application-dev.yml 填写真实配置
+
+# 4. 启动后端
+cd smart-note-system
+mvn clean install -DskipTests
+cd admin && mvn spring-boot:run
+```
+
+### Web 管理端
+
+```bash
+cd smart-note-ui
+npm install
+npm run dev
+# 访问 http://localhost:8848
+```
+
+### 小程序
+
+```bash
+# 用 HBuilderX 打开 smart-note-mp 目录
+# 运行到微信小程序开发者工具
+```
+
+## 六、数据库
+
+共 22 张表：
+
+| 分类 | 表名 | 说明 |
+|:---|:---|:---|
+| 用户 | sys_user, user_auth, user_info | 用户基础信息 |
+| 权限 | sys_role, sys_menu, sys_role_menu, sys_user_role | RBAC 权限 |
+| 笔记 | note, note_tag, note_tag_rel, note_comment, note_reaction, note_attachment | 笔记核心业务 |
+| AI | note_ai_summary, ai_usage_log, ai_user_quota | AI 摘要与配额 |
+| 消息 | user_message | 站内消息（8 种类型） |
+| 分类 | sys_category | 系统分类 |
+| 日志 | sys_log_behavior, sys_log_operation | 行为+操作日志 |
+| 字典 | sys_dict_type, sys_dict_data | 数据字典 |
+
+## 七、相关文档
+
+- 数据库初始化脚本：[docs/sql/init_db.sql](docs/sql/init_db.sql)
+- 系统数据初始化：[docs/sql/init_sys_data.sql](docs/sql/init_sys_data.sql)
+- 开发计划：[docs/plan/plan.md](docs/plan/plan.md)

@@ -419,5 +419,5 @@ INSERT INTO sys_dict_data (dict_type, dict_label, dict_value, tag_type, sort_ord
 |  14  | 小程序性能优化（401去重/环境配置/Markdown复用/分包） |    ✅     |
 |  15  | AI 笔记助手 + 标签推荐                               |    ✅     |
 |  16  | 管理端数据分析问答（自然语言→SQL→LLM总结）           |    ✅     |
-|  17  | 全量联调 + Bug 修复                                  |  ⚠️ 部分  |
+|  17  | 全量联调 + Bug 修复                                  |    ✅     |
 |  18  | 优化 + 收尾（慢SQL/资源压缩/文档更新/验收）          |  ⚠️ 部分  |

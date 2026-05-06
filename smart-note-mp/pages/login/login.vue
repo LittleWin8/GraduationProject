@@ -227,38 +227,19 @@ const handleLoginSuccess = async (token) => {
 const closeAuthPopup = () => {
 	showAuthPopup.value = false
 	tempAvatar.value = ''
+	tempAvatarPath.value = ''
 	tempNickname.value = ''
 }
+
+const tempAvatarPath = ref('') // 本地临时路径，登录后再上传
 
 const onChooseAvatar = (e) => {
 	const avatarUrl = e.detail.avatarUrl;
 	if (!avatarUrl) return;
-
-	uni.showLoading({ title: '上传头像中...' });
-	
-	// 将微信临时路径上传到后端
-	uni.uploadFile({
-		url: config.baseURL + '/api/wx/user/avatar',
-		filePath: avatarUrl,
-		name: 'file',
-		// 注意：如果后端拦截了未登录请求，此处可能需要特殊处理或在拦截器放行
-		success: (uploadRes) => {
-			const res = JSON.parse(uploadRes.data);
-			if (res.code === 200) {
-				tempAvatar.value = res.data.url;
-				uni.showToast({ title: '头像上传成功', icon: 'success' });
-			} else {
-				uni.showToast({ title: res.message || '上传失败', icon: 'none' });
-			}
-		},
-		fail: (err) => {
-			console.error('文件上传失败', err);
-			uni.showToast({ title: '网络错误', icon: 'none' });
-		},
-		complete: () => {
-			uni.hideLoading();
-		}
-	});
+	// 先存本地路径，登录成功后再上传到后端
+	tempAvatarPath.value = avatarUrl;
+	tempAvatar.value = avatarUrl;
+	uni.showToast({ title: '头像已选择', icon: 'success' });
 }
 
 const onNicknameInput = (e) => {
@@ -276,32 +257,34 @@ const confirmAuth = async () => {
 	const nickname = tempNickname.value.trim()
 
 	// 验证头像
-	if (!tempAvatar.value) {
+	if (!tempAvatarPath.value) {
 		uni.showToast({ title: '请先点击选择头像', icon: 'none' })
 		return
 	}
-	
+
 	// 验证昵称
 	if (!nickname) {
 		uni.showToast({ title: '请填写昵称', icon: 'none' })
 		return
 	}
-	
+
 	// 关闭弹窗
 	showAuthPopup.value = false
 	loading.value = true
 	uni.showLoading({ title: '正在创建账号...', mask: true });
-	
+
 	try {
 		const loginRes = await uni.login({ provider: 'weixin' });
-		
-		// 再次调用后端，此时带上头像和昵称
+
+		// 先不传头像URL（本地路径后端不识别），只传昵称
 		const res = await authApi.login(loginRes.code, {
 			nickName: nickname,
-			avatarUrl: tempAvatar.value
+			avatarUrl: ''
 		});
 
 		if (res.token) {
+			// 登录成功后，上传头像文件到后端
+			await uploadAvatarAfterLogin(tempAvatarPath.value, res.token);
 			await handleLoginSuccess(res.token);
 		} else if (res.isNewUser) {
 			showAuthPopup.value = true
@@ -315,6 +298,34 @@ const confirmAuth = async () => {
 	} finally {
 		loading.value = false;
 	}
+}
+
+// 登录成功后上传头像文件
+const uploadAvatarAfterLogin = (filePath, token) => {
+	return new Promise((resolve, reject) => {
+		uni.uploadFile({
+			url: config.baseURL + '/api/wx/user/avatar',
+			filePath: filePath,
+			name: 'file',
+			header: {
+				'Authorization': 'Bearer ' + token
+			},
+			success: (uploadRes) => {
+				const res = JSON.parse(uploadRes.data);
+				if (res.code === 200) {
+					tempAvatar.value = res.data.url;
+					resolve(res.data.url);
+				} else {
+					console.warn('头像上传失败，使用默认头像');
+					resolve('');
+				}
+			},
+			fail: (err) => {
+				console.warn('头像上传失败:', err);
+				resolve(''); // 上传失败不阻断登录流程
+			}
+		});
+	});
 }
 </script>
 
