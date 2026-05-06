@@ -649,10 +649,10 @@ INSERT INTO note (note_id, user_id, category_id, title, content, is_public, stat
 
 ## ref 和 reactive
 ```javascript
-import { ref, reactive } from 'vue'
+import { ref, reactive } from \'vue\'
 
 const count = ref(0)
-const state = reactive({ name: '张三', age: 25 })
+const state = reactive({ name: \'张三\', age: 25 })
 ```
 
 ## computed 计算属性
