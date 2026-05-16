@@ -10,9 +10,17 @@
 
 
 
-# 二、数据库E-R图
+# 二、数据库核心业务E-R图
 
-![E-R图](./img/erd.png)
+![E-R图（核心业务）](./img/er_core.svg)
+
+![E-R图（系统管理）](./img/er_system.svg)
+
+注意：
+
+- 以上 E-R 图的 draw.io 源文件同步开源在 `docs\diagrams` 目录下，如需调整可直接编辑源文件重新导出。
+- sys_user在两张图中同时出现
+- sys_log_behavior、sys_log_operation、sys_dict_data、sys_dict_type、note_attachmen没有上面的两图中均为出现
 
 
 

@@ -3,7 +3,7 @@
     <div class="login-box">
       <SwitchDark class="dark" />
       <div class="login-left">
-        <img class="login-left-img" src="@/assets/images/login_left.png" alt="login" />
+        <img class="login-left-img" :src="isDark ? loginKnowledgeNetworkDark : loginKnowledgeNetwork" alt="login" />
       </div>
       <div class="login-form">
         <div class="login-logo">
@@ -17,8 +17,15 @@
 </template>
 
 <script setup lang="ts" name="login">
+import { storeToRefs } from "pinia";
+import { useGlobalStore } from "@/stores/modules/global";
 import LoginForm from "./components/LoginForm.vue";
 import SwitchDark from "@/components/SwitchDark/index.vue";
+import loginKnowledgeNetwork from "@/assets/images/login_knowledge_network.svg";
+import loginKnowledgeNetworkDark from "@/assets/images/login_knowledge_network_dark.svg";
+
+const globalStore = useGlobalStore();
+const { isDark } = storeToRefs(globalStore);
 </script>
 
 <style scoped lang="scss">

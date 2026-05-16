@@ -190,7 +190,7 @@ CREATE TABLE note_reaction (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '互动记录ID',
     note_id BIGINT NOT NULL COMMENT '笔记ID',
     user_id BIGINT NOT NULL COMMENT '用户ID',
-    attitude TINYINT NOT NULL DEFAULT 0 COMMENT '态度：0 无, 1 点赞, 2 踩',
+    attitude TINYINT NOT NULL DEFAULT 0 COMMENT '态度：0 无, 1 点赞',
     is_favorite TINYINT NOT NULL DEFAULT 0 COMMENT '收藏状态：0 未收藏, 1 已收藏',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -205,7 +205,7 @@ CREATE TABLE note_reaction (
 /* 三、增强与日志模块       */
 /* ============================= */
 
-/* 1. AI 摘要表 (增加模型名称记录) */
+/* 1. AI 摘要表 */
 CREATE TABLE note_ai_summary (
     note_id BIGINT PRIMARY KEY COMMENT '笔记ID',
     summary TEXT COMMENT 'AI生成摘要内容',
@@ -425,7 +425,7 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 
 -- 字典管理
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
-(2030, 2000, 'dict', '/system/dict', '/system/dict/index', 'C', '字典管理', 'Book', 'sys:dict:list', 3);
+(2030, 2000, 'dict', '/system/dict', '/system/dict/index', 'C', '字典管理', 'Memo', 'sys:dict:list', 3);
 
 -- 插入字典数据详情页 (作为字典管理的子路由，但设置为隐藏)
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide,active_menu,sort_order) VALUES
@@ -449,9 +449,6 @@ INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, titl
 INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, sort_order) VALUES
 (3010, 3000, 'noteList', '/note/list', '/note/list/index', 'C', '笔记列表', 'List', 'note:list:view', 1);
 
--- 内容审核（审核功能已集成到笔记列表页，隐藏此菜单）
-INSERT INTO sys_menu (menu_id, parent_id, name, path, component, menu_type, title, icon, perms, is_hide, sort_order) VALUES
-(3020, 3000, 'audit', '/note/audit', '/note/audit/index', 'C', '内容审核', 'Checked', 'note:audit:view', 1, 2);
 -- 笔记列表按钮权限
 INSERT INTO sys_menu (menu_id, parent_id, menu_type, title, perms, sort_order) VALUES
 (3011, 3010, 'F', '审核笔记', 'note:audit', 1),

@@ -1,4 +1,16 @@
+<div align="center">
+
 # 基于 Spring Boot 的个人知识管理与智能笔记系统
+
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&style=flat-square)](https://spring.io/projects/spring-boot)
+[![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white&style=flat-square)](https://vuejs.org)
+[![Element Plus](https://img.shields.io/badge/Element%20Plus-409EFF?logo=element-plus&logoColor=white&style=flat-square)](https://element-plus.org)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white&style=flat-square)](https://www.mysql.com)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square)](https://redis.io)
+[![uni-app](https://img.shields.io/badge/uni--app-2B9939?logo=wechat&logoColor=white&style=flat-square)](https://uniapp.dcloud.net.cn)
+[![License](https://img.shields.io/github/license/LittleWin8/GraduationProject-Agent?style=flat-square)](./LICENSE)
+
+</div>
 
 ## 一、项目概述
 
@@ -56,7 +68,19 @@
 | 安全 | SQL 注入防护、敏感字段黑名单、接口权限校验 |
 | 日志 | AOP 操作审计、行为日志上报 |
 
-## 三、项目结构
+## 三、项目预览
+
+| Web 管理端 | |
+|:---:|:---:|
+| 工作台 | 暗色模式 |
+| ![工作台](docs/screenshots/admin-dashboard.png) | ![AI监控](docs/screenshots/admin-AImonitor.png) |
+
+| 小程序端 | |
+|:---:|:---:|
+| 社区首页 | 笔记详情 |
+| ![社区首页](docs/screenshots/mp-community.png) | ![笔记详情](docs/screenshots/mp-detail.png) |
+
+## 四、项目结构
 
 ```
 GraduationProject
@@ -81,7 +105,7 @@ GraduationProject
     └── plan/                   # 开发计划与提示词
 ```
 
-## 四、快速启动
+## 五、快速启动
 
 ### 后端
 
@@ -121,9 +145,11 @@ pnpm dev
 # 运行到微信小程序开发者工具
 ```
 
-## 五、相关文档
+## 六、相关文档
 
 - 架构设计（技术栈、模块职责、数据库概览）：[docs/design/architecture.md](docs/design/architecture.md)
 - 数据库字典：[docs/sql/data_dictionary.md](docs/sql/data_dictionary.md)
 - 数据库初始化脚本：[docs/sql/init_all.sql](docs/sql/init_all.sql)
 - 开发计划：[docs/plan/plan.md](docs/plan/plan.md)
+- 设计图（可编辑的 .drawio 源文件，含功能模块图、用例图、E-R图）：[docs/diagrams/](https://docs/diagrams/)
+

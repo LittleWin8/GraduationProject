@@ -70,6 +70,15 @@
   }
 }
 
+:global(html.dark) .login-container {
+  background-color: #1a1a2e;
+  background-image: none;
+
+  .login-box {
+    background-color: rgb(30 30 50 / 80%);
+  }
+}
+
 @media screen and (width <= 1250px) {
   .login-left {
     display: none;

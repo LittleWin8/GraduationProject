@@ -1,7 +1,7 @@
 // 环境配置
 const ENV = {
   dev: {
-    baseURL: 'http://192.168.1.8:8080'
+    baseURL: 'http://192.168.1.10:8080'
   },
   prod: {
     baseURL: 'https://your-domain.com' // ⚠️ 替换为实际域名
