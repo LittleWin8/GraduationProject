@@ -8,7 +8,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white&style=flat-square)](https://www.mysql.com)
 [![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square)](https://redis.io)
 [![uni-app](https://img.shields.io/badge/uni--app-2B9939?logo=wechat&logoColor=white&style=flat-square)](https://uniapp.dcloud.net.cn)
-[![License](https://img.shields.io/github/license/LittleWin8/GraduationProject-Agent?style=flat-square)](./LICENSE)
+[![License](https://img.shields.io/github/license/LittleWin8/GraduationProject?style=flat-square)](./LICENSE)
 
 </div>
 
@@ -72,7 +72,7 @@
 
 | Web 管理端 | |
 |:---:|:---:|
-| 工作台 | 暗色模式 |
+| 工作台 | AI 监控 |
 | ![工作台](docs/screenshots/admin-dashboard.png) | ![AI监控](docs/screenshots/admin-AImonitor.png) |
 
 | 小程序端 | |
