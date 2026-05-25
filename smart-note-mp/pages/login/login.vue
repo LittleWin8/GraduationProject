@@ -275,8 +275,17 @@ const confirmAuth = async () => {
 		});
 
 		if (res.token) {
-			// 登录成功后，上传头像文件到后端
-			await uploadAvatarAfterLogin(tempAvatarPath.value, res.token);
+			// 登录成功后，上传头像文件并写入数据库
+			const avatarUrl = await uploadAvatarAfterLogin(tempAvatarPath.value, res.token);
+			// 先存 token，否则 request.js 的 Authorization 头拿不到
+			uni.setStorageSync('token', res.token);
+			if (avatarUrl) {
+				try {
+					await userApi.updateUserInfo({ avatar: avatarUrl });
+				} catch (e) {
+					console.error('头像写入数据库失败:', e);
+				}
+			}
 			await handleLoginSuccess(res.token);
 		} else if (res.isNewUser) {
 			showAuthPopup.value = true
