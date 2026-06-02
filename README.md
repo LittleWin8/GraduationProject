@@ -151,5 +151,5 @@ pnpm dev
 - 数据库字典：[docs/sql/data_dictionary.md](docs/sql/data_dictionary.md)
 - 数据库初始化脚本：[docs/sql/init_all.sql](docs/sql/init_all.sql)
 - 开发计划：[docs/plan/plan.md](docs/plan/plan.md)
-- 设计图（可编辑的 .drawio 源文件，含功能模块图、用例图、E-R图）：[docs/diagrams/](docs/diagrams/)
+- 设计图（可编辑的 .drawio 源文件，含功能模块图、用例图、E-R图）：[docs/design/](docs/design/)
 
