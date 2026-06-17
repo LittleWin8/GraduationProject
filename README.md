@@ -2,13 +2,13 @@
 
 # 基于 Spring Boot 的个人知识管理与智能笔记系统
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&style=flat-square)](https://spring.io/projects/spring-boot)
-[![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white&style=flat-square)](https://vuejs.org)
-[![Element Plus](https://img.shields.io/badge/Element%20Plus-409EFF?logo=element-plus&logoColor=white&style=flat-square)](https://element-plus.org)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white&style=flat-square)](https://www.mysql.com)
-[![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square)](https://redis.io)
-[![uni-app](https://img.shields.io/badge/uni--app-2B9939?logo=wechat&logoColor=white&style=flat-square)](https://uniapp.dcloud.net.cn)
-[![License](https://img.shields.io/github/license/LittleWin8/GraduationProject?style=flat-square)](./LICENSE)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&style=flat-square&cachebust=20260617)](https://spring.io/projects/spring-boot)
+[![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white&style=flat-square&cachebust=20260617)](https://vuejs.org)
+[![Element Plus](https://img.shields.io/badge/Element%20Plus-409EFF?logo=element-plus&logoColor=white&style=flat-square&cachebust=20260617)](https://element-plus.org)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white&style=flat-square&cachebust=20260617)](https://www.mysql.com)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white&style=flat-square&cachebust=20260617)](https://redis.io)
+[![uni-app](https://img.shields.io/badge/uni--app-2B9939?logo=wechat&logoColor=white&style=flat-square&cachebust=20260617)](https://uniapp.dcloud.net.cn)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square&cachebust=20260617)](./LICENSE)
 
 </div>
 
